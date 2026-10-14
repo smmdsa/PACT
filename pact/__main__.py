@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .diagnostics import PactError
 from .graph import analyze, load_document
-from .schema import require
+from .schema import MAX_SOURCE_BYTES, require
 from .wasm import compile_plan
 
 
@@ -32,6 +32,12 @@ def atomic_write(path, data):
 def parser():
     root = Parser(description="PACT toolchain with compact frontend 0.2")
     commands = root.add_subparsers(dest="command", required=True)
+    patch = commands.add_parser('patch')
+    patch.add_argument('source', type=Path)
+    patch.add_argument('--patch', type=Path, required=True)
+    patch.add_argument('-o', '--output', type=Path)
+    patch.add_argument('--to', choices=['compact', 'json'], default='compact')
+    patch.add_argument('--dry-run', action='store_true')
     for name in ('inspect', 'symbols'):
         command = commands.add_parser(name)
         command.add_argument('source', type=Path)
@@ -56,6 +62,35 @@ def main(argv=None):
     try:
         args = parser().parse_args(argv)
         document = load_document(args.source)
+        if args.command == 'patch':
+            from .compact import dumps
+            from .module_build import build_module
+            from .revision import revision
+            from .transaction_io import publish_new
+            from .transactions import apply_patch
+            require(args.dry_run or args.output is not None, 'PATCH_OUTPUT_REQUIRED', 'Specify a new output path or --dry-run.')
+            require(args.to != 'json' or args.output is None or args.output.suffix != '.pact',
+                    'PATCH_OUTPUT_FORMAT', 'JSON candidates cannot use the .pact suffix; use .json.')
+            if not args.dry_run:
+                require(args.output.resolve() != args.source.resolve(), 'PATCH_IN_PLACE', 'In-place publication is unsupported; specify a new candidate path.')
+            patch = load_document(args.patch)
+            candidate = apply_patch(document, patch)
+            _, manifest = build_module(candidate)
+            source = dumps(candidate) if args.to == 'compact' else json.dumps(candidate, ensure_ascii=False, indent=2) + '\n'
+            data = source.encode('utf-8')
+            require(len(data) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Candidate source exceeds 1 MiB.')
+            receipt = {'format': 'pact.patch-receipt/0.1.0',
+                       'status': 'validated' if args.dry_run else 'patched',
+                       'expected_revision_sha256': patch['expected_revision_sha256'],
+                       'result_revision_sha256': revision(candidate),
+                       'evidence': manifest['evidence'],
+                       'changes': [{key:value for key,value in operation.items() if key not in ('node','test')}
+                                   for operation in patch['operations']],
+                       'output': None if args.dry_run else str(args.output)}
+            if not args.dry_run:
+                publish_new(args.output, data)
+            print(json.dumps(receipt, ensure_ascii=False, sort_keys=True, separators=(',', ':')))
+            return 0
         if args.command in ('inspect', 'symbols'):
             from .inspection import inspect_function, symbols
             response = inspect_function(document, args.function) if args.command == 'inspect' else symbols(document)

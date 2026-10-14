@@ -30,10 +30,17 @@ jobs:
           mkdir -p build
           python3 -m benchmarks.token_counts --encoding o200k_base > build/tokens-o200k_base.json
           python3 -m benchmarks.token_counts --encoding cl100k_base > build/tokens-cl100k_base.json
+          python3 -m benchmarks.traditional --encoding o200k_base --require-c > build/tokens-traditional-o200k_base.json
+          python3 -m benchmarks.traditional --encoding cl100k_base --require-c > build/tokens-traditional-cl100k_base.json
       - uses: actions/upload-artifact@v4
         with:
           name: token-baselines
           path: build/tokens-*.json
+      - name: Validate a revision-checked candidate
+        run: |
+          python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json --dry-run
+          python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json -o build/higher-jump.pact
+          python3 -m pact check build/higher-jump.pact
       - name: Compile checked examples and site
         run: python3 -m tools.build_site
       - name: Verify greeting capability host

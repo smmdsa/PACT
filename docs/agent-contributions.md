@@ -12,7 +12,7 @@ PACT is developed for agents that discuss expected outcomes with people, then in
 6. Run the full suite, compile examples and use the input-only playthrough for gameplay changes.
 7. Submit a focused change with expected outcome, evidence and remaining uncertainty.
 
-Inspection responses are context, not executable modules. Revision hashes identify the source version; they are not signatures or an implemented transaction API. Test summaries show relevance, not sufficient evidence of correctness. Read or run the actual cases before asserting coverage.
+Inspection responses are context, not executable modules. Revision hashes identify the source version; they are not signatures; revision-checked candidate patches are available through pact patch. Test summaries show relevance, not sufficient evidence of correctness. Read or run the actual cases before asserting coverage.
 
 ## Useful next contributions
 

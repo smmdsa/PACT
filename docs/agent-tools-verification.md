@@ -9,3 +9,5 @@
 - Fresh independent code reviewer found no important defects. Scope wording now describes actual call/effect/test summaries.
 
 Deferred resource improvements: benchmark compact-input allocation can use a bounded snapshot read; compact parser can avoid repeated slicing on pathological long operand lists. Source validation still enforces the 1MiB limit. No new execution semantics, runtime dependencies or source-profile version introduced. Tokenizer dependency is confined to optional benchmark tooling.
+
+Update: the parser slicing and bounded benchmark-read resource findings were resolved in the transactions/comparison stage; see docs/resource-bounds.md. Earlier verification entries describe their historical state.

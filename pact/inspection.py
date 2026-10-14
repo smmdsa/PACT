@@ -1,10 +1,10 @@
 """Deterministic context retrieval for fully validated numeric modules."""
 
 import copy
-import hashlib
 import json
 
 from .module import analyze_module
+from .revision import revision
 from .schema import GRAPH_FORMAT, require
 
 
@@ -36,12 +36,9 @@ def _closure(key, edges):
 
 
 def _provenance(document, output_format):
-    # Preserve every array's order, including operands and source declaration order.
-    canonical = json.dumps(document, sort_keys=True, separators=(',', ':'),
-                           ensure_ascii=False).encode('utf-8')
     return {'format': output_format, 'source_format': document['format'],
             'context_only': True, 'buildable': False,
-            'semantic_revision_sha256': hashlib.sha256(canonical).hexdigest()}
+            'semantic_revision_sha256': revision(document)}
 
 
 def _footprint(keys, functions):

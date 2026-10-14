@@ -13,3 +13,5 @@
 Deferred minor: operand parsing repeatedly slices the remaining line, giving quadratic work for pathological long lists. Overall source is limited to 1 MiB and semantic argument bounds reject oversized lists; a cursor or earlier bounds would improve parser hardening.
 
 No real-browser visual/compatibility QA in this iteration. No independently verified support for arbitrary third-party numeric Wasm. Pages workflow preparation is separate from repository activation and a successful remote deployment.
+
+Update: the parser slicing and bounded benchmark-read resource findings were resolved in the transactions/comparison stage; see docs/resource-bounds.md. Earlier verification entries describe their historical state.

@@ -71,7 +71,12 @@ class TokenCountsTests(unittest.TestCase):
         changed['nodes'][0]['value'] = 'changed'
         changed['contracts'][0]['value'] = 'changed' + changed['nodes'][1]['value']
         encoding = RecordingEncoding()
-        with patch.object(Path, 'read_bytes', return_value=dumps(changed).encode('utf-8')):
+        real_open = Path.open
+        def snapshot_open(path, *args, **kwargs):
+            if path == ROOT/'examples/hello.pact':
+                return io.BytesIO(dumps(changed).encode('utf-8'))
+            return real_open(path, *args, **kwargs)
+        with patch.object(Path, 'open', snapshot_open):
             with self.assertRaisesRegex(benchmark.BenchmarkError, 'representations differ'):
                 benchmark.measure_pair('hello', ROOT/'examples/hello.pact', ROOT/'examples/hello.pact.json', encoding)
         self.assertEqual(encoding.inputs, [])

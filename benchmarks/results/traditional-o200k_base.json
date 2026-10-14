@@ -1,0 +1,206 @@
+{
+  "agent_task_trials_run": false,
+  "equivalent_security_contracts": false,
+  "format": "pact.traditional-comparison/0.1",
+  "harness": {
+    "bytes": 8387,
+    "path": "benchmarks/traditional.py",
+    "sha256": "3b99c7af2d45612decb0c70f6c795690a4c6064c026c3498ee9e237f25c167d4",
+    "tokens": 1827
+  },
+  "limitations": [
+    "Two small chosen kernels are not representative of languages or the full game.",
+    "Equal frozen traces cover only the listed signed-i32 inputs, not equivalent capabilities, tests or safety.",
+    "PACT includes checked declarations and a contract/test; other sources do not implement that policy.",
+    "Driver and harness measurements exclude runtime/compiler/library binaries, prompts and tool framing.",
+    "Source and driver token counts are independent; tokenization of concatenations is not additive.",
+    "No editing, debugging, real-model productivity, timing or total task-cost experiment was run."
+  ],
+  "metric": "source_tokens",
+  "oracle": {
+    "bytes": 412,
+    "path": "benchmarks/traditional/cases.json",
+    "sha256": "e491252bbf6335b73af4a3be453cdd257e706b797571632f6684554ce529297f",
+    "tokens": 179
+  },
+  "results": [
+    {
+      "drivers": [
+        {
+          "bytes": 3305,
+          "path": "host/run.mjs",
+          "sha256": "4871180680ce3780f692582ec077e2b992844600ad6b546beabb48ea33611f8d",
+          "tokens": 849
+        }
+      ],
+      "language": "pact",
+      "policy_metadata_subset": {
+        "bytes": 139,
+        "overlaps_source": true,
+        "scope": "exact complete declaration lines; not separable token savings",
+        "sha256": "b011e73e39910b8bc87d2f8c0f4f4f66b512b5c22f235755766932fc9101d5ce",
+        "tokens": 34
+      },
+      "source": {
+        "bytes": 270,
+        "path": "benchmarks/traditional/greeting.pact",
+        "sha256": "7a16a84f2fba79fd807e818b8c8d2c801d087fce3cb2c832746542d5ca211495",
+        "tokens": 78
+      },
+      "status": "verified",
+      "stdout": "hola mundo, from an alien language\n",
+      "task": "greeting",
+      "trace_sha256": "e32ebc54ecfbbf6b84bc73ab79a3058addc7365614f4daba8f4b448386f39f13"
+    },
+    {
+      "drivers": [],
+      "language": "python",
+      "source": {
+        "bytes": 44,
+        "path": "benchmarks/traditional/greeting.py",
+        "sha256": "529b991ce78d0f71aebc9e727e989ba0e50de64ae464167f4b2d83b93bf9d182",
+        "tokens": 10
+      },
+      "status": "verified",
+      "stdout": "hola mundo, from an alien language\n",
+      "task": "greeting",
+      "trace_sha256": "e32ebc54ecfbbf6b84bc73ab79a3058addc7365614f4daba8f4b448386f39f13"
+    },
+    {
+      "drivers": [],
+      "language": "javascript",
+      "source": {
+        "bytes": 51,
+        "path": "benchmarks/traditional/greeting.mjs",
+        "sha256": "a23ff749a46c8c1feddcee49ceef1b8675531750f256256edd8f70dbf5f938b2",
+        "tokens": 11
+      },
+      "status": "verified",
+      "stdout": "hola mundo, from an alien language\n",
+      "task": "greeting",
+      "trace_sha256": "e32ebc54ecfbbf6b84bc73ab79a3058addc7365614f4daba8f4b448386f39f13"
+    },
+    {
+      "drivers": [],
+      "language": "c",
+      "source": {
+        "bytes": 101,
+        "path": "benchmarks/traditional/greeting.c",
+        "sha256": "9af4e4df67173ebf17d5e5afde47e796359297d4ed6b027c1a0db293fc498db8",
+        "tokens": 27
+      },
+      "status": "verified",
+      "stdout": "hola mundo, from an alien language\n",
+      "task": "greeting",
+      "trace_sha256": "e32ebc54ecfbbf6b84bc73ab79a3058addc7365614f4daba8f4b448386f39f13"
+    },
+    {
+      "drivers": [
+        {
+          "bytes": 686,
+          "path": "benchmarks/traditional/counter-driver-pact.mjs",
+          "sha256": "352cdc7b42113aa32d085f4d9f2a7c80f657a40efab66fe07fe8821ab7c12287",
+          "tokens": 170
+        }
+      ],
+      "language": "pact",
+      "policy_metadata_subset": {
+        "bytes": 190,
+        "overlaps_source": true,
+        "scope": "exact complete declaration lines; not separable token savings",
+        "sha256": "9faa5a1f8ef815f84e09bc377ae7cf976cdb8660dd3ad77ffb22665ff447a034",
+        "tokens": 53
+      },
+      "source": {
+        "bytes": 596,
+        "path": "benchmarks/traditional/counter.pact",
+        "sha256": "8752da831ade4baa876f6856404606725436fbc2a1d3c57ada2c0bcb3e4d0490",
+        "tokens": 163
+      },
+      "status": "verified",
+      "stdout": "ok -2147483647 -2147483647\nok -2147483647 2147483646\nok 2147483643 2147483646\nok 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\n",
+      "task": "counter",
+      "trace_sha256": "6d289776700bc5d1cec344ecae1da249ec7afd6318c30e1f2f6d18246d9a6d8b"
+    },
+    {
+      "drivers": [
+        {
+          "bytes": 254,
+          "path": "benchmarks/traditional/counter-driver.py",
+          "sha256": "6dc3ba977fdbcd12fd8f1048effbe1fc2283e2487c8c5a8881e16496d95a6fa5",
+          "tokens": 60
+        }
+      ],
+      "language": "python",
+      "source": {
+        "bytes": 236,
+        "path": "benchmarks/traditional/counter.py",
+        "sha256": "e5538586886c62eeb8d237e8f743956157c3f0436716cc212aeeb65ce073e819",
+        "tokens": 74
+      },
+      "status": "verified",
+      "stdout": "ok -2147483647 -2147483647\nok -2147483647 2147483646\nok 2147483643 2147483646\nok 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\n",
+      "task": "counter",
+      "trace_sha256": "6d289776700bc5d1cec344ecae1da249ec7afd6318c30e1f2f6d18246d9a6d8b"
+    },
+    {
+      "drivers": [
+        {
+          "bytes": 408,
+          "path": "benchmarks/traditional/counter-driver.mjs",
+          "sha256": "f62e8bc8d7eacb31b2fe00d3a5f05fb3a94e9c68b581a79069a9cfeacbada2eb",
+          "tokens": 108
+        }
+      ],
+      "language": "javascript",
+      "source": {
+        "bytes": 252,
+        "path": "benchmarks/traditional/counter.mjs",
+        "sha256": "e24527b2f7f7b299fc4e954a37dea3b06db95c74a75b2c68052aa9480716cb6f",
+        "tokens": 76
+      },
+      "status": "verified",
+      "stdout": "ok -2147483647 -2147483647\nok -2147483647 2147483646\nok 2147483643 2147483646\nok 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\n",
+      "task": "counter",
+      "trace_sha256": "6d289776700bc5d1cec344ecae1da249ec7afd6318c30e1f2f6d18246d9a6d8b"
+    },
+    {
+      "drivers": [
+        {
+          "bytes": 397,
+          "path": "benchmarks/traditional/counter-driver.c",
+          "sha256": "0f03c8b78cc174ae054f5016be00b86f3bd812d0bd1d2cd488883bf5f5b26290",
+          "tokens": 123
+        }
+      ],
+      "language": "c",
+      "source": {
+        "bytes": 381,
+        "path": "benchmarks/traditional/counter.c",
+        "sha256": "905e7f8378c205b3bb65cd9cb90567b9e0b1ba8d316903139300cf565a846a7e",
+        "tokens": 138
+      },
+      "status": "verified",
+      "stdout": "ok -2147483647 -2147483647\nok -2147483647 2147483646\nok 2147483643 2147483646\nok 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\nbounds 2147483643 -2\n",
+      "task": "counter",
+      "trace_sha256": "6d289776700bc5d1cec344ecae1da249ec7afd6318c30e1f2f6d18246d9a6d8b"
+    }
+  ],
+  "runtime_versions": {
+    "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+    "node": "v24.19.0",
+    "python": "3.12.14"
+  },
+  "scope": "complete exact UTF-8 files including whitespace and final newline; drivers counted separately",
+  "tokenizer": {
+    "encoding": "o200k_base",
+    "package": "tiktoken",
+    "version": "0.12.0"
+  },
+  "validation_runner": {
+    "bytes": 1278,
+    "path": "tools/check_module.mjs",
+    "sha256": "092163159263aae337307ce75c801210167c49309a61e4c3be7e2ca1ffbbfe51",
+    "tokens": 308
+  }
+}

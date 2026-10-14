@@ -21,4 +21,4 @@ Stdout requires an explicit source effect and a host `--allow stdout` grant. A n
 
 ## Trust
 
-Hashes identify content, not authors. Tests cover cases, not all possible inputs. Altered bytecode, compiler and host are outside the guarantees. Future filesystem/network/process capabilities must have scoped declarations and explicit host grants, with denial tests. Signed packages, nominal units and transactional editing are planned, not implemented.
+Hashes identify content, not authors. Tests cover cases, not all possible inputs. Altered bytecode, compiler and host are outside the guarantees. Future filesystem/network/process capabilities must have scoped declarations and explicit host grants, with denial tests. Signed packages, nominal units and in-place filesystem compare-and-swap are planned, not implemented. Revision-checked candidate construction and no-clobber CLI publication are implemented; see transactions.md.

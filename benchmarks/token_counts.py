@@ -10,7 +10,8 @@ import sys
 
 from pact.compact import loads, validate_document
 from pact.diagnostics import PactError
-from pact.graph import load_document
+from pact.graph import _unique_pairs, load_document
+from pact.schema import MAX_SOURCE_BYTES, require
 
 TIKTOKEN_VERSION = '0.12.0'
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,10 +42,30 @@ def load_tokenizer(name):
                              'Provide network access or a populated TIKTOKEN_CACHE_DIR.') from None
 
 
+def _read_source(path):
+    with Path(path).open('rb') as stream:
+        source = stream.read(MAX_SOURCE_BYTES + 1)
+    require(len(source) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Source exceeds 1 MiB.')
+    return source
+
+
+def _load_snapshot(source, path):
+    # Match load_document's format detection and JSON diagnostics without reopening.
+    try:
+        text = source.decode('utf-8')
+        if Path(path).suffix == '.pact' or text.lstrip().startswith('pact '):
+            return loads(text)
+        return json.loads(text, object_pairs_hook=_unique_pairs)
+    except PactError:
+        raise
+    except (ValueError, RecursionError) as error:
+        raise PactError('SOURCE_INVALID', str(error)) from None
+
+
 def measure_pair(name, compact_path, json_path, encoding):
-    compact = Path(compact_path).read_bytes()
+    compact = _read_source(compact_path)
     compact_document = loads(compact.decode('utf-8'))
-    json_document = load_document(json_path)
+    json_document = _load_snapshot(_read_source(json_path), json_path)
     validate_document(compact_document)
     validate_document(json_document)
     if compact_document != json_document:

@@ -52,6 +52,26 @@ Responses are deterministic JSON with a source revision, selected body, helper s
 
 Optional real-token measurements use `benchmarks/requirements.txt` and `python3 -m benchmarks.token_counts`. They measure source representations with named encodings, not model productivity. The independent compiler remains dependency-free. With `o200k_base`, the game uses 24,851 compact-source tokens versus 35,903 minified-JSON tokens (30.8% fewer). The `player.move` inspection returns 6,229 tokens, with omissions stated explicitly; additional reads may be needed. See frozen reports in `benchmarks/results/`.
 
+## Revision-checked edits
+
+```sh
+python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json --dry-run
+python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json -o build/higher-jump.pact
+```
+
+This example updates jump strength and the grounded-jump test together. Stale revisions, invalid candidates and failed executable tests reject the update. Publication creates a new candidate atomically and never overwrites the source or existing files. This is not an in-place filesystem compare-and-swap. The patch is tied to the checked-in source revision; regenerate its expected revision only after reviewing source changes. See [transactions](docs/transactions.md).
+
+## Traditional-language comparison
+
+Two frozen executable kernels were verified in PACT, Python, JavaScript and C. With `o200k_base`:
+
+| Source | PACT | Python | JavaScript | C |
+| --- | ---: | ---: | ---: | ---: |
+| Greeting | 78 | 10 | 11 | 27 |
+| Bounded wrapping counter | 163 | 74 | 76 | 138 |
+
+PACT uses more source tokens in all these small comparisons. It includes policy declarations and tests that the other versions do not implement; behavioral equality on the frozen traces is not security equivalence. Drivers are counted separately in the reports. This does not measure agent task efficiency or the complete game. See [methodology and all results](docs/traditional-comparison.md).
+
 ## Verification and site
 
 ```sh
@@ -74,7 +94,7 @@ The Pages workflow tests, compiles and runs the playthrough before publishing. E
 | `benchmarks/` | Byte measurements and future token protocol |
 | `tools/` | Authoring, input-only player and site builder |
 
-No full SDK, package manager, transaction API, debugger or nominal units yet. A `stdlib/` will be added when actual standard modules exist.
+No full SDK, package manager, debugger or nominal units yet. A `stdlib/` will be added when actual standard modules exist.
 
 ## License
 

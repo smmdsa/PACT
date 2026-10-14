@@ -40,18 +40,28 @@ def _pairs(pairs):
 def _values(text):
     decoder = json.JSONDecoder(object_pairs_hook=_pairs)
     values = []
-    while text.strip():
-        text = text.lstrip()
-        if text[0] in '[{"' or text[0] == '-' or text[0].isdigit():
-            value, end = decoder.raw_decode(text)
+    cursor = 0
+    while cursor < len(text):
+        if text[cursor].isspace():
+            cursor += 1
+            continue
+        if text[cursor] in '[{"' or text[cursor] == '-' or text[cursor].isdigit():
+            try:
+                value, end = decoder.raw_decode(text, cursor)
+            except json.JSONDecodeError as error:
+                # Keep operand-relative diagnostics; copying occurs only on rejection.
+                raise json.JSONDecodeError(error.msg, text[cursor:], error.pos - cursor) from None
             require(end == len(text) or text[end].isspace(), 'COMPACT_INVALID', 'Separate operands with spaces.')
             values.append(value)
-            text = text[end:]
+            cursor = end
         else:
-            parts = text.split(maxsplit=1)
-            require(bool(WORD.fullmatch(parts[0])), 'COMPACT_INVALID', 'Invalid operand.')
-            values.append(parts[0])
-            text = parts[1] if len(parts) == 2 else ''
+            end = cursor + 1
+            while end < len(text) and not text[end].isspace():
+                end += 1
+            value = text[cursor:end]
+            require(bool(WORD.fullmatch(value)), 'COMPACT_INVALID', 'Invalid operand.')
+            values.append(value)
+            cursor = end
     return values
 
 
