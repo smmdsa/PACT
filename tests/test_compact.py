@@ -70,7 +70,6 @@ class CompactTests(unittest.TestCase):
         doc['nodes'][0]['id'] = 'value:0'
         doc['nodes'][2]['args'][0] = 'value:0'
         self.assertEqual(compact.loads(compact.dumps(doc)), doc)
-        from pact.module import migrate_module
         from tests.test_module import tiny
         numeric = tiny()
         numeric['format'] = 'pact.module/0.2.0'
@@ -78,11 +77,10 @@ class CompactTests(unittest.TestCase):
         numeric['exports'][0] = 'game:step'
         self.assertEqual(compact.loads(compact.dumps(numeric)), numeric)
         legacy = tiny()
-        self.assertEqual(compact.loads(compact.dumps(legacy)), migrate_module(legacy))
+        self.assertEqual(compact.loads(compact.dumps(legacy)), legacy)
 
     def test_legacy_module_json_and_compact_load_to_same_ir(self):
         compact = self.frontend()
-        from pact.module import migrate_module
         from pact.revision import revision
         from tests.test_module import tiny
         legacy = tiny()
@@ -93,7 +91,7 @@ class CompactTests(unittest.TestCase):
             compact_path.write_text(compact.dumps(legacy), encoding='utf-8')
             json_document = load_document(json_path)
             compact_document = load_document(compact_path)
-        expected = migrate_module(legacy)
+        expected = legacy
         self.assertEqual(json_document, expected)
         self.assertEqual(compact_document, expected)
         self.assertEqual(revision(json_document), revision(compact_document))

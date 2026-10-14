@@ -205,7 +205,7 @@ def game_document():
         {'id':'jump.grounded','function':'player.move','set':{'player.grounded':[1],'input.jump':[1]},'expect':{'player.vy':[-1664]}},
         {'id':'damage.once','function':'player.damage','set':{'player.invulnerable':[0]},'expect':{'player.lives':[2],'player.invulnerable':[90]}},
     ]
-    return {'format':'pact.module/0.2.0','constants':constants,'cells':cells,'functions':functions,
+    return {'format':'pact.module/0.1.0','constants':constants,'cells':cells,'functions':functions,
             'exports':[fn['id'] for fn in functions],'assets':assets,'presentation':presentation,'tests':tests}
 
 

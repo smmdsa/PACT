@@ -1,6 +1,6 @@
 {
   "format": "pact.patch/0.1.0",
-  "expected_revision_sha256": "d69139cc4ac6c665d62b968612510fb8f31b841ad3d01da2b8c55f042bf9308b",
+  "expected_revision_sha256": "48f56ce6dcea4e647144ba1048d997ce352e0f37f60a970347af7512c67155d2",
   "operations": [
     {
       "op": "set_constant",

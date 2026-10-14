@@ -108,7 +108,6 @@ class CompressedTests(unittest.TestCase):
             valid_04.replace('n0001=0', 'n0001=-0', 1),
             valid_04.replace('n0001=0', 'n0001=2147483648', 1),
             valid_04.replace('n0001=0', 'n0001=-2147483649', 1),
-            valid_04.replace('format "pact.module/0.2.0"', 'format "pact.module/0.1.0"', 1),
         ]
         for invalid in bad_cases:
             with self.subTest(invalid=invalid[:80]), self.assertRaises(PactError):

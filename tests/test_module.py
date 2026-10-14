@@ -79,7 +79,7 @@ class ModuleTests(unittest.TestCase):
         self.reject(doc, 'STATE_MISSING')
 
     def test_state_reset_validation_inspection_and_structured_fixes(self):
-        document = game_document()
+        document = migrate_module(game_document())
         self.assertEqual(document['format'], 'pact.module/0.2.0')
         mutable_cells = [cell['id'] for cell in document['cells'] if cell['mutable']]
         init_fn = next(fn for fn in document['functions'] if fn['id'] == 'game.init')
@@ -137,7 +137,7 @@ class ModuleTests(unittest.TestCase):
             self.assertEqual(ctx.exception.diagnostic['code'], expected_code)
 
     def test_state_reset_requires_module_0_2_0(self):
-        document = game_document()
+        document = migrate_module(game_document())
         mutable_cells = [cell['id'] for cell in document['cells'] if cell['mutable']]
         init_fn = next(fn for fn in document['functions'] if fn['id'] == 'game.init')
         init_fn['nodes'] = [{'id': 'n0000', 'op': 'state.reset', 'cells': mutable_cells}]
@@ -163,8 +163,8 @@ class ModuleTests(unittest.TestCase):
         self.assertNotEqual(revision(migrated), revision(original))
         self.assertEqual(analyze_module(migrated)['format'], 'pact.module-plan/0.2.0')
         self.assertEqual(compile_module(analyze_module(migrated)), plan_bytes)
-        self.assertEqual(loads(dumps(original)), migrated)
-        self.assertEqual(loads(dumps(original, compressed=True)), migrated)
+        self.assertEqual(loads(dumps(original)), original)
+        self.assertEqual(loads(dumps(original, compressed=True)), original)
         with self.assertRaises(PactError) as error:
             migrate_module(migrated)
         self.assertEqual(error.exception.diagnostic['code'], 'MIGRATION_UNSUPPORTED')

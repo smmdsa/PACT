@@ -119,7 +119,7 @@ def _node(line, allow_inline=False):
     return (inline_nodes, node) if allow_inline else node
 
 
-def loads(source, migrate_legacy=True):
+def loads(source, migrate_legacy=False):
     """Parse and validate; never evaluate source as host code."""
     line_number = 0
     try:
@@ -189,19 +189,13 @@ def loads(source, migrate_legacy=True):
                     packed_sections = True
                 target[key] = record
         require(function is None, 'COMPACT_INVALID', 'Unterminated function.')
-        from .module import FORMAT, FORMATS, migrate_module
+        from .module import FORMATS, migrate_module
         require(not packed_sections or document.get('format') in FORMATS,
                 'COMPACT_INVALID', 'Compressed sections support numeric modules only.')
-        if document.get('format') == FORMATS[0]:
-            require(not inline_literals, 'COMPACT_INVALID',
-                    'Inline literals require pact.module/0.2.0; migrate the document first.')
-            if migrate_legacy:
-                document = migrate_module(document)
-        elif document.get('format') == FORMAT:
-            pass
-        else:
-            require(not inline_literals, 'COMPACT_INVALID',
-                    'Inline literals require numeric module pact.module/0.2.0.')
+        require(not inline_literals or document.get('format') in FORMATS,
+                'COMPACT_INVALID', 'Inline literals require a numeric module.')
+        if migrate_legacy and document.get('format') == FORMATS[0]:
+            document = migrate_module(document)
         validate_document(document)
         return document
     except (ValueError, RecursionError) as error:
@@ -269,9 +263,6 @@ def dumps(document, compressed=False, inline=False):
     """Serialize validated IR; canonical formatting preserves all semantic fields."""
     validate_document(document)
     if inline:
-        from .module import FORMATS
-        require(document.get('format') != FORMATS[0], 'COMPACT_INVALID',
-                'Inline literals require pact.module/0.2.0; migrate the document first.')
         compressed = True
     header = INLINE_HEADER if inline else (DATA_HEADER if compressed else HEADER)
     lines = [header]

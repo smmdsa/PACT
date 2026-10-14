@@ -64,7 +64,7 @@ def parser():
 def main(argv=None):
     try:
         args = parser().parse_args(argv)
-        document = load_document(args.source, migrate_legacy=args.command != 'migrate')
+        document = load_document(args.source)
         if args.command == 'patch':
             from .compact import dumps
             from .module_build import build_module

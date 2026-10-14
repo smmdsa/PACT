@@ -1,3 +1,4 @@
+from pact.module import migrate_module
 import json
 import subprocess
 import tempfile
@@ -74,7 +75,7 @@ class NumericExecutionTests(unittest.TestCase):
 
     def test_state_reset_runtime_and_wasm_equivalence_on_game(self):
         baseline_doc = game_document()
-        reset_doc = game_document()
+        reset_doc = migrate_module(game_document())
         mutable_cells = [cell['id'] for cell in reset_doc['cells'] if cell['mutable']]
         init_fn = next(fn for fn in reset_doc['functions'] if fn['id'] == 'game.init')
         self.assertEqual(len(init_fn['nodes']), 373)

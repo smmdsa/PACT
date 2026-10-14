@@ -14,7 +14,7 @@ def _unique_pairs(pairs):
     return result
 
 
-def load_document(path, migrate_legacy=True):
+def load_document(path, migrate_legacy=False):
     try:
         with Path(path).open("rb") as stream:
             data = stream.read(MAX_SOURCE_BYTES + 1)
