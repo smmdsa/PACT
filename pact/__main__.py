@@ -77,7 +77,7 @@ def main(argv=None):
             from .source_locations import locate_file
             print(json.dumps(locate_file(args.source, args.function, args.node), ensure_ascii=False, sort_keys=True))
             return 0
-        document = load_document(args.source)
+        document = load_document(args.source, validate_source=args.command != 'migrate')
         if args.command == 'patch':
             from .compact import dumps
             from .module_build import build_module

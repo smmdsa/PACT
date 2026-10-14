@@ -1,3 +1,7 @@
+## JSON semantic diagnostic attachment — 2026-10-14
+
+Implemented source validation in locate and CLI check/build/interpret/inspection/conversion/patch input. Positions derive from the original bounded snapshot. Repeated IDs remain candidates; contract collisions and malformed containers omit spans. Migration attachment, patch-candidate locations and replay remain pending.
+
 # Execution ledger — plan: docs/superpowers/plans/2026-10-13-bootstrap.md
 
 Ruling: User's explicit instruction to create the basic structure and hello world authorizes implementation now. Execute locally without another approval handoff.
