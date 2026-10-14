@@ -7,6 +7,17 @@ import tempfile
 
 
 class AgentSandboxTests(unittest.TestCase):
+    def test_javascript_observations_require_bounded_runtime_metadata(self):
+        observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
+        runtime={'engine':'node','node':'v24.0.0','v8':'13.6.0'}
+        parsed,versions=self.module().parse_observations(json.dumps({**observed,'runtime':runtime}).encode(),'javascript')
+        self.assertEqual(parsed,observed);self.assertEqual(versions,runtime)
+        for value in (None,{},dict(runtime,node='x'*101),dict(runtime,engine='other')):
+            with self.assertRaises(ValueError):
+                self.module().parse_observations(json.dumps({**observed,'runtime':value}).encode(),'javascript')
+        with self.assertRaises(ValueError):
+            self.module().parse_observations(json.dumps(observed).encode(),'javascript')
+
     def module(self):
         try:return importlib.import_module('benchmarks.agent_sandbox')
         except ImportError:self.fail('Isolated PACT adapter is missing')
@@ -53,3 +64,11 @@ class AgentSandboxTests(unittest.TestCase):
             with patch.object(module.sys,'platform','linux'),patch.object(module.subprocess,'run',side_effect=FileNotFoundError):
                 with self.assertRaisesRegex(ValueError,'no local execution fallback'):
                     module.run_candidate(candidate,'sha256:'+'a'*64,language='python')
+
+    def test_javascript_backend_missing_never_runs_candidate_on_host(self):
+        module=self.module()
+        with tempfile.TemporaryDirectory() as tmp:
+            candidate=Path(tmp)/'candidate.mjs';candidate.write_bytes(b'throw new Error("must not run on host")')
+            with patch.object(module.sys,'platform','linux'),patch.object(module.subprocess,'run',side_effect=FileNotFoundError):
+                with self.assertRaisesRegex(ValueError,'no local execution fallback'):
+                    module.run_candidate(candidate,'sha256:'+'a'*64,language='javascript')

@@ -2,7 +2,16 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — isolated Python counter adapter and bounded output
+## Latest — isolated JavaScript counter adapter
+
+- `--language javascript` runs the frozen counter task as a Node 24 ES module only inside Docker, with the existing calls, independent oracle, output cap and timeout.
+- A distinct module URL re-evaluates top-level state for reset; CI includes a global-state leakage fixture.
+- A separate static policy permits only the exact loop-bound edit, with CRLF normalization. Unlike PACT IR/Python AST policies, it also rejects extra comments and formatting changes.
+- Receipt 0.4 adds unauthenticated Node/V8 metadata separately from the common trace. Immutable image identity, logs and separate behavior/policy outcomes remain explicit.
+- Docker fixtures cover baseline/edited/invalid/noisy source, unapproved comments, an exact 1 MiB candidate, reset leakage, output flood and timeout. These are authored tests, not model trials.
+- C, broader containment probes, embedded declaration execution, broader policies and actual model runs remain pending.
+
+## Isolated Python counter adapter and bounded output
 
 - `--language python` runs candidate code only in the Docker worker; PACT remains the default. Both use the same frozen calls, reset and trace grader.
 - Added a frozen-baseline Python AST policy allowing only the canonical range(3)→range(4) edit, separate from trace grading.

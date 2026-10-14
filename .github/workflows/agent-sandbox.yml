@@ -19,7 +19,7 @@ jobs:
           python-version: '3.12'
       - name: Build trusted runtime image
         run: docker build -f benchmarks/sandbox/Dockerfile -t pact-counter-verifier .
-      - name: Exercise PACT/Python fixtures and output/timeout probes in isolated containers
+      - name: Exercise PACT/Python/JavaScript fixtures and output/timeout probes in isolated containers
         run: |
           image=$(docker image inspect --format '{{.Id}}' pact-counter-verifier)
           python -m tools.check_agent_sandbox "$image"
