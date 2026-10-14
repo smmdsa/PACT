@@ -47,6 +47,10 @@ jobs:
         with:
           name: token-baselines
           path: build/tokens-*.json
+      - name: Build module 0.3 with export case evidence
+        run: |
+          python3 -m pact check examples/counter.tested.pact
+          python3 -m pact build examples/counter.tested.pact -o build/counter.tested.wasm
       - name: Validate a revision-checked candidate
         run: |
           python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json --dry-run

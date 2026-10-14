@@ -1,6 +1,6 @@
 # Selective numeric-module inspection
 
-Use `python3 -m pact symbols SOURCE` to discover functions and `python3 -m pact inspect SOURCE --function ID` to retrieve one function's context. Compact and JSON source reconstruct the same module IR before inspection (loading preserves the declared version and revision). The compiler validates the entire source, including functions and assets absent from the response. Numeric modules `pact.module/0.1.0` and `pact.module/0.2.0` are supported; text graph `pact.graph/0.0.1` inspection is explicitly unsupported.
+Use `python3 -m pact symbols SOURCE` to discover functions and `python3 -m pact inspect SOURCE --function ID` to retrieve one function's context. Compact and JSON source reconstruct the same module IR before inspection (loading preserves the declared version and revision). The compiler validates the entire source, including functions and assets absent from the response. Numeric modules `pact.module/0.1.0`, `pact.module/0.2.0` and `pact.module/0.3.0` are supported; text graph `pact.graph/0.0.1` inspection is explicitly unsupported.
 
 Python callers use `pact.inspection.inspect_function(document, function_id)` and `pact.inspection.symbols(document)`. Both return ordinary JSON-compatible dictionaries and raise `PactError` for rejected input. An unknown selected function produces `FUNCTION_MISSING`; text graphs produce `INSPECTION_UNSUPPORTED`. Invalid modules retain the existing analyzer's diagnostics.
 
@@ -40,3 +40,5 @@ Reference lists and summaries are sorted, while the selected function's source a
 Call relationships and footprints cannot establish semantic purpose, single responsibility, or total impact. Shared state, host presentation and data changes can connect functions without a call edge. The test selection is a conservative call-graph aid, not complete change-impact analysis. The revision detects stale context; revision-checked candidate patches are now implemented (see transactions.md), while in-place filesystem compare-and-swap remains unsupported.
 
 For physical definitions and inline literal positions, use [source locations](source-locations.md). Coordinates belong to an exact source-byte hash; semantic revisions alone do not identify formatting.
+
+For module 0.3, `declared_export_tests` lists the declared cases per export; it is not evidence that inspection executed them. Only successful build receipts report `tested` cases. See [export evidence](export-evidence.md).

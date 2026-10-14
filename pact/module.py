@@ -6,7 +6,8 @@ import struct
 from .schema import closed_record, identifier, require
 
 FORMAT = 'pact.module/0.2.0'
-FORMATS = ('pact.module/0.1.0', FORMAT)
+TESTED_FORMAT = 'pact.module/0.3.0'
+FORMATS = ('pact.module/0.1.0', FORMAT, TESTED_FORMAT)
 BINARY = {
     'i32.add_wrap': 0x6a, 'i32.sub_wrap': 0x6b, 'i32.mul_wrap': 0x6c,
     'i32.div_s': 0x6d, 'i32.rem_s': 0x6f, 'i32.eq': 0x46, 'i32.ne': 0x47,
@@ -262,29 +263,42 @@ def analyze_module(document):
                 require(cell in layout and isinstance(values, list) and 1 <= len(values) <= layout[cell]['count'], 'TEST_INVALID', 'Invalid test state extent.')
                 require(category != 'set' or layout[cell]['mutable'], 'STATE_IMMUTABLE', 'Tests cannot overwrite immutable cells.')
                 for value in values: integer(value)
+    export_evidence = None
+    if document['format'] == TESTED_FORMAT:
+        export_evidence = {key: sorted(test['id'] for test in document['tests']
+                                      if test['function'] == key) for key in sorted(exports)}
+        missing = [key for key, cases in export_evidence.items() if not cases]
+        require(not missing, 'EXPORT_EVIDENCE_MISSING',
+                'Every exported function requires at least one declared test.',
+                fix={'op': 'add_export_tests', 'functions': missing})
     normalized = dict(document)
     normalized['functions'] = sorted(functions, key=lambda fn: fn['id'])
     normalized['cells'] = sorted(cells, key=lambda cell: cell['id'])
     source = json.dumps(normalized, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
-    return {'format': 'pact.module-plan/' + document['format'].rsplit('/', 1)[-1], 'document': document, 'layout': layout,
+    plan = {'format': 'pact.module-plan/' + document['format'].rsplit('/', 1)[-1], 'document': document, 'layout': layout,
             'function_types': {key: {'params': len(fn['params']), 'result': fn['result']} for key, fn in indexed.items()},
             'source_sha256': hashlib.sha256(source).hexdigest(), 'tiles': tiles, 'atlas_offset': offset,
             'initial_data': bytes(initial) + atlas, 'work': costs}
+    if export_evidence is not None:
+        plan['declared_export_tests'] = export_evidence
+    return plan
 
 
-def migrate_module(document):
-    """Migrate a validated pact.module/0.1.0 document to pact.module/0.2.0.
+def migrate_module(document, target_format=FORMAT):
+    """Migrate a validated numeric module strictly forward to a supported format.
 
-    Only the format version changes: the migration adds no state.reset nodes,
+    The historical default remains 0.1.0 to 0.2.0. Only the format changes:
+    the migration adds no state.reset nodes or tests,
     so every cell write remains an explicit state.store. The migrated document
     compiles to byte-identical WebAssembly, while its canonical semantic
     revision differs because the format version is semantic content.
     """
     import copy
     analyze_module(document)
-    require(document['format'] == FORMATS[0], 'MIGRATION_UNSUPPORTED',
-            'Only pact.module/0.1.0 documents migrate to pact.module/0.2.0.')
+    require(target_format in FORMATS and
+            FORMATS.index(document['format']) < FORMATS.index(target_format),
+            'MIGRATION_UNSUPPORTED', 'Migration requires a supported strictly newer module format.')
     migrated = copy.deepcopy(document)
-    migrated['format'] = FORMAT
+    migrated['format'] = target_format
     analyze_module(migrated)
     return migrated
