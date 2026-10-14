@@ -268,6 +268,9 @@ def dumps(document, compressed=False, inline=False):
     """Serialize validated IR; canonical formatting preserves all semantic fields."""
     validate_document(document)
     if inline:
+        from .module import FORMATS
+        require(document.get('format') != FORMATS[0], 'COMPACT_INVALID',
+                'Inline literals require pact.module/0.2.0; migrate the document first.')
         compressed = True
     header = INLINE_HEADER if inline else (DATA_HEADER if compressed else HEADER)
     lines = [header]
