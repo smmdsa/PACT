@@ -5,9 +5,9 @@ import shutil
 from pathlib import Path
 
 from pact.browser import game_html
-from pact.graph import analyze, load_document
+from pact.graph import load_document
 from pact.module_build import build_module
-from pact.wasm import compile_plan
+from pact.__main__ import main as pact_cli
 
 ROOT = Path(__file__).resolve().parents[1]
 STYLE = '''
@@ -35,8 +35,8 @@ def main():
     (output/'game.wasm').write_bytes(binary)
     (output/'game.manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     (output/'game.html').write_bytes(game_html(game,binary,manifest))
-    greeting = load_document(ROOT/'examples/hello.pact')
-    (output/'hello.wasm').write_bytes(compile_plan(analyze(greeting)))
+    if pact_cli(['build', str(ROOT/'examples/hello.pact'), '-o', str(output/'hello.wasm')]) != 0:
+        raise RuntimeError('Greeting build failed.')
     for name in ('hello.pact','hello.pact.json','alien-harvest.pact','alien-harvest.pact.json'):
         shutil.copyfile(ROOT/'examples'/name,output/name)
     documents = [('syntax','docs/syntax.md'),('security','docs/security.md'),('roadmap','ROADMAP.md')]
