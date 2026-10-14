@@ -9,7 +9,7 @@ HEADER = 'pact 0.2'
 DATA_HEADER = 'pact 0.3'
 INLINE_HEADER = 'pact 0.4'
 WORD = IDENTIFIER
-INLINE_LITERAL = re.compile(r'([A-Za-z][A-Za-z0-9_.:\-]{0,63})=(-?(?:0|[1-9][0-9]*))', re.ASCII)
+INLINE_LITERAL = re.compile(r'([A-Za-z][A-Za-z0-9_.:\-]{0,63})=((?:0|-?[1-9][0-9]*))', re.ASCII)
 FIELDS = {
     'i32.const': ('value',), 'utf8.literal': ('value',),
     'const.load': ('name',), 'local.get': ('name',),
