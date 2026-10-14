@@ -15,6 +15,8 @@ Compact source reconstructs the same closed-schema IR as JSON and passes the sam
 
 Module 0.3 optionally requires a declared executable case for every export; builds run the cases. This is structural presence plus case execution, not proof of relevant assertions or adequate coverage. See [export evidence](export-evidence.md).
 
+Module 0.4 adds explicit guard/assert runtime conditions. A trap does not roll back earlier writes; current Wasm hosts do not map assertion traps to source IDs. See [checked conditions](checked-assertions.md).
+
 These constraints do not prove naming, single responsibility, universal correctness or intent. The numeric host consumes compiler-produced artifacts and is not an independent verifier of arbitrary third-party Wasm. The embedding host can modify exported memory.
 
 ## Text graph

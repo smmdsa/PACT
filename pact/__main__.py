@@ -54,7 +54,7 @@ def parser():
     migrate = commands.add_parser('migrate')
     migrate.add_argument('source', type=Path)
     migrate.add_argument('-o', '--output', type=Path, required=True)
-    migrate.add_argument('--to', choices=['pact.module/0.2.0', 'pact.module/0.3.0'], default='pact.module/0.2.0')
+    migrate.add_argument('--to', choices=['pact.module/0.2.0', 'pact.module/0.3.0', 'pact.module/0.4.0'], default='pact.module/0.2.0')
     for command in ("check", "interpret", "build"):
         child = commands.add_parser(command)
         child.add_argument("source", type=Path)

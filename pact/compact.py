@@ -20,7 +20,8 @@ FIELDS = {
 }
 ALIASES = {'get': 'state.load', 'set': 'state.store', 'reset': 'state.reset',
            'add.wrap': 'i32.add_wrap', 'sub.wrap': 'i32.sub_wrap',
-           'mul.wrap': 'i32.mul_wrap', 'seq': 'flow.sequence', 'if': 'flow.if'}
+           'mul.wrap': 'i32.mul_wrap', 'seq': 'flow.sequence', 'if': 'flow.if',
+           'assert': 'flow.assert', 'guard': 'flow.guard'}
 SHORT = {value: key for key, value in ALIASES.items()}
 FUNCTION_FIELDS = ('params', 'locals', 'result', 'writes')
 

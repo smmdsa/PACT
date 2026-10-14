@@ -30,8 +30,8 @@ def compile_module(plan):
         def result_type(key):
             op = graph[key]['op']
             if op == 'call': return fn_defs[graph[key]['target']]['result']
-            if op == 'flow.if': return result_type(graph[key]['args'][1])
-            return 'unit' if op in ('local.set','state.store','state.reset','flow.sequence','flow.repeat') else 'i32'
+            if op in ('flow.if', 'flow.guard'): return result_type(graph[key]['args'][1])
+            return 'unit' if op in ('local.set','state.store','state.reset','flow.sequence','flow.repeat','flow.assert') else 'i32'
         def address(node):
             field = plan['layout'][node['cell']]
             scratch = temp()
@@ -57,6 +57,9 @@ def compile_module(plan):
                     for idx, val in enumerate(initial_cells[cell_id])
                 )
             if op == 'flow.sequence': return b''.join(emit(ref) for ref in args)
+            if op in ('flow.assert', 'flow.guard'):
+                check = emit(args[0]) + b'\x45\x04\x40\x00\x0b'
+                return check + (emit(args[1]) if op == 'flow.guard' else b'')
             if op == 'flow.if':
                 kind = b'\x7f' if result_type(key) == 'i32' else b'\x40'
                 return emit(args[0]) + b'\x04' + kind + emit(args[1]) + b'\x05' + emit(args[2]) + b'\x0b'
