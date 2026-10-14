@@ -1,5 +1,5 @@
 // Runs only inside the configured container; never import candidate code on the host.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 
 const result = {
     execution_status: 'compile_error', initial_counter: null, cases: [], reset_case: null,
@@ -26,7 +26,6 @@ function observe(scope, args) {
 
 try {
     const request = JSON.parse(readFileSync(process.argv[2], 'utf8'));
-    writeFileSync('/tmp/candidate.mjs', Buffer.from(request.candidate_base64, 'base64'));
     const scope = await candidateScope(false);
     result.initial_counter = [...scope.counter];
     result.execution_status = 'error';

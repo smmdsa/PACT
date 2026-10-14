@@ -30,6 +30,7 @@ with tempfile.TemporaryDirectory() as tmp:
             ('javascript-edited',correct_js,True,True,None),
             ('javascript-invalid','export const =',False,False,None),
             ('javascript-unapproved',correct_js+'\n// extra comment\n',True,False,None),
+            ('javascript-size-limit',correct_js+'/*'+'x'*(1048576-len(correct_js.encode())-4)+'*/',True,False,None),
             ('javascript-noisy',correct_js+'\nconsole.log("noise");\n',False,False,'invalid_worker_output'),
             ('javascript-reset-leak',correct_js.replace('export const counter = [2147483646, -2147483647];',
                 'export const counter = globalThis.savedCounter ??= [2147483646, -2147483647];'),False,False,None),

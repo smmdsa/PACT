@@ -8,7 +8,7 @@ Every entry distinguishes implemented behavior from measured evidence and planne
 - A distinct module URL re-evaluates top-level state for reset; CI includes a global-state leakage fixture.
 - A separate static policy permits only the exact loop-bound edit, with CRLF normalization. Unlike PACT IR/Python AST policies, it also rejects extra comments and formatting changes.
 - Receipt 0.4 adds unauthenticated Node/V8 metadata separately from the common trace. Immutable image identity, logs and separate behavior/policy outcomes remain explicit.
-- Docker fixtures cover baseline/edited/invalid/noisy source, unapproved comments, reset leakage, output flood and timeout. These are authored tests, not model trials.
+- Docker fixtures cover baseline/edited/invalid/noisy source, unapproved comments, an exact 1 MiB candidate, reset leakage, output flood and timeout. These are authored tests, not model trials.
 - C, broader containment probes, embedded declaration execution, broader policies and actual model runs remain pending.
 
 ## Isolated Python counter adapter and bounded output

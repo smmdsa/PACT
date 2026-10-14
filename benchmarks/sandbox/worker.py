@@ -43,7 +43,8 @@ try:
     candidate=base64.b64decode(request['candidate_base64'],validate=True)
     if len(candidate)>1024*1024:raise ValueError('Candidate exceeds 1 MiB')
     if request.get('language')=='javascript':
-        Path('/tmp/request.json').write_bytes(data)
+        Path('/tmp/candidate.mjs').write_bytes(candidate)
+        Path('/tmp/request.json').write_text(json.dumps({'cases':request['cases'],'reset_args':request['reset_args']}))
         # Replace this process: the outer Docker capture/timeout governs Node directly.
         os.execv('/usr/local/bin/node',['node','/opt/javascript_worker.mjs','/tmp/request.json'])
     if request.get('language','pact')=='python':
