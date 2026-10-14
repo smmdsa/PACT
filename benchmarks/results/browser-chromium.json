@@ -1,0 +1,110 @@
+{
+  "format": "pact.browser-smoke/0.1.0",
+  "started_at_utc": "2026-10-14T06:49:15.191Z",
+  "engine": "chromium",
+  "browser_version": "149.0.7827.55",
+  "playwright_version": "1.61.1",
+  "scope": "Headless local-file smoke: docs layout, game rendering, keyboard/pointer controls and pause. No visual baseline or audio-quality grading.",
+  "game_html_sha256": "1c013feb078d5976c3139a66411838c9102044abd792ec3b5d3ba632c42630ca",
+  "checks": [
+    {
+      "name": "docs-layout",
+      "status": "passed",
+      "viewport": {
+        "width": 1400,
+        "height": 1000
+      },
+      "document_width": 1400
+    },
+    {
+      "name": "canvas-rendered",
+      "status": "passed",
+      "viewport": {
+        "width": 1400,
+        "height": 1000
+      },
+      "distinct_colors": 130
+    },
+    {
+      "name": "keyboard-movement",
+      "status": "passed",
+      "viewport": {
+        "width": 1400,
+        "height": 1000
+      }
+    },
+    {
+      "name": "pause-freezes-state",
+      "status": "passed",
+      "viewport": {
+        "width": 1400,
+        "height": 1000
+      }
+    },
+    {
+      "name": "no-browser-errors",
+      "status": "passed",
+      "viewport": {
+        "width": 1400,
+        "height": 1000
+      }
+    },
+    {
+      "name": "docs-layout",
+      "status": "passed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "document_width": 390
+    },
+    {
+      "name": "canvas-rendered",
+      "status": "passed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "distinct_colors": 130
+    },
+    {
+      "name": "pointer-movement",
+      "status": "passed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "name": "touch-jump",
+      "status": "passed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "name": "pause-freezes-state",
+      "status": "passed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "name": "no-browser-errors",
+      "status": "passed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    }
+  ],
+  "status": "passed",
+  "ci": {
+    "run_url": "https://github.com/smmdsa/PACT/actions/runs/38524413016",
+    "commit_sha": "00512f9c5a60498b5c6ceba9e63424a85b12c80a",
+    "artifact_id": 11875392826,
+    "artifact_digest": "sha256:df36efb5efeaf3c9bf1729307557204ae75a79f317628e07474d24c3a02246b4"
+  }
+}

@@ -139,3 +139,7 @@ The owner has not selected an open-source license. Public availability alone doe
 ## Physical source context
 
 `python3 -m pact locate examples/alien-harvest.inline.pact --function player.move --node n0000` returns qualified physical positions and exact source-byte identity separately from the semantic revision. Compact diagnostics locate unique definitions or list ambiguous candidates. See [source locations](docs/source-locations.md). JSON maps and runtime replay remain planned.
+
+## Platform and browser evidence
+
+The full suite and game flow have passed on Linux, Windows and macOS CI. A separate pinned Chromium workflow verifies rendered docs, Canvas, keyboard/pointer movement, touch jump and pause at desktop/mobile-shaped viewports. See [portability evidence](docs/portability.md), [browser checks and limits](docs/browser-validation.md), and the [frozen browser report](benchmarks/results/browser-chromium.json). This does not certify real devices, audio quality or every browser engine.

@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — operating-system validation
+## Latest — browser smoke validation
+
+- Pinned Chromium workflow added for desktop and mobile-shaped viewport checks.
+- Real DOM input, canvas, pause and documentation layout assertions; screenshots/result artifacts.
+- [Chromium CI run](https://github.com/smmdsa/PACT/actions/runs/38524413016) passed 11 checks; browser 149.0.7827.55, generated HTML hash and artifacts recorded.
+- Full browser victory, additional engines and real-device/audio checks remain planned.
+
+## Operating-system validation
 
 - Dedicated compiler/host/docs/game matrix introduced for Linux, Windows and macOS.
 - Corrected matrix passed 208 tests and the game flow on each system; [run evidence](https://github.com/smmdsa/PACT/actions/runs/38523715398).
