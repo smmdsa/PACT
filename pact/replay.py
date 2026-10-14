@@ -76,8 +76,8 @@ def compare_reports(reference, wasm):
 
 
 def _wasm_replay(plan, expected, calls):
-    from .module_wasm import compile_module
-    binary=compile_module(plan)
+    from .module_wasm import compile_module_with_traps
+    binary,trap_map=compile_module_with_traps(plan)
     require(len(binary)<=8*MAX_SOURCE_BYTES,'REPLAY_BINARY_LIMIT','Compiled replay exceeds 8 MiB.')
     script=Path(__file__).resolve().parents[1]/'tools/replay_module.mjs'
     runtime=script.read_bytes()
@@ -99,6 +99,15 @@ def _wasm_replay(plan, expected, calls):
             'REPLAY_RUNTIME','Wasm replay artifact identity differs.')
     report['runtime_sha256']=hashlib.sha256(runtime).hexdigest()
     report['timeout_seconds']=15
+    report['trap_map_complete']=trap_map['complete']
+    positions={(p['function_index'],p['offset']):p for p in trap_map['positions']}
+    for event in report['events']:
+        diagnostic=event.get('diagnostic',{})
+        location=diagnostic.get('wasm_location',{})
+        position=positions.get((location.get('function_index'),location.get('offset')))
+        if position:
+            diagnostic.update(function=position['function'],node=position['node'],
+                              trap_site_kind=position['kind'])
     return report
 
 
@@ -157,8 +166,8 @@ def replay_file(source_path, record_path, engine='reference'):
     report.update(source_path=str(source_path),source_sha256=hashlib.sha256(data).hexdigest(),
                   record_sha256=hashlib.sha256(record_data).hexdigest())
     positions=(index_source if compact else index_json_source)(source)
-    reference=report.get('reference') if engine=='compare' else report
-    for event in reference['events']:
+    reports=[report.get('reference'),report.get('wasm')] if engine=='compare' else [report]
+    for event in (event for result in reports if result for event in result['events']):
         diagnostic=event.get('diagnostic')
         if diagnostic:
             matches=[p for p in positions if p['function']==diagnostic.get('function')

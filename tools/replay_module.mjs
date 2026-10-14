@@ -22,6 +22,8 @@ try {
     } catch (error) {
       if (!(error instanceof WebAssembly.RuntimeError)) throw error;
       event.diagnostic = {status: 'rejected', code: 'WASM_TRAP', message: 'Compiled WebAssembly trapped.'};
+      const frame = /wasm-function\[(\d+)\]:(0x[0-9a-f]+)/i.exec(error.stack ?? '');
+      if (frame) event.diagnostic.wasm_location = {function_index: Number(frame[1]), offset: Number(frame[2])};
       status = 'trapped';
     }
     event.state_sha256 = hash(JSON.stringify(state()));
