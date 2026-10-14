@@ -38,7 +38,16 @@ class ExecutionTests(unittest.TestCase):
         self.assertEqual(json.loads(result.stderr)["code"], code)
 
     def write_manifest(self, path, value):
-        path.write_text(json.dumps(value, sort_keys=True, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        path.write_bytes((json.dumps(value, sort_keys=True, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
+
+    def test_manifest_rewrite_preserves_compiler_bytes_and_host_acceptance(self):
+        _, wasm, manifest = self.build(text_program("👽é\n"))
+        original = manifest.read_bytes()
+        self.write_manifest(manifest, json.loads(original))
+        self.assertEqual(manifest.read_bytes(), original)
+        result = self.run_host(wasm, "--allow", "stdout")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "👽é\n".encode("utf-8"))
 
     def test_compiler_emits_valid_webassembly(self):
         artifact = compile_plan(analyze(hello()))

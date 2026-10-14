@@ -124,7 +124,7 @@ def make_report(iterations=100000, samples=5, require_c=False):
                 row['manifest_sha256'] = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
                 command = [node, str(harness), str(binary), str(manifest_path)]
             elif language == 'c':
-                binary = work / 'counter-c'
+                binary = work / ('counter-c.exe' if sys.platform == 'win32' else 'counter-c')
                 run([gcc, *C_FLAGS, str(source), str(harness), '-o', str(binary)])
                 row['binary'] = binary_record(binary)
                 row['compiler_flags'] = C_FLAGS.copy()

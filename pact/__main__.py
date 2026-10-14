@@ -66,6 +66,10 @@ def parser():
 
 
 def main(argv=None):
+    # Stable UTF-8/LF JSON wire format, independent of Windows text-mode defaults.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8', newline='\n')
     try:
         args = parser().parse_args(argv)
         if args.command == 'locate':

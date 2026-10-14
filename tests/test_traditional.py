@@ -33,6 +33,14 @@ class TraditionalComparisonTests(unittest.TestCase):
         self.assertEqual(measured, {'bytes':len(source), 'tokens':2,
                                   'sha256':hashlib.sha256(source).hexdigest()})
 
+    def test_windows_trace_transport_preserves_evidence_and_lone_carriage_returns(self):
+        benchmark = self.benchmark()
+        actual=b'ok 1 2\r\nodd\rvalue\r\n'
+        with patch.object(benchmark.sys,'platform','win32'):
+            self.assertEqual(benchmark.normalize_trace(actual), b'ok 1 2\nodd\rvalue\n')
+        with patch.object(benchmark.sys,'platform','linux'):
+            self.assertEqual(benchmark.normalize_trace(actual), actual)
+
     def test_frozen_oracle_rejects_jointly_wrong_implementations(self):
         benchmark = self.benchmark()
         for language in ('pact', 'python', 'javascript', 'c'):

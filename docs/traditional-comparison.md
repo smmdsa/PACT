@@ -75,3 +75,7 @@ python3 -m unittest tests.test_traditional -v
 Frozen [o200k_base](../benchmarks/results/traditional-o200k_base.json) and [cl100k_base](../benchmarks/results/traditional-cl100k_base.json) reports were generated with Python 3.12.14, Node v24.19.0 and GCC 13.3.0. All eight executions verified in each run. Reports include runtime versions and source/driver hashes; they are reproducible for those files and tokenizer resources, rather than promises of invariant counts after future source changes.
 
 These two chosen kernels are intentionally small and are **not representative of the full Alien Harvest game**. No whole-game translation or real-model editing/debugging trial was run. Broader claims about model cost, task efficiency or productivity remain untested.
+
+## Windows transport
+
+Frozen sources and expected LF traces remain unchanged. Windows text-mode Python/C output may transport CRLF. The harness normalizes CRLF to LF only on Windows, preserves standalone carriage returns, and records raw stdout transport bytes/hashes and the normalization in Windows reports. This compares logical line traces; it is not cross-platform byte-identical stdout evidence. Source-token measurements still count the untouched source files.
