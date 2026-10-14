@@ -27,3 +27,5 @@ Module 0.3 requires declared cases for every export. Inspection declared_export_
 Module 0.4 guard/assert nodes check chosen runtime conditions. Guards skip bodies on false; traps retain prior writes. Reference ASSERTION_FAILED IDs and generic Wasm traps are not interchangeable diagnostics. Negative-trap declarations and replay are planned.
 
 Use benchmarks.agent_trace_grader for external counter-four observations bound to archived candidate bytes. It never executes source, authenticates a trace or approves full candidate correctness. behavior_pass is not the trial pass field; candidate_pass remains null until sandbox/interface/policy/embedded-test checks are provided. Synthetic tests are not model results.
+
+The initial benchmarks.agent_sandbox adapter is Linux/Docker/PACT-only and requires a trusted immutable local image ID. Never fall back to host execution. Its receipts grade finite observed behavior, not full source-policy correctness or authenticated model results. CI container fixtures are authored tests, not model trials.

@@ -1,3 +1,7 @@
+## Initial isolated PACT adapter — 2026-10-14
+
+Added a Linux/Docker counter-four worker and runner with immutable image identity, inspected restrictions, bounded execution, cleanup and trace-grade receipts. Missing Docker rejects locally; dedicated CI exercises actual container fixtures. Broader adapters, adversarial containment validation, source-policy verification and real model trials remain pending.
+
 ## External trace grading — 2026-10-14
 
 Implemented language-independent comparison of external counter-four traces, pinned oracle/candidate identity, bounds-state preservation and explicit failed/incomplete outcomes. Behavioral match does not approve candidate source or authenticate execution. Sandbox adapters, source-policy checks and real model measurements remain pending.

@@ -2,7 +2,15 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — independent external trace grading
+## Latest — initial isolated PACT counter adapter
+
+- A Linux/Docker adapter produces finite counter-four observations from a fixed reference worker, using an immutable local image ID.
+- Candidate execution requests no network/host mounts, a read-only filesystem, dropped privileges and explicit resource/time limits; effective configuration is inspected before execution.
+- Missing backend or weakened configuration rejects with no host fallback. Containers are forcibly removed; receipts retain image, candidate and log identity.
+- Dedicated CI exercises authored baseline, edited and malformed fixtures in actual containers and archives receipts. These are not model results.
+- Broader language adapters, source-policy checks, adversarial containment probes and real model trials remain pending.
+
+## Independent external trace grading
 
 - External counter-four observations can be graded for PACT, Python, JavaScript and C against exact candidate bytes and a pinned, independently derived oracle.
 - Initial/reset state, ordered cases, bounds-state preservation and incomplete/error outcomes are checked; identity and malformed-input rejections retain provenance.
