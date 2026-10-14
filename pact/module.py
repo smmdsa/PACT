@@ -13,7 +13,7 @@ BINARY = {
     'i32.and': 0x71, 'i32.or': 0x72,
 }
 OPERATIONS = set(BINARY) | {'i32.const', 'const.load', 'local.get', 'local.set',
-    'state.load', 'state.store', 'flow.if', 'flow.sequence', 'flow.repeat', 'call', 'i32.eqz'}
+    'state.load', 'state.store', 'state.reset', 'flow.if', 'flow.sequence', 'flow.repeat', 'call', 'i32.eqz'}
 MAX_WORK = 2_000_000
 
 
@@ -125,6 +125,7 @@ def analyze_module(document):
             elif op in ('const.load', 'local.get'): fields |= {'name'}
             elif op == 'local.set': fields |= {'name', 'args'}
             elif op in ('state.load', 'state.store'): fields |= {'cell', 'args'}
+            elif op == 'state.reset': fields |= {'cells'}
             elif op == 'flow.repeat': fields |= {'count', 'counter', 'args'}
             elif op == 'call': fields |= {'target', 'args'}
             else: fields |= {'args'}
@@ -136,6 +137,15 @@ def analyze_module(document):
             if 'cell' in node:
                 require(isinstance(node['cell'], str) and node['cell'] in layout, 'STATE_MISSING', 'Unknown state cell.', name)
                 if op == 'state.store': require(layout[node['cell']]['mutable'], 'STATE_IMMUTABLE', 'Cannot store immutable state.', name)
+            if op == 'state.reset':
+                require(isinstance(node['cells'], list) and 1 <= len(node['cells']) <= 128, 'ARGUMENT_LIMIT', 'Expected 1..128 reset cells.', name)
+                seen_reset = set()
+                for cell_id in node['cells']:
+                    identifier(cell_id, name)
+                    require(cell_id in layout, 'STATE_MISSING', 'Unknown state cell.', name)
+                    require(layout[cell_id]['mutable'], 'STATE_IMMUTABLE', 'Cannot reset immutable state.', name)
+                    require(cell_id not in seen_reset, 'ID_DUPLICATE', 'Duplicate reset cell.', name)
+                    seen_reset.add(cell_id)
             if 'args' in node:
                 require(isinstance(node['args'], list) and len(node['args']) <= 128, 'ARGUMENT_LIMIT', 'Invalid arguments.', name)
                 for ref in node['args']: identifier(ref, name)
@@ -177,6 +187,9 @@ def analyze_module(document):
             elif op in ('local.set', 'state.store'):
                 result, arity = 'unit', 1 if op == 'local.set' else 2
                 if op == 'state.store': writes.add(node['cell'])
+            elif op == 'state.reset':
+                result, arity = 'unit', 0
+                writes.update(node['cells'])
             elif op == 'state.load': arity = 1
             elif op == 'flow.if':
                 arity = 3
@@ -197,7 +210,8 @@ def analyze_module(document):
             if op == 'call': depth += function_depth[node['target']]
             require(depth <= 128, 'EVALUATION_DEPTH', 'Combined call/expression depth exceeds 128.', name)
             depths[name] = depth
-            estimate = 1 + sum(work[ref] for ref in args)
+            base_work = sum(layout[cell_id]['count'] for cell_id in node['cells']) if op == 'state.reset' else 1
+            estimate = base_work + sum(work[ref] for ref in args)
             if op == 'flow.repeat': estimate *= node['count'] + 1
             if op == 'call': estimate += costs[node['target']]
             require(estimate <= MAX_WORK, 'WORK_LIMIT', 'Expanded execution budget exceeded.', name)
@@ -206,12 +220,16 @@ def analyze_module(document):
             return result
         result = infer(fn['entry'])
         require(result == fn['result'], 'TYPE_MISMATCH', 'Function result differs from its body.', key)
-        require(set(types) == set(graph), 'NODE_UNREACHABLE', 'Unused function nodes.', key)
+        require(set(types) == set(graph), 'NODE_UNREACHABLE', 'Unused function nodes.', key,
+                fix={'op': 'remove_unreachable', 'function': key,
+                     'unreachable_nodes': sorted(set(graph) - set(types))})
         references = {name: 0 for name in graph}
         for node in graph.values():
             for ref in node.get('args', []): references[ref] += 1
         require(all(references[name] <= 1 for name, kind in types.items() if kind == 'unit'), 'EFFECT_SHARED', 'Unit actions cannot have multiple execution edges.', key)
-        require(writes == set(fn['writes']), 'WRITE_MISMATCH', 'Declared writes differ from transitive writes.', key)
+        require(writes == set(fn['writes']), 'WRITE_MISMATCH', 'Declared writes differ from transitive writes.', key,
+                fix={'op': 'set_writes', 'function': key,
+                     'declared_writes': list(fn['writes']), 'expected_writes': sorted(writes)})
         require(fn['result'] == 'unit' or not writes, 'IMPURE_EXPRESSION', 'Numeric functions cannot mutate state.', key)
         effects[key], costs[key] = writes, work[fn['entry']]
         function_depth[key] = depths[fn['entry']]

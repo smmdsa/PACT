@@ -12,9 +12,9 @@ OPERATIONS = {"utf8.literal", "utf8.concat", "stdout.emit", "effect.sequence"}
 IDENTIFIER = re.compile(r"[A-Za-z][A-Za-z0-9_.:\-]{0,63}", re.ASCII)
 
 
-def require(condition, code, message, node=None):
+def require(condition, code, message, node=None, fix=None):
     if not condition:
-        raise PactError(code, message, node)
+        raise PactError(code, message, node, fix)
 
 
 def closed_record(value, fields, node=None):

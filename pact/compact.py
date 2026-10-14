@@ -7,15 +7,18 @@ from .schema import IDENTIFIER, MAX_SOURCE_BYTES, require
 
 HEADER = 'pact 0.2'
 DATA_HEADER = 'pact 0.3'
+INLINE_HEADER = 'pact 0.4'
 WORD = IDENTIFIER
+INLINE_LITERAL = re.compile(r'([A-Za-z][A-Za-z0-9_.:\-]{0,63})=(-?(?:0|[1-9][0-9]*))', re.ASCII)
 FIELDS = {
     'i32.const': ('value',), 'utf8.literal': ('value',),
     'const.load': ('name',), 'local.get': ('name',),
     'local.set': ('name', 'args'), 'state.load': ('cell', 'args'),
-    'state.store': ('cell', 'args'), 'flow.repeat': ('count', 'counter', 'args'),
+    'state.store': ('cell', 'args'), 'state.reset': ('cells',),
+    'flow.repeat': ('count', 'counter', 'args'),
     'call': ('target', 'args'),
 }
-ALIASES = {'get': 'state.load', 'set': 'state.store',
+ALIASES = {'get': 'state.load', 'set': 'state.store', 'reset': 'state.reset',
            'add.wrap': 'i32.add_wrap', 'sub.wrap': 'i32.sub_wrap',
            'mul.wrap': 'i32.mul_wrap', 'seq': 'flow.sequence', 'if': 'flow.if'}
 SHORT = {value: key for key, value in ALIASES.items()}
@@ -38,7 +41,7 @@ def _pairs(pairs):
     return result
 
 
-def _values(text):
+def _values(text, allow_inline=False):
     decoder = json.JSONDecoder(object_pairs_hook=_pairs)
     values = []
     cursor = 0
@@ -60,8 +63,15 @@ def _values(text):
             while end < len(text) and not text[end].isspace():
                 end += 1
             value = text[cursor:end]
-            require(bool(WORD.fullmatch(value)), 'COMPACT_INVALID', 'Invalid operand.')
-            values.append(value)
+            if allow_inline and '=' in value:
+                match = INLINE_LITERAL.fullmatch(value)
+                require(match is not None, 'COMPACT_INVALID', 'Invalid inline literal.')
+                const_id, raw_int = match.group(1), int(match.group(2))
+                require(-(2**31) <= raw_int < 2**31, 'INTEGER_INVALID', 'Expected signed i32.')
+                values.append(('inline_const', const_id, raw_int))
+            else:
+                require(bool(WORD.fullmatch(value)), 'COMPACT_INVALID', 'Invalid operand.')
+                values.append(value)
             cursor = end
     return values
 
@@ -73,7 +83,7 @@ def _schema(op):
     return FIELDS.get(op, ('args',))
 
 
-def _node(line):
+def _node(line, allow_inline=False):
     name, expression = line.split('=', 1)
     name = name.strip()
     require(bool(WORD.fullmatch(name)), 'COMPACT_INVALID', 'Invalid node ID.')
@@ -81,18 +91,32 @@ def _node(line):
     require(bool(parts), 'COMPACT_INVALID', 'Missing operation.')
     op = ALIASES.get(parts[0], parts[0])
     fields = _schema(op)
-    values = _values(parts[1] if len(parts) > 1 else '')
+    values = _values(parts[1] if len(parts) > 1 else '', allow_inline=allow_inline)
     fixed = len(fields) - ('args' in fields)
     require(len(values) >= fixed, 'COMPACT_INVALID', 'Missing operands.')
     node = {'id': name, 'op': op}
     for key, value in zip(fields[:fixed], values[:fixed]):
+        require(not (isinstance(value, tuple) and value[0] == 'inline_const'),
+                'COMPACT_INVALID', 'Inline literals are permitted in args only.')
         node[key] = value
+    inline_nodes = []
     if 'args' in fields:
         tail = values[fixed:]
-        node['args'] = [] if tail == [[]] else tail
+        if tail == [[]]:
+            node['args'] = []
+        else:
+            args = []
+            for item in tail:
+                if isinstance(item, tuple) and item[0] == 'inline_const':
+                    _, const_id, raw_int = item
+                    inline_nodes.append({'id': const_id, 'op': 'i32.const', 'value': raw_int})
+                    args.append(const_id)
+                else:
+                    args.append(item)
+            node['args'] = args
     else:
         require(len(values) == fixed, 'COMPACT_INVALID', 'Unexpected operands.')
-    return node
+    return (inline_nodes, node) if allow_inline else node
 
 
 def loads(source):
@@ -102,8 +126,10 @@ def loads(source):
         require(len(source.encode('utf-8')) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Source exceeds 1 MiB.')
         lines = [(n, line.strip()) for n, line in enumerate(source.split('\n'), 1)
                  if line.strip() and not line.lstrip().startswith('#')]
-        require(bool(lines) and lines[0][1] in (HEADER, DATA_HEADER), 'COMPACT_INVALID', 'Expected pact 0.2 or pact 0.3 header.')
-        data_version = lines[0][1] == DATA_HEADER
+        require(bool(lines) and lines[0][1] in (HEADER, DATA_HEADER, INLINE_HEADER),
+                'COMPACT_INVALID', 'Expected pact 0.2, pact 0.3 or pact 0.4 header.')
+        data_version = lines[0][1] in (DATA_HEADER, INLINE_HEADER)
+        inline_version = lines[0][1] == INLINE_HEADER
         packed_sections = False
         document, function, ids = {}, None, set()
         for line_number, line in lines[1:]:
@@ -125,17 +151,24 @@ def loads(source):
             elif re.match(r'^[A-Za-z][A-Za-z0-9_.:\-]*\s*=', line):
                 require(function is not None or 'functions' not in document,
                         'COMPACT_INVALID', 'Module nodes must be inside a function.')
-                node = _node(line)
+                if inline_version and function is not None:
+                    inline_nodes, node = _node(line, allow_inline=True)
+                else:
+                    inline_nodes, node = [], _node(line)
+                target = function if function is not None else document
+                for inl in inline_nodes:
+                    require(inl['id'] not in ids, 'COMPACT_INVALID', 'Duplicate node ID.')
+                    ids.add(inl['id'])
+                    target.setdefault('nodes', []).append(inl)
                 require(node['id'] not in ids, 'COMPACT_INVALID', 'Duplicate node ID.')
                 ids.add(node['id'])
-                target = function if function is not None else document
                 target.setdefault('nodes', []).append(node)
             else:
                 key, separator, value = line.partition(' ')
                 require(bool(separator), 'COMPACT_INVALID', 'Expected section and JSON value.')
                 packed = key in ('cells.packed', 'assets.shared')
                 if packed:
-                    require(data_version and function is None, 'COMPACT_INVALID', 'Compressed sections require module-level pact 0.3.')
+                    require(data_version and function is None, 'COMPACT_INVALID', 'Compressed sections require module-level pact 0.3 or pact 0.4.')
                     encoded_key = key
                     key = 'cells' if key == 'cells.packed' else 'assets'
                 target = function if function is not None else document
@@ -172,13 +205,13 @@ def _operand(value, literal=False):
     return value if isinstance(value, str) and WORD.fullmatch(value) and not literal else _json(value)
 
 
-def _emit_node(node):
+def _emit_node(node, inlined=None):
     fields = _schema(node['op'])
     operands = []
     for field in fields:
         value = node[field]
         if field == 'args':
-            operands.extend(_operand(ref) for ref in value)
+            operands.extend(inlined[ref] if inlined and ref in inlined else _operand(ref) for ref in value)
             if not value:
                 operands.append('[]')
         else:
@@ -186,10 +219,46 @@ def _emit_node(node):
     return f"{node['id']} = {SHORT.get(node['op'], node['op'])}" + (' ' + ' '.join(operands) if operands else '')
 
 
-def dumps(document, compressed=False):
+def _emit_function_nodes(function, inline=False):
+    nodes = function['nodes']
+    if not inline:
+        return [_emit_node(node) for node in nodes]
+    refs = {}
+    for node in nodes:
+        for ref in node.get('args', []):
+            refs[ref] = refs.get(ref, 0) + 1
+    refs[function['entry']] = refs.get(function['entry'], 0) + 1
+    inlined_map, skip_ids = {}, set()
+    index = 0
+    while index < len(nodes):
+        run = []
+        cursor = index
+        while (cursor < len(nodes) and nodes[cursor]['op'] == 'i32.const'
+               and refs.get(nodes[cursor]['id'], 0) == 1):
+            run.append(nodes[cursor])
+            cursor += 1
+        if run and cursor < len(nodes) and 'args' in _schema(nodes[cursor]['op']):
+            consumer = nodes[cursor]
+            run_ids = [item['id'] for item in run]
+            run_set = set(run_ids)
+            c_args = [arg for arg in consumer.get('args', []) if arg in run_set]
+            if c_args and len(c_args) == len(set(c_args)) and c_args == run_ids[-len(c_args):]:
+                for item in run[-len(c_args):]:
+                    inlined_map[item['id']] = f"{item['id']}={item['value']}"
+                    skip_ids.add(item['id'])
+                index = cursor + 1
+                continue
+        index += 1
+    return [_emit_node(node, inlined_map) for node in nodes if node['id'] not in skip_ids]
+
+
+def dumps(document, compressed=False, inline=False):
     """Serialize validated IR; canonical formatting preserves all semantic fields."""
     validate_document(document)
-    lines = [DATA_HEADER if compressed else HEADER]
+    if inline:
+        compressed = True
+    header = INLINE_HEADER if inline else (DATA_HEADER if compressed else HEADER)
+    lines = [header]
     for key, value in document.items():
         if key == 'nodes':
             lines.extend(_emit_node(node) for node in value)
@@ -197,7 +266,7 @@ def dumps(document, compressed=False):
             for function in value:
                 lines.append('fn ' + function['id'])
                 lines.extend(key + ' ' + _json(function[key]) for key in FUNCTION_FIELDS)
-                lines.extend(_emit_node(node) for node in function['nodes'])
+                lines.extend(_emit_function_nodes(function, inline=inline))
                 lines.extend(['return ' + function['entry'], 'end'])
         else:
             plain = key + ' ' + _json(value)

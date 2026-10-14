@@ -1,8 +1,11 @@
 import copy
 import unittest
 
+from pact.compact import dumps, loads
 from pact.diagnostics import PactError
+from pact.inspection import inspect_function, symbols
 from pact.module import analyze_module
+from tools.make_game import game_document
 
 
 def tiny():
@@ -71,6 +74,63 @@ class ModuleTests(unittest.TestCase):
         doc = tiny()
         doc['functions'][0]['nodes'][-1]['cell'] = 'missing'
         self.reject(doc, 'STATE_MISSING')
+
+    def test_state_reset_validation_inspection_and_structured_fixes(self):
+        document = game_document()
+        mutable_cells = [cell['id'] for cell in document['cells'] if cell['mutable']]
+        init_fn = next(fn for fn in document['functions'] if fn['id'] == 'game.init')
+        init_fn['nodes'] = [{'id': 'n0000', 'op': 'state.reset', 'cells': mutable_cells}]
+        init_fn['entry'] = 'n0000'
+        plan = analyze_module(document)
+        self.assertEqual(plan['work']['game.init'], sum(len(cell['values']) for cell in document['cells'] if cell['mutable']))
+        for kwargs in ({}, {'compressed': True}, {'inline': True}):
+            text = dumps(document, **kwargs)
+            self.assertIn('n0000 = reset [', text)
+            self.assertEqual(loads(text), document)
+        sym = symbols(document)
+        init_sym = next(item for item in sym['functions'] if item['id'] == 'game.init')
+        self.assertEqual(init_sym['write_cells'], sorted(mutable_cells))
+        inspected = inspect_function(document, 'game.init')
+        self.assertEqual([c['id'] for c in inspected['cells']['write']], sorted(mutable_cells))
+
+        bad_writes = copy.deepcopy(document)
+        bad_init = next(fn for fn in bad_writes['functions'] if fn['id'] == 'game.init')
+        bad_init['writes'] = ['input.left']
+        with self.assertRaises(PactError) as ctx:
+            analyze_module(bad_writes)
+        self.assertEqual(ctx.exception.diagnostic['code'], 'WRITE_MISMATCH')
+        self.assertEqual(ctx.exception.diagnostic['fix'], {
+            'op': 'set_writes',
+            'function': 'game.init',
+            'declared_writes': ['input.left'],
+            'expected_writes': sorted(mutable_cells),
+        })
+
+        bad_unreach = copy.deepcopy(document)
+        bad_unreach_init = next(fn for fn in bad_unreach['functions'] if fn['id'] == 'game.init')
+        bad_unreach_init['nodes'].append({'id': 'dead0', 'op': 'i32.const', 'value': 42})
+        with self.assertRaises(PactError) as ctx:
+            analyze_module(bad_unreach)
+        self.assertEqual(ctx.exception.diagnostic['code'], 'NODE_UNREACHABLE')
+        self.assertEqual(ctx.exception.diagnostic['fix'], {
+            'op': 'remove_unreachable',
+            'function': 'game.init',
+            'unreachable_nodes': ['dead0'],
+        })
+
+        for bad_cells, expected_code in [
+            (['level.tiles'], 'STATE_IMMUTABLE'),
+            (['missing.cell'], 'STATE_MISSING'),
+            (['input.left', 'input.left'], 'ID_DUPLICATE'),
+            ([], 'ARGUMENT_LIMIT'),
+        ]:
+            candidate = copy.deepcopy(document)
+            fn = next(item for item in candidate['functions'] if item['id'] == 'game.init')
+            fn['nodes'] = [{'id': 'n0000', 'op': 'state.reset', 'cells': bad_cells}]
+            fn['writes'] = sorted(set(bad_cells))
+            with self.subTest(bad_cells=bad_cells), self.assertRaises(PactError) as ctx:
+                analyze_module(candidate)
+            self.assertEqual(ctx.exception.diagnostic['code'], expected_code)
 
 
 if __name__ == '__main__':

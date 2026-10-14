@@ -4,6 +4,7 @@ from .wasm import WASM_HEADER, section, vector, unsigned, signed, name
 
 def compile_module(plan):
     doc = plan['document']
+    initial_cells = {cell['id']: cell['values'] for cell in doc['cells']}
     functions = sorted(doc['functions'], key=lambda fn: fn['id'])
     fn_index = {fn['id']: i for i, fn in enumerate(functions)}
     fn_defs = {fn['id']: fn for fn in functions}
@@ -30,7 +31,7 @@ def compile_module(plan):
             op = graph[key]['op']
             if op == 'call': return fn_defs[graph[key]['target']]['result']
             if op == 'flow.if': return result_type(graph[key]['args'][1])
-            return 'unit' if op in ('local.set','state.store','flow.sequence','flow.repeat') else 'i32'
+            return 'unit' if op in ('local.set','state.store','state.reset','flow.sequence','flow.repeat') else 'i32'
         def address(node):
             field = plan['layout'][node['cell']]
             scratch = temp()
@@ -49,6 +50,12 @@ def compile_module(plan):
             if op == 'i32.eqz': return emit(args[0]) + b'\x45'
             if op == 'state.load': return address(node) + b'\x28\x02\x00'
             if op == 'state.store': return address(node) + emit(args[1]) + b'\x36\x02\x00'
+            if op == 'state.reset':
+                return b''.join(
+                    const(plan['layout'][cell_id]['offset'] + idx * 4) + const(val) + b'\x36\x02\x00'
+                    for cell_id in node['cells']
+                    for idx, val in enumerate(initial_cells[cell_id])
+                )
             if op == 'flow.sequence': return b''.join(emit(ref) for ref in args)
             if op == 'flow.if':
                 kind = b'\x7f' if result_type(key) == 'i32' else b'\x40'
