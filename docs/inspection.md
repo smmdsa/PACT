@@ -38,3 +38,5 @@ Every array's order is retained in this hash, including parameter lists, operand
 Reference lists and summaries are sorted, while the selected function's source arrays are preserved. Output dictionaries use deterministic key insertion order even when input dictionary order varies. Returned records are detached from the source and can be modified without changing the original document.
 
 Call relationships and footprints cannot establish semantic purpose, single responsibility, or total impact. Shared state, host presentation and data changes can connect functions without a call edge. The test selection is a conservative call-graph aid, not complete change-impact analysis. The revision detects stale context; revision-checked candidate patches are now implemented (see transactions.md), while in-place filesystem compare-and-swap remains unsupported.
+
+For physical definitions and inline literal positions, use [source locations](source-locations.md). Coordinates belong to an exact source-byte hash; semantic revisions alone do not identify formatting.

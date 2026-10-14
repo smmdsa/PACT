@@ -17,3 +17,5 @@ Traditional comparisons must preserve frozen traces, count drivers separately an
 Use --to compact-data for source RLE/shared-symbol compression. Keep baseline0.2 examples and frozen hashes intact; generate a separate .data.pact example. Data compression changes neither runtime semantics nor revision IDs. Tests must compare decoded IR and compiled bytes. Never expand unvalidated run counts or merge differing symbol maps.
 
 Keep CHANGELOG.md and the public site in sync with concrete implemented/measured scope. Full test suite includes docs build and needs docs/site-requirements.txt; compiler runtime does not. Model trial recorder is not an authenticated evaluator or sandbox; never run generated candidates with trusted local performance fixtures. Performance numbers are local workload evidence, not universal ranks.
+
+Use `pact locate SOURCE --function ID --node ID` for qualified physical positions. Coordinates use Unicode code points and belong to the exact source-byte hash, not just the semantic revision. Ambiguous diagnostic candidates are not permission to guess a scope. JSON maps and runtime replay are not implemented.
