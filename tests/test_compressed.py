@@ -73,6 +73,7 @@ class CompressedTests(unittest.TestCase):
             self.assertEqual(compiler(validator(restored)), compiler(validator(document)))
             self.assertEqual(dumps(document), (ROOT / f'examples/{name}.pact').read_text())
             if name == 'alien-harvest':
+                self.assertEqual(source, (ROOT / 'examples/alien-harvest.inline.pact').read_text())
                 self.assertEqual(dumps(document, compressed=True), (ROOT / 'examples/alien-harvest.data.pact').read_text())
                 self.assertNotIn(' = i32.const ', source)
                 self.assertLess(len(source.encode('utf-8')), len(dumps(document, compressed=True).encode('utf-8')))
