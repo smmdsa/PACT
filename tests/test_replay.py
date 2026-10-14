@@ -20,6 +20,23 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class ReplayTests(unittest.TestCase):
+    def test_wasm_trap_maps_actual_instruction_without_changing_binary(self):
+        from pact.module import analyze_module
+        from pact.module_wasm import compile_module
+        module=importlib.import_module('pact.module_wasm')
+        self.assertTrue(hasattr(module,'compile_module_with_traps'),'Wasm trap maps are missing')
+        document=checked();plan=analyze_module(document)
+        binary,locations=module.compile_module_with_traps(plan)
+        self.assertEqual(binary,compile_module(plan))
+        self.assertEqual(locations['wasm_sha256'],hashlib.sha256(binary).hexdigest())
+        assertion=next(p for p in locations['positions'] if p['node']=='check')
+        self.assertEqual(binary[assertion['offset']],0)
+        result=self.replay(document,[{'function':'step','args':[0]}],engine='wasm')
+        diagnostic=result['events'][0]['diagnostic']
+        self.assertEqual(diagnostic['code'],'WASM_TRAP')
+        self.assertEqual((diagnostic.get('function'),diagnostic.get('node')),('step','check'))
+        self.assertEqual(diagnostic['wasm_location']['offset'],assertion['offset'])
+
     def test_wasm_replay_matches_reference_state_hashes(self):
         document=tiny();calls=[{'function':'step','args':[]}]*2
         reference=self.replay(document,calls)
@@ -31,14 +48,14 @@ class ReplayTests(unittest.TestCase):
                          [e['state_sha256'] for e in reference['events']])
         self.assertEqual(len(wasm['wasm_sha256']),64)
 
-    def test_compare_traps_without_claiming_wasm_node_identity(self):
+    def test_compare_traps_with_exact_wasm_instruction_mapping(self):
         document=checked('flow.assert');document['functions'][0]['nodes'][-1]['args']=['s','check']
         result=self.replay(document,[{'function':'step','args':[0]}],engine='compare')
         self.assertEqual(result['status'],'matched')
         self.assertEqual(result['reference']['status'],'trapped')
         self.assertEqual(result['wasm']['status'],'trapped')
         self.assertEqual(result['wasm']['events'][0]['diagnostic']['code'],'WASM_TRAP')
-        self.assertNotIn('node',result['wasm']['events'][0]['diagnostic'])
+        self.assertEqual(result['wasm']['events'][0]['diagnostic']['node'],'check')
         self.assertEqual(result['wasm']['final_state'],{'counter':[10]})
 
     def test_comparison_detects_changed_intermediate_state(self):
@@ -82,7 +99,52 @@ class ReplayTests(unittest.TestCase):
         report=json.loads(result.stdout)
         self.assertEqual(report['status'],'matched')
         self.assertIn('source_location',report['reference']['events'][-1]['diagnostic'])
-        self.assertNotIn('source_location',report['wasm']['events'][-1]['diagnostic'])
+        self.assertEqual(report['wasm']['events'][-1]['diagnostic']['source_location'],
+                         report['reference']['events'][-1]['diagnostic']['source_location'])
+
+    def test_unmapped_wasm_trap_remains_generic(self):
+        compiler=importlib.import_module('pact.module_wasm')
+        with patch.object(compiler,'MAX_TRAP_POSITIONS',0):
+            result=self.replay(checked(),[{'function':'step','args':[0]}],engine='wasm')
+        self.assertFalse(result['trap_map_complete'])
+        self.assertNotIn('node',result['events'][0]['diagnostic'])
+        self.assertEqual(result['events'][0]['diagnostic']['code'],'WASM_TRAP')
+
+    def test_wasm_bounds_and_division_sites_are_distinct(self):
+        document=tiny();document['functions'][0]['nodes'][0]['value']=-1
+        report=self.replay(document,[{'function':'step','args':[]}],engine='wasm')
+        diagnostic=report['events'][0]['diagnostic']
+        self.assertEqual((diagnostic['node'],diagnostic['trap_site_kind']),('s','bounds'))
+        document=tiny();fn=document['functions'][0]
+        fn['nodes'][3].update(op='i32.div_s',args=['a','z'])
+        fn['nodes']=[node for node in fn['nodes'] if node['id']!='v']
+        report=self.replay(document,[{'function':'step','args':[]}],engine='wasm')
+        diagnostic=report['events'][0]['diagnostic']
+        self.assertEqual((diagnostic['node'],diagnostic['trap_site_kind']),('sum','arithmetic'))
+
+    def test_wasm_helper_trap_uses_innermost_actual_frame(self):
+        document=checked();helper=copy.deepcopy(document['functions'][0]);helper['id']='helper'
+        fn=document['functions'][0]
+        fn['nodes']=[{'id':'p','op':'local.get','name':'predicate'},
+                     {'id':'check','op':'call','target':'helper','args':['p']}]
+        document['functions'].append(helper)
+        result=self.replay(document,[{'function':'step','args':[0]}],engine='wasm')
+        diagnostic=result['events'][0]['diagnostic']
+        self.assertEqual((diagnostic['function'],diagnostic['node']),('helper','check'))
+        self.assertEqual(diagnostic['wasm_location']['function_index'],0)
+
+    def test_trap_map_keeps_repeated_definition_instruction_sites(self):
+        from pact.module import analyze_module
+        from pact.module_wasm import compile_module_with_traps
+        document=checked(numeric=True);fn=document['functions'][0]
+        # The same pure predicate can be compiled multiple times at use sites.
+        fn['nodes'].append({'id':'twice','op':'i32.add_wrap','args':['check','check']})
+        fn['entry']='twice';document['tests'][0]['result']=20
+        binary,locations=compile_module_with_traps(analyze_module(document))
+        positions=[p for p in locations['positions'] if p['node']=='check']
+        self.assertEqual(len(positions),2)
+        self.assertNotEqual(positions[0]['offset'],positions[1]['offset'])
+        self.assertTrue(all(binary[p['offset']]==0 for p in positions))
 
 
     def test_shipped_recording_traps_after_first_success(self):

@@ -2,7 +2,15 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — Wasm replay and comparison
+## Latest — exact Wasm trap locations
+
+- Compiler-generated trap maps bind qualified node IDs and absolute opcode offsets to the exact binary hash and semantic revision.
+- Node replay attaches IDs only when the actual innermost Wasm frame exactly matches a trap site; generic WASM_TRAP codes are preserved.
+- Assertions/guards, bounds and signed division/remainder sites are covered. Repeated node uses remain distinct positions.
+- Map collection is bounded; incomplete maps and missing engine positions do not fabricate attribution.
+- All 11 numeric example binaries remain byte-identical to the prior compiler. Full instruction mapping and interactive debugging remain pending.
+
+## Wasm replay and comparison
 
 - `pact replay --engine wasm` executes compiler-produced modules in a fresh Node instance; `--engine compare` compares results, trap occurrence and state hashes for each recorded call.
 - Wasm reports include artifact/runtime hashes and Node/V8 versions. Traps stay generic; reference node identities are not asserted for Wasm.

@@ -1,3 +1,7 @@
+## Exact Wasm trap sites — 2026-10-14
+
+Mapped compiler-emitted traps to qualified nodes using actual Node function-index/byte-offset frames and exact binary identity. Tests cover helpers, repeated definitions, bounds, arithmetic and unmapped fallback. Eleven numeric example binaries match the prior compiler exactly. Full instruction maps, interactive debugger and real model trials remain pending.
+
 ## Wasm replay and comparison — 2026-10-14
 
 Added fresh-instance Wasm call replay and per-call reference comparison. Reports preserve generic Wasm traps, artifact/runtime hashes and Node/V8 versions. Tests cover success/trap state equivalence, changed intermediate hashes, incomplete reference traces and missing/timeout runtime errors. Wasm instruction mapping, interactive debugging and real model trials remain pending.
