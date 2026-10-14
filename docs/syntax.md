@@ -16,7 +16,7 @@ return ENTRY_NODE_ID
 end
 ```
 
-Top-level nodes belong to a text graph; functions belong to a numeric module. Explicit `format` selects `pact.graph/0.0.1` or `pact.module/0.1.0`. All original closed-schema sections remain. Every section occupies one physical line. JSON strings encode newlines as escapes. Blank lines and indentation are insignificant.
+Top-level nodes belong to a text graph; functions belong to a numeric module. Explicit `format` selects `pact.graph/0.0.1`, `pact.module/0.1.0` or `pact.module/0.2.0` (loading preserves the declared module version; `state.reset` requires explicit migration to 0.2.0). All original closed-schema sections remain. Every section occupies one physical line. JSON strings encode newlines as escapes. Blank lines and indentation are insignificant.
 
 Whole-line `#` comments are optional and discarded by conversion. Inline comments are unsupported; `#` in quoted text is ordinary text. Rationale belongs in documentation until versioned metadata is designed.
 
@@ -56,8 +56,8 @@ Node order is not execution order. References and the entry node define executio
 
 Duplicate keys/IDs, invalid operations, bad operands and malformed boundaries are rejected. Translation runs the existing type/effect/cycle/budget validator. Conversion preserves IDs, operand ordering and all semantic fields, but not formatting/comments.
 
-Implicit scopes, inline constants, bulk resets, RLE maps and revision-checked patches remain planned. This release changes representation, not execution semantics.
+Implicit scopes remain planned. Inline literals and checked runtime bulk resets are specified in [inline literals and resets](inline-literals-and-resets.md); the `state.reset` semantics ship as `pact.module/0.2.0` with an explicit 0.1.0 migration. Inline literal syntax supports both numeric module versions and preserves IR identity. RLE maps are covered by [data compression](data-compression.md), and revision-checked patches by [transactions](transactions.md). This release changes representation, not execution semantics.
 
 ## Optional data frontend0.3
 
-The pact0.3 header adds bounded cells.packed and assets.shared sections; all normal operations/IDs remain. See data-compression.md. Default canonical output remains0.2. Inline literals, runtime bulk resets and scopes are separate pending proposals.
+The pact0.3 header adds bounded cells.packed and assets.shared sections; all normal operations/IDs remain. See data-compression.md. Default canonical output remains0.2. Inline literals (`pact 0.4`) and checked runtime bulk resets (`state.reset`) are specified in [inline literals and resets](inline-literals-and-resets.md); scopes remain a separate pending proposal.

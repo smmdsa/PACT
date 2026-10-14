@@ -1,3 +1,4 @@
+from pact.module import migrate_module
 import json
 import subprocess
 import tempfile
@@ -9,6 +10,7 @@ from pact.module_wasm import compile_module
 from pact.reference import Machine
 from tests.test_graph import ROOT
 from tests.test_module import tiny
+from tools.make_game import game_document
 
 
 def execute(document, calls):
@@ -70,6 +72,43 @@ class NumericExecutionTests(unittest.TestCase):
         output, _ = execute(doc, [{'fn':'step'}])
         self.assertEqual(output.returncode, 0, output.stderr)
         self.assertEqual(json.loads(output.stdout)['state']['counter'], [24])
+
+    def test_state_reset_runtime_and_wasm_equivalence_on_game(self):
+        baseline_doc = game_document()
+        reset_doc = migrate_module(game_document())
+        mutable_cells = [cell['id'] for cell in reset_doc['cells'] if cell['mutable']]
+        init_fn = next(fn for fn in reset_doc['functions'] if fn['id'] == 'game.init')
+        self.assertEqual(len(init_fn['nodes']), 373)
+        init_fn['nodes'] = [{'id': 'n0000', 'op': 'state.reset', 'cells': mutable_cells}]
+        init_fn['entry'] = 'n0000'
+
+        baseline_wasm = compile_module(analyze_module(baseline_doc))
+        reset_wasm = compile_module(analyze_module(reset_doc))
+        self.assertEqual(len(baseline_wasm) - len(reset_wasm), 3097)
+
+        calls = [
+            {'set': {'player.x': [99999], 'enemy.alive': [0, 0, 0, 0, 0, 0], 'game.gems': [5]}, 'fn': 'game.init'},
+            {'set': {'input.start': [1]}, 'fn': 'game.tick'},
+            {'set': {'input.start': [0], 'input.right': [1], 'input.jump': [1]}, 'fn': 'game.tick'},
+        ]
+        for _ in range(25):
+            calls.append({'fn': 'game.tick'})
+        calls.append({'fn': 'game.init'})
+        calls.append({'set': {'input.start': [1]}, 'fn': 'game.tick'})
+
+        vm_base = Machine(baseline_doc)
+        vm_reset = Machine(reset_doc)
+        for call in calls:
+            for key, values in call.get('set', {}).items():
+                vm_base.state[key] = list(values)
+                vm_reset.state[key] = list(values)
+            vm_base.call(call['fn'])
+            vm_reset.call(call['fn'])
+        self.assertEqual(vm_reset.state, vm_base.state)
+
+        wasm_result, _ = execute(reset_doc, calls)
+        self.assertEqual(wasm_result.returncode, 0, wasm_result.stderr)
+        self.assertEqual(json.loads(wasm_result.stdout)['state'], vm_base.state)
 
 
 if __name__ == '__main__': unittest.main()

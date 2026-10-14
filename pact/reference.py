@@ -8,7 +8,8 @@ class Machine:
     def __init__(self, document):
         self.plan = analyze_module(document)
         self.document = document
-        self.state = {cell['id']: list(cell['values']) for cell in document['cells']}
+        self.initial_state = {cell['id']: list(cell['values']) for cell in document['cells']}
+        self.state = {cell_id: list(values) for cell_id, values in self.initial_state.items()}
         self.functions = {fn['id']: fn for fn in document['functions']}
 
     def call(self, name, *args):
@@ -24,6 +25,10 @@ class Machine:
             if op == 'const.load': return self.document['constants'][node['name']]
             if op == 'local.get': return locals_[node['name']]
             if op == 'local.set': locals_[node['name']] = evaluate(refs[0]); return None
+            if op == 'state.reset':
+                for cell_id in node['cells']:
+                    self.state[cell_id] = list(self.initial_state[cell_id])
+                return None
             if op == 'flow.if': return evaluate(refs[1] if evaluate(refs[0]) else refs[2])
             if op == 'flow.sequence':
                 for ref in refs: evaluate(ref)

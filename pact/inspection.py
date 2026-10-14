@@ -51,6 +51,8 @@ def _footprint(keys, functions):
                 reads.add(node['cell'])
             elif node['op'] == 'state.store':
                 writes.add(node['cell'])
+            elif node['op'] == 'state.reset':
+                writes.update(node['cells'])
     return constants, reads, writes
 
 

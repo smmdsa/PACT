@@ -1,5 +1,4 @@
 import copy
-import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -19,7 +18,8 @@ class PatchCliTests(unittest.TestCase):
         doc['tests'] = [{'id': 'step.test', 'function': 'step', 'set': {}, 'expect': {'counter': [10]}}]
         source = root/'source.json'
         source.write_text(json.dumps(doc), encoding='utf-8')
-        expected = hashlib.sha256(json.dumps(doc,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
+        from pact.revision import revision
+        expected = revision(doc)
         patch = {'format':'pact.patch/0.1.0','expected_revision_sha256':expected,'operations':[
             {'op':'set_constant','name':'amount','value':8},
             {'op':'replace_test','id':'step.test','test':{

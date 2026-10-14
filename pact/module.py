@@ -5,7 +5,8 @@ import struct
 
 from .schema import closed_record, identifier, require
 
-FORMAT = 'pact.module/0.1.0'
+FORMAT = 'pact.module/0.2.0'
+FORMATS = ('pact.module/0.1.0', FORMAT)
 BINARY = {
     'i32.add_wrap': 0x6a, 'i32.sub_wrap': 0x6b, 'i32.mul_wrap': 0x6c,
     'i32.div_s': 0x6d, 'i32.rem_s': 0x6f, 'i32.eq': 0x46, 'i32.ne': 0x47,
@@ -13,7 +14,9 @@ BINARY = {
     'i32.and': 0x71, 'i32.or': 0x72,
 }
 OPERATIONS = set(BINARY) | {'i32.const', 'const.load', 'local.get', 'local.set',
-    'state.load', 'state.store', 'flow.if', 'flow.sequence', 'flow.repeat', 'call', 'i32.eqz'}
+    'state.load', 'state.store', 'state.reset', 'flow.if', 'flow.sequence', 'flow.repeat', 'call', 'i32.eqz'}
+# pact.module/0.1.0 operations (docs/superpowers/specs/2026-10-13-platformer.md); preserved exactly.
+OPERATIONS_0_1_0 = OPERATIONS - {'state.reset'}
 MAX_WORK = 2_000_000
 
 
@@ -67,7 +70,8 @@ def analyze_module(document):
         from .diagnostics import PactError
         raise PactError('SCHEMA_INVALID', 'Module must contain finite JSON data.') from None
     closed_record(document, {'format', 'constants', 'cells', 'functions', 'exports', 'assets', 'presentation', 'tests'})
-    require(document['format'] == FORMAT, 'FORMAT_UNSUPPORTED', 'Unsupported module format.')
+    require(document['format'] in FORMATS, 'FORMAT_UNSUPPORTED', 'Unsupported module format.')
+    operations = OPERATIONS_0_1_0 if document['format'] == FORMATS[0] else OPERATIONS
     constants = document['constants']
     require(isinstance(constants, dict) and len(constants) <= 1024, 'SCHEMA_INVALID', 'Expected bounded constants.')
     for key, value in constants.items():
@@ -119,12 +123,13 @@ def analyze_module(document):
             require(isinstance(node, dict), 'SCHEMA_INVALID', 'Expected node record.')
             name, op = node.get('id'), node.get('op')
             identifier(name)
-            require(isinstance(op, str) and op in OPERATIONS, 'OP_UNKNOWN', 'Unknown numeric operation.', name)
+            require(isinstance(op, str) and op in operations, 'OP_UNKNOWN', 'Unknown numeric operation.', name)
             fields = {'id', 'op'}
             if op == 'i32.const': fields |= {'value'}
             elif op in ('const.load', 'local.get'): fields |= {'name'}
             elif op == 'local.set': fields |= {'name', 'args'}
             elif op in ('state.load', 'state.store'): fields |= {'cell', 'args'}
+            elif op == 'state.reset': fields |= {'cells'}
             elif op == 'flow.repeat': fields |= {'count', 'counter', 'args'}
             elif op == 'call': fields |= {'target', 'args'}
             else: fields |= {'args'}
@@ -136,6 +141,15 @@ def analyze_module(document):
             if 'cell' in node:
                 require(isinstance(node['cell'], str) and node['cell'] in layout, 'STATE_MISSING', 'Unknown state cell.', name)
                 if op == 'state.store': require(layout[node['cell']]['mutable'], 'STATE_IMMUTABLE', 'Cannot store immutable state.', name)
+            if op == 'state.reset':
+                require(isinstance(node['cells'], list) and 1 <= len(node['cells']) <= 128, 'ARGUMENT_LIMIT', 'Expected 1..128 reset cells.', name)
+                seen_reset = set()
+                for cell_id in node['cells']:
+                    identifier(cell_id, name)
+                    require(cell_id in layout, 'STATE_MISSING', 'Unknown state cell.', name)
+                    require(layout[cell_id]['mutable'], 'STATE_IMMUTABLE', 'Cannot reset immutable state.', name)
+                    require(cell_id not in seen_reset, 'ID_DUPLICATE', 'Duplicate reset cell.', name)
+                    seen_reset.add(cell_id)
             if 'args' in node:
                 require(isinstance(node['args'], list) and len(node['args']) <= 128, 'ARGUMENT_LIMIT', 'Invalid arguments.', name)
                 for ref in node['args']: identifier(ref, name)
@@ -177,6 +191,9 @@ def analyze_module(document):
             elif op in ('local.set', 'state.store'):
                 result, arity = 'unit', 1 if op == 'local.set' else 2
                 if op == 'state.store': writes.add(node['cell'])
+            elif op == 'state.reset':
+                result, arity = 'unit', 0
+                writes.update(node['cells'])
             elif op == 'state.load': arity = 1
             elif op == 'flow.if':
                 arity = 3
@@ -197,7 +214,8 @@ def analyze_module(document):
             if op == 'call': depth += function_depth[node['target']]
             require(depth <= 128, 'EVALUATION_DEPTH', 'Combined call/expression depth exceeds 128.', name)
             depths[name] = depth
-            estimate = 1 + sum(work[ref] for ref in args)
+            base_work = sum(layout[cell_id]['count'] for cell_id in node['cells']) if op == 'state.reset' else 1
+            estimate = base_work + sum(work[ref] for ref in args)
             if op == 'flow.repeat': estimate *= node['count'] + 1
             if op == 'call': estimate += costs[node['target']]
             require(estimate <= MAX_WORK, 'WORK_LIMIT', 'Expanded execution budget exceeded.', name)
@@ -206,12 +224,16 @@ def analyze_module(document):
             return result
         result = infer(fn['entry'])
         require(result == fn['result'], 'TYPE_MISMATCH', 'Function result differs from its body.', key)
-        require(set(types) == set(graph), 'NODE_UNREACHABLE', 'Unused function nodes.', key)
+        require(set(types) == set(graph), 'NODE_UNREACHABLE', 'Unused function nodes.', key,
+                fix={'op': 'remove_unreachable', 'function': key,
+                     'unreachable_nodes': sorted(set(graph) - set(types))})
         references = {name: 0 for name in graph}
         for node in graph.values():
             for ref in node.get('args', []): references[ref] += 1
         require(all(references[name] <= 1 for name, kind in types.items() if kind == 'unit'), 'EFFECT_SHARED', 'Unit actions cannot have multiple execution edges.', key)
-        require(writes == set(fn['writes']), 'WRITE_MISMATCH', 'Declared writes differ from transitive writes.', key)
+        require(writes == set(fn['writes']), 'WRITE_MISMATCH', 'Declared writes differ from transitive writes.', key,
+                fix={'op': 'set_writes', 'function': key,
+                     'declared_writes': list(fn['writes']), 'expected_writes': sorted(writes)})
         require(fn['result'] == 'unit' or not writes, 'IMPURE_EXPRESSION', 'Numeric functions cannot mutate state.', key)
         effects[key], costs[key] = writes, work[fn['entry']]
         function_depth[key] = depths[fn['entry']]
@@ -244,7 +266,25 @@ def analyze_module(document):
     normalized['functions'] = sorted(functions, key=lambda fn: fn['id'])
     normalized['cells'] = sorted(cells, key=lambda cell: cell['id'])
     source = json.dumps(normalized, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
-    return {'format': 'pact.module-plan/0.1.0', 'document': document, 'layout': layout,
+    return {'format': 'pact.module-plan/' + document['format'].rsplit('/', 1)[-1], 'document': document, 'layout': layout,
             'function_types': {key: {'params': len(fn['params']), 'result': fn['result']} for key, fn in indexed.items()},
             'source_sha256': hashlib.sha256(source).hexdigest(), 'tiles': tiles, 'atlas_offset': offset,
             'initial_data': bytes(initial) + atlas, 'work': costs}
+
+
+def migrate_module(document):
+    """Migrate a validated pact.module/0.1.0 document to pact.module/0.2.0.
+
+    Only the format version changes: the migration adds no state.reset nodes,
+    so every cell write remains an explicit state.store. The migrated document
+    compiles to byte-identical WebAssembly, while its canonical semantic
+    revision differs because the format version is semantic content.
+    """
+    import copy
+    analyze_module(document)
+    require(document['format'] == FORMATS[0], 'MIGRATION_UNSUPPORTED',
+            'Only pact.module/0.1.0 documents migrate to pact.module/0.2.0.')
+    migrated = copy.deepcopy(document)
+    migrated['format'] = FORMAT
+    analyze_module(migrated)
+    return migrated
