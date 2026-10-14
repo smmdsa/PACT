@@ -10,7 +10,7 @@ Every sample emits both its final state and a consumed checksum, preventing the 
 
 ## Recorded local run
 
-The checked-in [raw report](../benchmarks/results/runtime-local.json) was executed on 2026-10-14 UTC, Linux 6.18.44, x86_64, AMD EPYC 9V74 80-Core Processor, with Python 3.12.14, Node v24.19.0 and GCC 13.3.0. These are observations from this machine and workload, not universal language ranks or production estimates.
+The checked-in [raw report](../benchmarks/results/runtime-local.json) was executed on 2026-10-14 UTC, Linux 6.18.44, x86_64, AMD EPYC 9V74 80-Core Processor, with Python 3.12.14, Node v24.19.0 and GCC 13.3.0. These are observations from this machine and workload, not universal language ranks or production estimates. The report freezes the compiler source hashes at measurement time; later diagnostic/tooling changes may differ from that historical snapshot. Reproduce the command to measure a newer checkout.
 
 | Runtime | Minimum, ms / 100k calls | Median, ms / 100k calls | p95, ms / 100k calls | Median, ns / call |
 | --- | ---: | ---: | ---: | ---: |

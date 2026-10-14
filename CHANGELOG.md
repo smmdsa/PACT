@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — Gemini integration, measured inline source and readable documentation
+## Latest — physical source locations
+
+- `pact locate` queries qualified node/function definitions, including inline constants.
+- Source maps are separate from IR; source-byte hashes and semantic revisions have distinct meanings.
+- Compact errors now include physical parse lines or unique semantic definitions; ambiguous IDs list candidates.
+- JSON maps, Wasm trap replay and full debugger remain planned.
+
+## Gemini integration, measured inline source and readable documentation
 
 - Source0.4 keeps stable literal IDs while reducing syntax; old0.2/0.3 sources remain supported.
 - Gemini PR #1 merged after compatibility fixes, 171 tests and successful CI. Legacy reads/conversions preserve source revisions and frozen hashes; migration is explicit.

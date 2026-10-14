@@ -132,11 +132,13 @@ def _node(line, allow_inline=False):
 
 def loads(source, migrate_legacy=False):
     """Parse and validate; never evaluate source as host code."""
-    line_number = 0
+    line_number = 1
+    validating = False
     try:
         require(len(source.encode('utf-8')) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Source exceeds 1 MiB.')
         lines = [(n, line.strip()) for n, line in enumerate(source.split('\n'), 1)
                  if line.strip() and not line.lstrip().startswith('#')]
+        line_number = lines[0][0] if lines else 1
         require(bool(lines) and lines[0][1] in (HEADER, DATA_HEADER, INLINE_HEADER),
                 'COMPACT_INVALID', 'Expected pact 0.2, pact 0.3 or pact 0.4 header.')
         data_version = lines[0][1] in (DATA_HEADER, INLINE_HEADER)
@@ -200,6 +202,7 @@ def loads(source, migrate_legacy=False):
                     packed_sections = True
                 target[key] = record
         require(function is None, 'COMPACT_INVALID', 'Unterminated function.')
+        validating = True
         from .module import FORMATS, migrate_module
         require(not packed_sections or document.get('format') in FORMATS,
                 'COMPACT_INVALID', 'Compressed sections support numeric modules only.')
@@ -211,8 +214,15 @@ def loads(source, migrate_legacy=False):
         return document
     except (ValueError, RecursionError) as error:
         if isinstance(error, PactError):
+            if validating:
+                from .source_locations import attach_semantic_location
+                attach_semantic_location(error.diagnostic, source, document)
+            elif error.diagnostic['code'] != 'SOURCE_LIMIT':
+                error.diagnostic['source_location'] = {'line':line_number, 'column':1}
             raise
-        raise PactError('COMPACT_INVALID', f'Line {line_number}: {error}') from None
+        rejection = PactError('COMPACT_INVALID', f'Line {line_number}: {error}')
+        rejection.diagnostic['source_location'] = {'line':line_number, 'column':1}
+        raise rejection from None
 
 
 def _json(value):

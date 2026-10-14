@@ -43,6 +43,10 @@ def parser():
         command.add_argument('source', type=Path)
         if name == 'inspect':
             command.add_argument('--function', required=True)
+    locate = commands.add_parser('locate')
+    locate.add_argument('source', type=Path)
+    locate.add_argument('--function')
+    locate.add_argument('--node')
     convert = commands.add_parser('convert')
     convert.add_argument('source', type=Path)
     convert.add_argument('-o', '--output', type=Path, required=True)
@@ -64,6 +68,10 @@ def parser():
 def main(argv=None):
     try:
         args = parser().parse_args(argv)
+        if args.command == 'locate':
+            from .source_locations import locate_file
+            print(json.dumps(locate_file(args.source, args.function, args.node), ensure_ascii=False, sort_keys=True))
+            return 0
         document = load_document(args.source)
         if args.command == 'patch':
             from .compact import dumps

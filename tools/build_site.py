@@ -12,6 +12,7 @@ from tools.markdown_docs import render_markdown
 
 ROOT=Path(__file__).resolve().parents[1]
 DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.md'),
+ ('locations','Source locations','docs/source-locations.md'),
  ('syntax','Syntax','docs/syntax.md'),('literals','Literal definitions','docs/literals.md'),
  ('inline-literals-and-resets','Inline literals and resets','docs/inline-literals-and-resets.md'),
  ('inspection','Selective inspection','docs/inspection.md'),('transactions','Transactions','docs/transactions.md'),
