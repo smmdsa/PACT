@@ -1,0 +1,673 @@
+pact 0.4
+format "pact.module/0.2.0"
+constants {"units.pixel":256,"units.tile":4096,"player.width":3072,"player.height":3584,"player.speed":640,"player.jump":-1664,"world.gravity":96,"world.max_fall":2304,"world.width":720896,"world.height":69632,"view.width":122880,"enemy.count":6,"item.count":9,"gem.count":7}
+cells.packed [{"id":"input.left","mutable":true,"values":[0]},{"id":"input.right","mutable":true,"values":[0]},{"id":"input.up","mutable":true,"values":[0]},{"id":"input.down","mutable":true,"values":[0]},{"id":"input.jump","mutable":true,"values":[0]},{"id":"input.action","mutable":true,"values":[0]},{"id":"input.start","mutable":true,"values":[0]},{"id":"game.phase","mutable":true,"values":[0]},{"id":"game.tick","mutable":true,"values":[0]},{"id":"game.gems","mutable":true,"values":[0]},{"id":"game.checkpoint","mutable":true,"values":[0]},{"id":"event.code","mutable":true,"values":[0]},{"id":"camera.x","mutable":true,"values":[0]},{"id":"checkpoint.x","mutable":true,"values":[12288]},{"id":"checkpoint.y","mutable":true,"values":[53760]},{"id":"player.x","mutable":true,"values":[12288]},{"id":"player.y","mutable":true,"values":[53760]},{"id":"player.vx","mutable":true,"values":[0]},{"id":"player.vy","mutable":true,"values":[0]},{"id":"player.facing","mutable":true,"values":[1]},{"id":"player.frame","mutable":true,"values":[0]},{"id":"player.grounded","mutable":true,"values":[1]},{"id":"player.coyote","mutable":true,"values":[0]},{"id":"player.jump_buffer","mutable":true,"values":[0]},{"id":"player.lives","mutable":true,"values":[3]},{"id":"player.invulnerable","mutable":true,"values":[0]},{"id":"player.carried","mutable":true,"values":[-1]},{"id":"enemy.spawn_x","mutable":false,"values":[87040,184320,294912,434176,558080,673280]},{"id":"enemy.x","mutable":true,"values":[87040,184320,294912,434176,558080,673280]},{"id":"enemy.y","mutable":true,"runs":[[5,53760],[1,51200]]},{"id":"enemy.vx","mutable":true,"values":[128,-128,128,-128,128,64]},{"id":"enemy.alive","mutable":true,"runs":[[6,1]]},{"id":"enemy.health","mutable":true,"runs":[[5,1],[1,3]]},{"id":"enemy.frame","mutable":true,"runs":[[6,0]]},{"id":"item.spawn_x","mutable":false,"values":[46080,133120,225280,352256,468480,576000,640000,665600,688640]},{"id":"item.x","mutable":true,"values":[46080,133120,225280,352256,468480,576000,640000,665600,688640]},{"id":"item.y","mutable":true,"runs":[[9,55296]]},{"id":"item.vx","mutable":true,"runs":[[9,0]]},{"id":"item.vy","mutable":true,"runs":[[9,0]]},{"id":"item.mode","mutable":true,"runs":[[9,0]]},{"id":"item.timer","mutable":true,"runs":[[9,0]]},{"id":"gem.x","mutable":false,"values":[61440,143360,229376,327680,413696,516096,634880]},{"id":"gem.y","mutable":false,"values":[39936,50176,39936,50176,39936,50176,50176]},{"id":"gem.active","mutable":true,"runs":[[7,1]]},{"id":"level.tiles","mutable":false,"runs":[[1779,0],[1,2],[34,0],[1,2],[41,0],[1,2],[31,0],[1,2],[59,0],[7,1],[1,2],[1,1],[31,0],[2,1],[1,2],[1,1],[38,0],[2,1],[1,2],[1,1],[24,0],[6,1],[1,2],[1,1],[65,0],[1,2],[34,0],[1,2],[41,0],[1,2],[31,0],[1,2],[66,0],[1,2],[20,0],[1,1],[13,0],[1,2],[18,0],[1,1],[22,0],[1,2],[15,0],[1,1],[15,0],[1,2],[7,0],[1,1],[39,0],[26,1],[4,0],[29,1],[5,0],[36,1],[4,0],[40,1],[4,0],[54,1],[4,0],[29,1],[5,0],[36,1],[4,0],[40,1],[4,0],[54,1],[4,0],[29,1],[5,0],[36,1],[4,0],[40,1],[4,0],[28,1]]}]
+fn math.abs
+params ["v"]
+locals []
+result "i32"
+writes []
+n0000 = local.get v
+n0002 = i32.lt_s n0000 n0001=0
+n0004 = sub.wrap n0003=0 n0000
+n0005 = if n0002 n0004 n0000
+return n0005
+end
+fn math.min
+params ["a","b"]
+locals []
+result "i32"
+writes []
+n0000 = local.get a
+n0001 = local.get b
+n0002 = i32.lt_s n0000 n0001
+n0003 = if n0002 n0000 n0001
+return n0003
+end
+fn math.max
+params ["a","b"]
+locals []
+result "i32"
+writes []
+n0000 = local.get a
+n0001 = local.get b
+n0002 = i32.gt_s n0000 n0001
+n0003 = if n0002 n0000 n0001
+return n0003
+end
+fn world.tile
+params ["x","y"]
+locals []
+result "i32"
+writes []
+n0000 = local.get x
+n0001 = local.get y
+n0003 = i32.lt_s n0000 n0002=0
+n0004 = const.load world.width
+n0005 = i32.ge_s n0000 n0004
+n0006 = const.load world.height
+n0007 = i32.ge_s n0001 n0006
+n0008 = i32.or n0003 n0005
+n0009 = i32.or n0008 n0007
+n0010 = const.load units.tile
+n0011 = i32.div_s n0001 n0010
+n0013 = mul.wrap n0011 n0012=176
+n0014 = const.load units.tile
+n0015 = i32.div_s n0000 n0014
+n0016 = add.wrap n0013 n0015
+n0018 = i32.lt_s n0001 n0017=0
+n0019 = get level.tiles n0016
+n0021 = if n0009 n0020=0 n0019
+n0023 = if n0018 n0022=0 n0021
+return n0023
+end
+fn world.solid
+params ["x","y"]
+locals []
+result "i32"
+writes []
+n0000 = local.get x
+n0001 = local.get y
+n0002 = call world.tile n0000 n0001
+n0004 = i32.eq n0002 n0003=1
+return n0004
+end
+fn math.overlap
+params ["ax","ay","aw","ah","bx","by","bw","bh"]
+locals []
+result "i32"
+writes []
+n0000 = local.get ax
+n0001 = local.get ay
+n0002 = local.get aw
+n0003 = local.get ah
+n0004 = local.get bx
+n0005 = local.get by
+n0006 = local.get bw
+n0007 = local.get bh
+n0008 = add.wrap n0004 n0006
+n0009 = i32.lt_s n0000 n0008
+n0010 = add.wrap n0000 n0002
+n0011 = i32.gt_s n0010 n0004
+n0012 = add.wrap n0005 n0007
+n0013 = i32.lt_s n0001 n0012
+n0014 = add.wrap n0001 n0003
+n0015 = i32.gt_s n0014 n0005
+n0016 = i32.and n0009 n0011
+n0017 = i32.and n0016 n0013
+n0018 = i32.and n0017 n0015
+return n0018
+end
+fn game.init
+params []
+locals []
+result "unit"
+writes ["camera.x","checkpoint.x","checkpoint.y","enemy.alive","enemy.frame","enemy.health","enemy.vx","enemy.x","enemy.y","event.code","game.checkpoint","game.gems","game.phase","game.tick","gem.active","input.action","input.down","input.jump","input.left","input.right","input.start","input.up","item.mode","item.timer","item.vx","item.vy","item.x","item.y","player.carried","player.coyote","player.facing","player.frame","player.grounded","player.invulnerable","player.jump_buffer","player.lives","player.vx","player.vy","player.x","player.y"]
+n0000 = reset ["input.left","input.right","input.up","input.down","input.jump","input.action","input.start","game.phase","game.tick","game.gems","game.checkpoint","event.code","camera.x","checkpoint.x","checkpoint.y","player.x","player.y","player.vx","player.vy","player.facing","player.frame","player.grounded","player.coyote","player.jump_buffer","player.lives","player.invulnerable","player.carried","enemy.x","enemy.y","enemy.vx","enemy.alive","enemy.health","enemy.frame","item.x","item.y","item.vx","item.vy","item.mode","item.timer","gem.active"]
+return n0000
+end
+fn player.damage
+params []
+locals []
+result "unit"
+writes ["event.code","game.phase","player.invulnerable","player.lives","player.vy"]
+n0001 = get player.lives n0000=0
+n0003 = sub.wrap n0001 n0002=1
+n0005 = set player.lives n0004=0 n0003
+n0008 = set player.invulnerable n0006=0 n0007=90
+n0011 = set player.vy n0009=0 n0010=-1024
+n0014 = set event.code n0012=0 n0013=3
+n0016 = get player.lives n0015=0
+n0018 = i32.le_s n0016 n0017=0
+n0021 = set game.phase n0019=0 n0020=3
+n0024 = set event.code n0022=0 n0023=7
+n0025 = seq n0021 n0024
+n0026 = seq []
+n0027 = if n0018 n0025 n0026
+n0028 = seq n0005 n0008 n0011 n0014 n0027
+n0030 = get player.invulnerable n0029=0
+n0032 = i32.eq n0030 n0031=0
+n0033 = seq []
+n0034 = if n0032 n0028 n0033
+return n0034
+end
+fn player.move
+params []
+locals ["nx","ny","edge","climb"]
+result "unit"
+writes ["event.code","player.coyote","player.facing","player.frame","player.grounded","player.jump_buffer","player.vx","player.vy","player.x","player.y"]
+n0001 = get player.x n0000=0
+n0003 = get player.y n0002=0
+n0004 = const.load player.width
+n0005 = const.load player.height
+n0007 = get input.right n0006=0
+n0009 = get input.left n0008=0
+n0010 = sub.wrap n0007 n0009
+n0011 = const.load player.speed
+n0012 = mul.wrap n0010 n0011
+n0014 = set player.vx n0013=0 n0012
+n0016 = i32.ne n0012 n0015=0
+n0018 = i32.gt_s n0012 n0017=0
+n0021 = if n0018 n0019=1 n0020=-1
+n0023 = set player.facing n0022=0 n0021
+n0024 = seq []
+n0025 = if n0016 n0023 n0024
+n0027 = get player.grounded n0026=0
+n0029 = get player.coyote n0028=0
+n0031 = sub.wrap n0029 n0030=1
+n0033 = call math.max n0032=0 n0031
+n0035 = if n0027 n0034=6 n0033
+n0037 = set player.coyote n0036=0 n0035
+n0039 = get input.jump n0038=0
+n0041 = get player.jump_buffer n0040=0
+n0043 = sub.wrap n0041 n0042=1
+n0045 = call math.max n0044=0 n0043
+n0047 = if n0039 n0046=6 n0045
+n0049 = set player.jump_buffer n0048=0 n0047
+n0051 = add.wrap n0001 n0050=1536
+n0053 = add.wrap n0003 n0052=2048
+n0054 = call world.tile n0051 n0053
+n0056 = i32.eq n0054 n0055=2
+n0058 = get input.up n0057=0
+n0060 = get input.down n0059=0
+n0061 = i32.or n0058 n0060
+n0062 = i32.and n0056 n0061
+n0063 = local.set climb n0062
+n0064 = local.get climb
+n0066 = get input.down n0065=0
+n0068 = get input.up n0067=0
+n0069 = sub.wrap n0066 n0068
+n0071 = mul.wrap n0069 n0070=384
+n0073 = set player.vy n0072=0 n0071
+n0075 = get player.vy n0074=0
+n0076 = const.load world.gravity
+n0077 = add.wrap n0075 n0076
+n0078 = const.load world.max_fall
+n0079 = call math.min n0077 n0078
+n0081 = set player.vy n0080=0 n0079
+n0083 = get player.coyote n0082=0
+n0085 = i32.gt_s n0083 n0084=0
+n0087 = get player.jump_buffer n0086=0
+n0089 = i32.gt_s n0087 n0088=0
+n0090 = i32.and n0085 n0089
+n0091 = const.load player.jump
+n0093 = set player.vy n0092=0 n0091
+n0096 = set player.coyote n0094=0 n0095=0
+n0099 = set player.jump_buffer n0097=0 n0098=0
+n0102 = set event.code n0100=0 n0101=1
+n0103 = seq n0093 n0096 n0099 n0102
+n0104 = seq []
+n0105 = if n0090 n0103 n0104
+n0106 = seq n0081 n0105
+n0107 = if n0064 n0073 n0106
+n0109 = get player.vx n0108=0
+n0110 = add.wrap n0001 n0109
+n0111 = const.load world.width
+n0112 = sub.wrap n0111 n0004
+n0113 = call math.min n0110 n0112
+n0115 = call math.max n0114=0 n0113
+n0116 = local.set nx n0115
+n0118 = get player.vx n0117=0
+n0120 = i32.gt_s n0118 n0119=0
+n0121 = local.get nx
+n0122 = add.wrap n0121 n0004
+n0124 = sub.wrap n0122 n0123=1
+n0125 = local.get nx
+n0126 = if n0120 n0124 n0125
+n0127 = local.set edge n0126
+n0128 = local.get edge
+n0130 = add.wrap n0003 n0129=256
+n0131 = call world.solid n0128 n0130
+n0132 = local.get edge
+n0133 = add.wrap n0003 n0005
+n0135 = sub.wrap n0133 n0134=1
+n0136 = call world.solid n0132 n0135
+n0137 = i32.or n0131 n0136
+n0139 = get player.vx n0138=0
+n0141 = i32.gt_s n0139 n0140=0
+n0142 = local.get edge
+n0143 = const.load units.tile
+n0144 = i32.div_s n0142 n0143
+n0145 = const.load units.tile
+n0146 = mul.wrap n0144 n0145
+n0147 = sub.wrap n0146 n0004
+n0148 = local.get edge
+n0149 = const.load units.tile
+n0150 = i32.div_s n0148 n0149
+n0152 = add.wrap n0150 n0151=1
+n0153 = const.load units.tile
+n0154 = mul.wrap n0152 n0153
+n0155 = if n0141 n0147 n0154
+n0157 = get player.vx n0156=0
+n0159 = i32.ne n0157 n0158=0
+n0160 = i32.and n0159 n0137
+n0161 = local.set nx n0155
+n0162 = seq []
+n0163 = if n0160 n0161 n0162
+n0164 = local.get nx
+n0166 = set player.x n0165=0 n0164
+n0169 = set player.grounded n0167=0 n0168=0
+n0171 = get player.vy n0170=0
+n0172 = add.wrap n0003 n0171
+n0173 = local.set ny n0172
+n0175 = get player.vy n0174=0
+n0177 = i32.ge_s n0175 n0176=0
+n0178 = local.get ny
+n0179 = add.wrap n0178 n0005
+n0181 = sub.wrap n0179 n0180=1
+n0182 = local.get ny
+n0183 = if n0177 n0181 n0182
+n0184 = local.set edge n0183
+n0186 = get player.x n0185=0
+n0188 = add.wrap n0186 n0187=256
+n0189 = local.get edge
+n0190 = call world.solid n0188 n0189
+n0192 = get player.x n0191=0
+n0193 = add.wrap n0192 n0004
+n0195 = sub.wrap n0193 n0194=256
+n0196 = local.get edge
+n0197 = call world.solid n0195 n0196
+n0198 = i32.or n0190 n0197
+n0200 = get player.vy n0199=0
+n0202 = i32.ge_s n0200 n0201=0
+n0203 = local.get edge
+n0204 = const.load units.tile
+n0205 = i32.div_s n0203 n0204
+n0206 = const.load units.tile
+n0207 = mul.wrap n0205 n0206
+n0208 = sub.wrap n0207 n0005
+n0209 = local.set ny n0208
+n0212 = set player.grounded n0210=0 n0211=1
+n0213 = seq n0209 n0212
+n0214 = local.get edge
+n0215 = const.load units.tile
+n0216 = i32.div_s n0214 n0215
+n0218 = add.wrap n0216 n0217=1
+n0219 = const.load units.tile
+n0220 = mul.wrap n0218 n0219
+n0221 = local.set ny n0220
+n0222 = if n0202 n0213 n0221
+n0225 = set player.vy n0223=0 n0224=0
+n0226 = seq n0222 n0225
+n0227 = seq []
+n0228 = if n0198 n0226 n0227
+n0229 = local.get ny
+n0231 = set player.y n0230=0 n0229
+n0233 = get player.carried n0232=0
+n0235 = i32.ge_s n0233 n0234=0
+n0237 = get player.grounded n0236=0
+n0239 = i32.eq n0237 n0238=0
+n0241 = get player.vx n0240=0
+n0243 = i32.ne n0241 n0242=0
+n0245 = get game.tick n0244=0
+n0247 = i32.div_s n0245 n0246=8
+n0249 = i32.rem_s n0247 n0248=2
+n0251 = if n0243 n0249 n0250=0
+n0253 = if n0239 n0252=2 n0251
+n0255 = if n0235 n0254=3 n0253
+n0257 = set player.frame n0256=0 n0255
+n0258 = seq n0014 n0025 n0037 n0049 n0063 n0107 n0116 n0127 n0163 n0166 n0169 n0173 n0184 n0228 n0231 n0257
+return n0258
+end
+fn items.interact
+params []
+locals ["i","held"]
+result "unit"
+writes ["event.code","item.mode","item.vx","item.vy","item.x","item.y","player.carried"]
+n0000 = local.get i
+n0001 = local.get held
+n0003 = set item.mode n0001 n0002=2
+n0005 = get player.x n0004=0
+n0007 = get player.facing n0006=0
+n0009 = mul.wrap n0007 n0008=2560
+n0010 = add.wrap n0005 n0009
+n0011 = set item.x n0001 n0010
+n0013 = get player.y n0012=0
+n0015 = add.wrap n0013 n0014=512
+n0016 = set item.y n0001 n0015
+n0018 = get player.facing n0017=0
+n0020 = mul.wrap n0018 n0019=1536
+n0021 = set item.vx n0001 n0020
+n0023 = set item.vy n0001 n0022=-384
+n0026 = set player.carried n0024=0 n0025=-1
+n0029 = set event.code n0027=0 n0028=2
+n0030 = seq n0003 n0011 n0016 n0021 n0023 n0026 n0029
+n0032 = get player.carried n0031=0
+n0034 = i32.eq n0032 n0033=-1
+n0035 = get item.mode n0000
+n0037 = i32.eq n0035 n0036=0
+n0038 = get item.x n0000
+n0040 = get player.x n0039=0
+n0041 = sub.wrap n0038 n0040
+n0042 = call math.abs n0041
+n0044 = i32.lt_s n0042 n0043=6144
+n0045 = get item.y n0000
+n0047 = get player.y n0046=0
+n0048 = sub.wrap n0045 n0047
+n0049 = call math.abs n0048
+n0051 = i32.lt_s n0049 n0050=8192
+n0052 = i32.and n0034 n0037
+n0053 = i32.and n0052 n0044
+n0054 = i32.and n0053 n0051
+n0056 = set player.carried n0055=0 n0000
+n0058 = set item.mode n0000 n0057=1
+n0061 = set event.code n0059=0 n0060=2
+n0062 = seq n0056 n0058 n0061
+n0063 = seq []
+n0064 = if n0054 n0062 n0063
+n0066 = get input.action n0065=0
+n0068 = get player.carried n0067=0
+n0069 = local.set held n0068
+n0071 = i32.ge_s n0001 n0070=0
+n0072 = flow.repeat 9 i n0064
+n0073 = if n0071 n0030 n0072
+n0074 = seq n0069 n0073
+n0075 = seq []
+n0076 = if n0066 n0074 n0075
+return n0076
+end
+fn items.update
+params []
+locals ["i","e","nx","ny"]
+result "unit"
+writes ["enemy.alive","enemy.health","event.code","item.mode","item.timer","item.vx","item.vy","item.x","item.y"]
+n0000 = local.get i
+n0001 = local.get e
+n0003 = get player.x n0002=0
+n0005 = add.wrap n0003 n0004=512
+n0006 = set item.x n0000 n0005
+n0008 = get player.y n0007=0
+n0010 = sub.wrap n0008 n0009=2560
+n0011 = set item.y n0000 n0010
+n0012 = seq n0006 n0011
+n0013 = get item.timer n0000
+n0015 = sub.wrap n0013 n0014=1
+n0016 = set item.timer n0000 n0015
+n0017 = get item.timer n0000
+n0019 = i32.le_s n0017 n0018=0
+n0021 = set item.mode n0000 n0020=0
+n0022 = get item.spawn_x n0000
+n0023 = set item.x n0000 n0022
+n0025 = set item.y n0000 n0024=55296
+n0027 = set item.vx n0000 n0026=0
+n0029 = set item.vy n0000 n0028=0
+n0030 = seq n0021 n0023 n0025 n0027 n0029
+n0031 = seq []
+n0032 = if n0019 n0030 n0031
+n0033 = seq n0016 n0032
+n0034 = get item.vy n0000
+n0036 = add.wrap n0034 n0035=64
+n0037 = set item.vy n0000 n0036
+n0038 = get item.x n0000
+n0039 = get item.vx n0000
+n0040 = add.wrap n0038 n0039
+n0041 = set item.x n0000 n0040
+n0042 = get item.y n0000
+n0043 = get item.vy n0000
+n0044 = add.wrap n0042 n0043
+n0045 = set item.y n0000 n0044
+n0046 = get item.mode n0000
+n0048 = i32.eq n0046 n0047=2
+n0049 = get enemy.alive n0001
+n0050 = get item.x n0000
+n0051 = get item.y n0000
+n0052 = get enemy.x n0001
+n0053 = get enemy.y n0001
+n0055 = i32.eq n0001 n0054=5
+n0058 = if n0055 n0056=6144 n0057=3584
+n0060 = i32.eq n0001 n0059=5
+n0063 = if n0060 n0061=6144 n0062=3584
+n0066 = call math.overlap n0050 n0051 n0064=2048 n0065=2048 n0052 n0053 n0058 n0063
+n0067 = i32.and n0048 n0049
+n0068 = i32.and n0067 n0066
+n0069 = get enemy.health n0001
+n0071 = sub.wrap n0069 n0070=1
+n0072 = set enemy.health n0001 n0071
+n0073 = get enemy.health n0001
+n0075 = i32.le_s n0073 n0074=0
+n0077 = set enemy.alive n0001 n0076=0
+n0078 = seq []
+n0079 = if n0075 n0077 n0078
+n0081 = set item.mode n0000 n0080=3
+n0083 = set item.timer n0000 n0082=90
+n0086 = set event.code n0084=0 n0085=4
+n0087 = seq n0072 n0079 n0081 n0083 n0086
+n0088 = seq []
+n0089 = if n0068 n0087 n0088
+n0090 = flow.repeat 6 e n0089
+n0091 = get item.mode n0000
+n0093 = i32.eq n0091 n0092=2
+n0094 = get item.vy n0000
+n0096 = i32.ge_s n0094 n0095=0
+n0097 = get item.x n0000
+n0099 = add.wrap n0097 n0098=1024
+n0100 = get item.y n0000
+n0102 = add.wrap n0100 n0101=2047
+n0103 = call world.solid n0099 n0102
+n0104 = i32.and n0093 n0096
+n0105 = i32.and n0104 n0103
+n0106 = get item.y n0000
+n0108 = add.wrap n0106 n0107=2047
+n0109 = const.load units.tile
+n0110 = i32.div_s n0108 n0109
+n0111 = const.load units.tile
+n0112 = mul.wrap n0110 n0111
+n0114 = sub.wrap n0112 n0113=2048
+n0115 = set item.y n0000 n0114
+n0117 = set item.mode n0000 n0116=0
+n0119 = set item.vx n0000 n0118=0
+n0121 = set item.vy n0000 n0120=0
+n0122 = seq n0115 n0117 n0119 n0121
+n0123 = seq []
+n0124 = if n0105 n0122 n0123
+n0125 = get item.y n0000
+n0126 = const.load world.height
+n0127 = i32.gt_s n0125 n0126
+n0128 = get item.x n0000
+n0130 = i32.lt_s n0128 n0129=0
+n0131 = get item.x n0000
+n0132 = const.load world.width
+n0133 = i32.gt_s n0131 n0132
+n0134 = i32.or n0127 n0130
+n0135 = i32.or n0134 n0133
+n0137 = set item.mode n0000 n0136=3
+n0139 = set item.timer n0000 n0138=30
+n0140 = seq n0137 n0139
+n0141 = seq []
+n0142 = if n0135 n0140 n0141
+n0143 = get item.mode n0000
+n0145 = i32.eq n0143 n0144=1
+n0147 = i32.eq n0143 n0146=2
+n0148 = seq n0037 n0041 n0045 n0090 n0124 n0142
+n0150 = i32.eq n0143 n0149=3
+n0151 = seq []
+n0152 = if n0150 n0033 n0151
+n0153 = if n0147 n0148 n0152
+n0154 = if n0145 n0012 n0153
+n0155 = flow.repeat 9 i n0154
+return n0155
+end
+fn enemies.update
+params []
+locals ["i","edge"]
+result "unit"
+writes ["enemy.frame","enemy.vx","enemy.x","event.code","game.phase","player.invulnerable","player.lives","player.vy"]
+n0000 = local.get i
+n0002 = i32.eq n0000 n0001=5
+n0005 = if n0002 n0003=6144 n0004=3584
+n0006 = get enemy.x n0000
+n0007 = get enemy.y n0000
+n0008 = get enemy.vx n0000
+n0010 = i32.gt_s n0008 n0009=0
+n0011 = add.wrap n0006 n0005
+n0013 = sub.wrap n0006 n0012=256
+n0014 = if n0010 n0011 n0013
+n0015 = get enemy.spawn_x n0000
+n0017 = sub.wrap n0015 n0016=9216
+n0018 = i32.lt_s n0006 n0017
+n0019 = get enemy.spawn_x n0000
+n0021 = add.wrap n0019 n0020=9216
+n0022 = i32.gt_s n0006 n0021
+n0024 = call world.solid n0014 n0023=57344
+n0026 = i32.eq n0024 n0025=0
+n0028 = add.wrap n0007 n0027=2048
+n0029 = call world.solid n0014 n0028
+n0030 = i32.or n0018 n0022
+n0031 = i32.or n0030 n0026
+n0032 = i32.or n0031 n0029
+n0034 = get player.x n0033=0
+n0036 = get player.y n0035=0
+n0037 = const.load player.width
+n0038 = const.load player.height
+n0039 = call math.overlap n0034 n0036 n0037 n0038 n0006 n0007 n0005 n0005
+n0040 = get enemy.alive n0000
+n0041 = get enemy.vx n0000
+n0043 = sub.wrap n0042=0 n0041
+n0044 = set enemy.vx n0000 n0043
+n0045 = seq []
+n0046 = if n0032 n0044 n0045
+n0047 = get enemy.vx n0000
+n0048 = add.wrap n0006 n0047
+n0049 = set enemy.x n0000 n0048
+n0051 = get game.tick n0050=0
+n0053 = i32.div_s n0051 n0052=12
+n0055 = i32.rem_s n0053 n0054=2
+n0056 = set enemy.frame n0000 n0055
+n0057 = call player.damage []
+n0058 = seq []
+n0059 = if n0039 n0057 n0058
+n0060 = seq n0046 n0049 n0056 n0059
+n0061 = seq []
+n0062 = if n0040 n0060 n0061
+n0063 = flow.repeat 6 i n0062
+return n0063
+end
+fn world.progress
+params []
+locals ["i"]
+result "unit"
+writes ["checkpoint.x","event.code","game.checkpoint","game.gems","game.phase","gem.active","item.mode","item.timer","player.carried","player.invulnerable","player.lives","player.vx","player.vy","player.x","player.y"]
+n0000 = local.get i
+n0001 = get gem.active n0000
+n0003 = get player.x n0002=0
+n0005 = get player.y n0004=0
+n0006 = const.load player.width
+n0007 = const.load player.height
+n0008 = get gem.x n0000
+n0009 = get gem.y n0000
+n0012 = call math.overlap n0003 n0005 n0006 n0007 n0008 n0009 n0010=2048 n0011=2048
+n0013 = i32.and n0001 n0012
+n0015 = set gem.active n0000 n0014=0
+n0017 = get game.gems n0016=0
+n0019 = add.wrap n0017 n0018=1
+n0021 = set game.gems n0020=0 n0019
+n0024 = set event.code n0022=0 n0023=8
+n0025 = seq n0015 n0021 n0024
+n0026 = seq []
+n0027 = if n0013 n0025 n0026
+n0028 = flow.repeat 7 i n0027
+n0030 = get game.checkpoint n0029=0
+n0032 = i32.eq n0030 n0031=0
+n0034 = get player.x n0033=0
+n0036 = i32.ge_s n0034 n0035=322560
+n0037 = i32.and n0032 n0036
+n0040 = set game.checkpoint n0038=0 n0039=1
+n0043 = set checkpoint.x n0041=0 n0042=331776
+n0046 = set event.code n0044=0 n0045=5
+n0047 = seq n0040 n0043 n0046
+n0048 = seq []
+n0049 = if n0037 n0047 n0048
+n0051 = get player.lives n0050=0
+n0053 = sub.wrap n0051 n0052=1
+n0055 = set player.lives n0054=0 n0053
+n0057 = get checkpoint.x n0056=0
+n0059 = set player.x n0058=0 n0057
+n0061 = get checkpoint.y n0060=0
+n0063 = set player.y n0062=0 n0061
+n0066 = set player.vx n0064=0 n0065=0
+n0069 = set player.vy n0067=0 n0068=0
+n0072 = set player.invulnerable n0070=0 n0071=60
+n0074 = get player.carried n0073=0
+n0076 = i32.ge_s n0074 n0075=0
+n0078 = get player.carried n0077=0
+n0080 = set item.mode n0078 n0079=3
+n0082 = get player.carried n0081=0
+n0084 = set item.timer n0082 n0083=30
+n0087 = set player.carried n0085=0 n0086=-1
+n0088 = seq n0080 n0084 n0087
+n0089 = seq []
+n0090 = if n0076 n0088 n0089
+n0093 = set event.code n0091=0 n0092=3
+n0095 = get player.lives n0094=0
+n0097 = i32.le_s n0095 n0096=0
+n0100 = set game.phase n0098=0 n0099=3
+n0103 = set event.code n0101=0 n0102=7
+n0104 = seq n0100 n0103
+n0105 = seq []
+n0106 = if n0097 n0104 n0105
+n0107 = seq n0055 n0059 n0063 n0066 n0069 n0072 n0090 n0093 n0106
+n0109 = get enemy.alive n0108=5
+n0111 = i32.eq n0109 n0110=0
+n0113 = get game.gems n0112=0
+n0115 = i32.ge_s n0113 n0114=3
+n0117 = get player.x n0116=0
+n0119 = i32.ge_s n0117 n0118=704512
+n0121 = get player.lives n0120=0
+n0123 = i32.gt_s n0121 n0122=0
+n0124 = i32.and n0111 n0115
+n0125 = i32.and n0124 n0119
+n0126 = i32.and n0125 n0123
+n0128 = get player.y n0127=0
+n0130 = i32.gt_s n0128 n0129=81920
+n0131 = seq []
+n0132 = if n0130 n0107 n0131
+n0135 = set game.phase n0133=0 n0134=2
+n0138 = set event.code n0136=0 n0137=6
+n0139 = seq n0135 n0138
+n0140 = seq []
+n0141 = if n0126 n0139 n0140
+n0142 = seq n0028 n0049 n0132 n0141
+return n0142
+end
+fn game.tick
+params []
+locals []
+result "unit"
+writes ["camera.x","checkpoint.x","checkpoint.y","enemy.alive","enemy.frame","enemy.health","enemy.vx","enemy.x","enemy.y","event.code","game.checkpoint","game.gems","game.phase","game.tick","gem.active","input.action","input.down","input.jump","input.left","input.right","input.start","input.up","item.mode","item.timer","item.vx","item.vy","item.x","item.y","player.carried","player.coyote","player.facing","player.frame","player.grounded","player.invulnerable","player.jump_buffer","player.lives","player.vx","player.vy","player.x","player.y"]
+n0002 = set event.code n0000=0 n0001=0
+n0004 = get game.tick n0003=0
+n0006 = add.wrap n0004 n0005=1
+n0008 = set game.tick n0007=0 n0006
+n0010 = get player.invulnerable n0009=0
+n0012 = sub.wrap n0010 n0011=1
+n0014 = call math.max n0013=0 n0012
+n0016 = set player.invulnerable n0015=0 n0014
+n0017 = call player.move []
+n0018 = call items.interact []
+n0019 = call items.update []
+n0020 = call enemies.update []
+n0021 = call world.progress []
+n0023 = get player.x n0022=0
+n0025 = sub.wrap n0023 n0024=40960
+n0026 = const.load world.width
+n0027 = const.load view.width
+n0028 = sub.wrap n0026 n0027
+n0029 = call math.min n0025 n0028
+n0031 = call math.max n0030=0 n0029
+n0033 = set camera.x n0032=0 n0031
+n0034 = seq n0002 n0008 n0016 n0017 n0018 n0019 n0020 n0021 n0033
+n0036 = get input.start n0035=0
+n0037 = call game.init []
+n0040 = set game.phase n0038=0 n0039=1
+n0041 = seq n0037 n0040
+n0042 = seq []
+n0043 = if n0036 n0041 n0042
+n0045 = get game.phase n0044=0
+n0047 = i32.eq n0045 n0046=1
+n0048 = if n0047 n0034 n0043
+return n0048
+end
+exports ["math.abs","math.min","math.max","world.tile","world.solid","math.overlap","game.init","player.damage","player.move","items.interact","items.update","enemies.update","world.progress","game.tick"]
+assets.shared {"palettes":[{"id":"harvest","colors":{"Ink":"#162238","Cream":"#fff1ca","Skin":"#edba86","Teal":"#65dfbd","Leaf":"#308d78","Deep":"#22645b","Gold":"#ffc56b","Rust":"#c86656","Berry":"#be6fa5","White":"#ffffff","Blue":"#629ac2","Night":"#354867"}}],"symbol_tables":[{".":null,"i":"Ink","c":"Cream","s":"Skin","t":"Teal","l":"Leaf","d":"Deep","g":"Gold","r":"Rust","b":"Berry","w":"White","u":"Blue","n":"Night"}],"tiles":[{"id":"hero0","palette":"harvest","pixels":["..tttt..",".tttttt.","..ssisi.","..ssss..",".iitii..","ttttttt.","..t..t..",".ii..ii."],"symbol_table":0},{"id":"hero1","palette":"harvest","pixels":["..tttt..",".tttttt.","..ssisi.","..ssss..",".iitii..",".tttttt.",".t....t.","ii....ii"],"symbol_table":0},{"id":"hero2","palette":"harvest","pixels":["..tttt..",".tttttt.","..ssisi.","..ssss..","ttiititt",".tttttt.","..tttt..",".ii..ii."],"symbol_table":0},{"id":"hero3","palette":"harvest","pixels":["..tttt..",".tttttt.","..ssisi.","..ssss..","tiiiiitt",".tttttt.","..t..t..",".ii..ii."],"symbol_table":0},{"id":"enemy0","palette":"harvest","pixels":["..rrrr..",".rrrrrr.","rrwiwirr","rrriirrr",".rrrrrr.","..rrrr..",".ii..ii.","ii....ii"],"symbol_table":0},{"id":"enemy1","palette":"harvest","pixels":["..rrrr..",".rrrrrr.","rrwiwirr","rrriirrr",".rrrrrr.","..rrrr..","ii....ii",".ii..ii."],"symbol_table":0},{"id":"boss","palette":"harvest","pixels":[".gg..gg.","gbbbbbbg","bwiwwiwb","bbbrrbbb",".bwwwwb.","bbbbbbbb",".bb..bb.","iii..iii"],"symbol_table":0},{"id":"turnip","palette":"harvest","pixels":["..l.l...","...ll...","..cccc..",".cccccc.",".ccggcc.","..cccc..","...cc...","...c...."],"symbol_table":0},{"id":"gem","palette":"harvest","pixels":["...g....","..gcg...",".gcccg..","gccwccg.",".gcccg..","..gcg...","...g....","........"],"symbol_table":0},{"id":"ground","palette":"harvest","pixels":["tltltltl","llllllld","dddddddd","dnndddnd","dddndddd","ddddnndd","nddddddn","dddndddd"],"symbol_table":0},{"id":"soil","palette":"harvest","pixels":["dddddddd","dnndddnd","dddddddd","dddndddd","ddddnndd","nddddddn","dddddddd","dddndddd"],"symbol_table":0},{"id":"ladder","palette":"harvest","pixels":[".g....g.",".gggggg.",".g....g.",".g....g.",".gggggg.",".g....g.",".g....g.",".gggggg."],"symbol_table":0},{"id":"flag","palette":"harvest","pixels":["...i....","...itt..","...ittt.","...itt..","...i....","...i....","...i....","..iii..."],"symbol_table":0},{"id":"door","palette":"harvest","pixels":[".gggggg.","ggnnnngg","gnnnnnng","gnnnngng","gnnnnnng","gnnnnnng","gnnnnnng","gggggggg"],"symbol_table":0},{"id":"flower","palette":"harvest","pixels":["...b....","..bgb...","...b....","...l....","..ll....","...ll...","...l....","..ll...."],"symbol_table":0},{"id":"heart","palette":"harvest","pixels":[".rr..rr.","rrrrrrrr","rrrrrrrr",".rrrrrr.","..rrrr..","...rr...","........","........"],"symbol_table":0}]}
+presentation {"title":"Alien Harvest","subtitle":"La cosecha del otro mundo","width":480,"height":270,"scale":256,"map":{"cell":"level.tiles","columns":176,"rows":17,"tile_size":16,"tiles":{"1":"ground","2":"ladder"}},"camera":"camera.x","phase":"game.phase","clock":"game.tick","event":"event.code","views":[{"id":"gems","count":7,"x":"gem.x","y":"gem.y","visible":"gem.active","frames":["gem"],"size":8},{"id":"items","count":9,"x":"item.x","y":"item.y","mode":"item.mode","hidden_modes":[3],"frames":["turnip"],"size":8},{"id":"enemies","count":5,"x":"enemy.x","y":"enemy.y","visible":"enemy.alive","frame":"enemy.frame","mirror":"enemy.vx","frames":["enemy0","enemy1"],"size":16},{"id":"boss","count":1,"start":5,"x":"enemy.x","y":"enemy.y","visible":"enemy.alive","frames":["boss"],"size":24},{"id":"player","count":1,"x":"player.x","y":"player.y","frame":"player.frame","mirror":"player.facing","blink":"player.invulnerable","frames":["hero0","hero1","hero2","hero3"],"size":16}],"markers":[{"x":1296,"y":208,"tile":"flag","size":16},{"x":2760,"y":192,"tile":"door","size":32}],"hud":{"lives":"player.lives","gems":"game.gems","boss":"enemy.health","checkpoint":"game.checkpoint"},"inputs":{"left":["ArrowLeft","KeyA"],"right":["ArrowRight","KeyD"],"up":["ArrowUp","KeyW"],"down":["ArrowDown","KeyS"],"jump":["Space"],"action":["KeyX","KeyJ"],"start":["Enter"]}}
+tests [{"id":"jump.grounded","function":"player.move","set":{"player.grounded":[1],"input.jump":[1]},"expect":{"player.vy":[-1664]}},{"id":"damage.once","function":"player.damage","set":{"player.invulnerable":[0]},"expect":{"player.lives":[2],"player.invulnerable":[90]}}]

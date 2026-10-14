@@ -1,6 +1,6 @@
 # Agent guidance
 
-Read README.md, docs/syntax.md and docs/security.md before changing semantics. ROADMAP.md describes planned work. Compact 0.2 and optional compressed data0.3 wrap graph 0.0.1/module 0.1.0; preserve these distinctions.
+Read README.md, docs/syntax.md and docs/security.md before changing semantics. ROADMAP.md describes planned work. Compact 0.2, compressed data 0.3 and literal/inline source 0.4 wrap graph 0.0.1 or numeric modules 0.1.0/0.2.0; preserve these distinctions. Reading/converting preserves revisions. Only explicit migration changes numeric format; state.reset requires 0.2.0.
 
 Prefer focused function/dependency reads. Keep IDs stable. Do not replace semantic names with undocumented opcodes. Effects, array indices, overflow and grants remain explicit.
 
@@ -15,3 +15,5 @@ Run the full unittest suite for compiler changes and input-only playthrough for 
 Traditional comparisons must preserve frozen traces, count drivers separately and publish unfavorable PACT results. Equal behavior does not establish equivalent safety contracts.
 
 Use --to compact-data for source RLE/shared-symbol compression. Keep baseline0.2 examples and frozen hashes intact; generate a separate .data.pact example. Data compression changes neither runtime semantics nor revision IDs. Tests must compare decoded IR and compiled bytes. Never expand unvalidated run counts or merge differing symbol maps.
+
+Keep CHANGELOG.md and the public site in sync with concrete implemented/measured scope. Full test suite includes docs build and needs docs/site-requirements.txt; compiler runtime does not. Model trial recorder is not an authenticated evaluator or sandbox; never run generated candidates with trusted local performance fixtures. Performance numbers are local workload evidence, not universal ranks.

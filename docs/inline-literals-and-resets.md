@@ -55,3 +55,9 @@ When `analyze_module` rejects a module for a deterministic mismatch, `PactError.
 
 - `WRITE_MISMATCH`: `{"op": "set_writes", "function": fn_id, "declared_writes": [...], "expected_writes": [...]}`
 - `NODE_UNREACHABLE`: `{"op": "remove_unreachable", "function": fn_id, "unreachable_nodes": [...]}`
+
+## Measured tokens and separate reset example
+
+The pinned tokenizer report [o200k_base](../benchmarks/results/inline-o200k_base.json) records 24,851 tokens for compact 0.2, 18,328 for data 0.3, 16,747 for standalone definitions and 14,112 for Gemini inline arguments. Every row verifies identical IR, revision and Wasm. [cl100k_base](../benchmarks/results/inline-cl100k_base.json) is recorded separately. Combining both literal forms yields the same game source as inline alone here; no further reduction is claimed.
+
+`examples/alien-harvest.reset.pact` is a separate explicitly migrated 0.2 module replacing the 373-node initialization with a checked reset. Its revision and compiled bytes differ; it is excluded from equivalent-source token baselines. The baseline game remains unchanged. A reset targets declared initial values and is appropriate only when those values match the intended initialization.

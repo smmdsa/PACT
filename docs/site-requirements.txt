@@ -1,0 +1,3 @@
+# Build-time documentation dependencies only; PACT itself uses the standard library.
+markdown-it-py==4.0.0
+mdurl==0.1.2

@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+      - name: Install documentation build tools
+        run: python3 -m pip install --disable-pip-version-check -r docs/site-requirements.txt
       - name: Test compiler and game
         run: python3 -m unittest discover -v
       - name: Measure representation sizes
@@ -34,6 +36,13 @@ jobs:
           python3 -m benchmarks.traditional --encoding cl100k_base --require-c > build/tokens-traditional-cl100k_base.json
           python3 -m benchmarks.data_compression --encoding o200k_base > build/tokens-data-o200k_base.json
           python3 -m benchmarks.data_compression --encoding cl100k_base > build/tokens-data-cl100k_base.json
+          python3 -m benchmarks.data_compression --encoding o200k_base --include-literals > build/tokens-literals-o200k_base.json
+          python3 -m benchmarks.data_compression --encoding cl100k_base --include-literals > build/tokens-literals-cl100k_base.json
+      - name: Measure Gemini inline and combined representations
+        run: |
+          python3 -m benchmarks.data_compression --encoding o200k_base --include-literals --include-inline > build/tokens-inline-o200k_base.json
+          python3 -m benchmarks.data_compression --encoding cl100k_base --include-literals --include-inline > build/tokens-inline-cl100k_base.json
+          python3 -m pact check examples/alien-harvest.reset.pact
       - uses: actions/upload-artifact@v4
         with:
           name: token-baselines
@@ -47,6 +56,16 @@ jobs:
         run: |
           python3 -m pact check examples/alien-harvest.data.pact
           python3 -m pact patch examples/alien-harvest.data.pact --patch examples/patches/jump.patch.json --dry-run
+      - name: Smoke test runtime benchmark and freeze trial material
+        run: |
+          python3 -m benchmarks.runtime_performance --iterations 1000 --samples 2 --require-c > build/runtime-ci-smoke.json
+          python3 -m benchmarks.agent_trials prepare --language pact --plan-seed 17 > build/agent-trial-pack.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runtime-and-agent-material
+          path: |
+            build/runtime-ci-smoke.json
+            build/agent-trial-pack.json
       - name: Compile checked examples and site
         run: python3 -m tools.build_site
       - name: Verify greeting capability host
