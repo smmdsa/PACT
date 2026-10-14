@@ -1,3 +1,7 @@
+## Bounded reference replay — 2026-10-14
+
+Implemented revision-checked call recordings, deterministic reports, state hashes, qualified runtime spans and a shared evaluation budget. Tests compare selected success/trap states with actual Wasm. Fixed reference store trap ordering. This executes the reference interpreter; compiled-Wasm replay, debugger and real model trials remain pending.
+
 ## Explicit migration locations — 2026-10-14
 
 JSON migration now retains original physical definition positions on semantic rejection. Source and target validation use the existing migrator; no format defaults or codes change. Single-snapshot reads, ambiguity, escaped IDs/CRLF, preserved output on rejection and Wasm-equivalent successful migrations are covered by tests. Replay and patch-candidate spans remain pending.

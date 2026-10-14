@@ -6,12 +6,15 @@ def wrap(value): return (value + 2**31) % 2**32 - 2**31
 
 
 class Machine:
-    def __init__(self, document):
+    def __init__(self, document, evaluation_limit=None, runtime_diagnostics=False):
         self.plan = analyze_module(document)
         self.document = document
         self.initial_state = {cell['id']: list(cell['values']) for cell in document['cells']}
         self.state = {cell_id: list(values) for cell_id, values in self.initial_state.items()}
         self.functions = {fn['id']: fn for fn in document['functions']}
+        self.evaluation_limit = evaluation_limit
+        self.evaluations = 0
+        self.runtime_diagnostics = runtime_diagnostics
 
     def call(self, name, *args):
         fn = self.functions[name]
@@ -20,6 +23,22 @@ class Machine:
         locals_.update(zip(fn['params'], args))
         nodes = {node['id']: node for node in fn['nodes']}
         def evaluate(key):
+            if self.evaluation_limit is not None:
+                if self.evaluations >= self.evaluation_limit:
+                    error = PactError('REPLAY_LIMIT', 'Reference evaluation budget exhausted.', key)
+                    error.diagnostic['function'] = name
+                    raise error
+                self.evaluations += 1
+            try:
+                return evaluate_node(key)
+            except (IndexError, ArithmeticError) as cause:
+                if not self.runtime_diagnostics:
+                    raise
+                code = 'STATE_BOUNDS' if isinstance(cause, IndexError) else 'ARITHMETIC_TRAP'
+                error = PactError(code, str(cause), key)
+                error.diagnostic['function'] = name
+                raise error from None
+        def evaluate_node(key):
             node = nodes[key]
             op, refs = node['op'], node.get('args', [])
             if op == 'i32.const': return node['value']
@@ -46,13 +65,13 @@ class Machine:
                     evaluate(refs[0])
                 return None
             if op == 'call': return self.call(node['target'], *[evaluate(ref) for ref in refs])
-            values = [evaluate(ref) for ref in refs]
             if op.startswith('state.'):
-                array, index = self.state[node['cell']], values[0]
+                array, index = self.state[node['cell']], evaluate(refs[0])
                 if index < 0 or index >= len(array): raise IndexError('state bounds')
                 if op == 'state.load': return array[index]
-                array[index] = values[1]
+                array[index] = evaluate(refs[1])
                 return None
+            values = [evaluate(ref) for ref in refs]
             if op == 'i32.eqz': return int(values[0] == 0)
             a, b = values
             if op == 'i32.add_wrap': return wrap(a+b)

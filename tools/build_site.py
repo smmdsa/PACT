@@ -17,6 +17,7 @@ DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.
  ('browser-validation','Browser validation','docs/browser-validation.md'),
  ('portability','Portability','docs/portability.md'),
  ('locations','Source locations','docs/source-locations.md'),
+ ('replay','Reference replay','docs/replay.md'),
  ('syntax','Syntax','docs/syntax.md'),('literals','Literal definitions','docs/literals.md'),
  ('inline-literals-and-resets','Inline literals and resets','docs/inline-literals-and-resets.md'),
  ('inspection','Selective inspection','docs/inspection.md'),('transactions','Transactions','docs/transactions.md'),
@@ -48,6 +49,8 @@ def main():
     if pact_cli(['build',str(ROOT/'examples/hello.agent.pact'),'-o',str(output/'hello.wasm')])!=0:raise RuntimeError('Greeting build failed')
     mapping={path:slug+'.html' for slug,_,path in DOCUMENTS};mapping['README.md']='index.html'
     for path in (ROOT/'examples').glob('*.pact*'):
+        shutil.copyfile(path,output/path.name);mapping[str(path.relative_to(ROOT))]=path.name
+    for path in (ROOT/'examples').glob('*.replay.json'):
         shutil.copyfile(path,output/path.name);mapping[str(path.relative_to(ROOT))]=path.name
     reports=output/'reports';reports.mkdir(exist_ok=True)
     for path in (ROOT/'benchmarks/results').glob('*.json'):
