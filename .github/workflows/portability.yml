@@ -1,0 +1,57 @@
+name: Verify PACT across operating systems
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pact-portability-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Verify ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: '1'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install documentation build tools
+        run: python -m pip install --disable-pip-version-check -r docs/site-requirements.txt
+      - name: Test compiler, hosts and tools
+        run: python -m unittest discover -v
+      - name: Compile checked examples and documentation
+        run: python -m tools.build_site
+      - name: Verify greeting capability host
+        run: node host/run.mjs site-output/hello.wasm --allow stdout
+      - name: Win input-only playthrough
+        run: |
+          mkdir -p build
+          node tools/playthrough.mjs site-output/game.wasm site-output/game.manifest.json build/playthrough.json
+      - name: Verify source identity and patch
+        run: |
+          python -m pact locate examples/alien-harvest.inline.pact --function player.move --node n0000 > build/source-location.json
+          python -m pact patch examples/alien-harvest.inline.pact --patch examples/patches/jump.patch.json --dry-run
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portability-${{ matrix.os }}
+          path: |
+            build/playthrough.json
+            build/source-location.json
+            site-output/game.wasm
+            site-output/game.manifest.json
