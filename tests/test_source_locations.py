@@ -116,5 +116,76 @@ class SourceLocationTests(unittest.TestCase):
             self.assertEqual(result['source_path'],str(path))
             path.write_text(json.dumps(tiny()))
             output=subprocess.run([sys.executable,'-m','pact','locate',str(path)],cwd=ROOT,capture_output=True,text=True)
-            self.assertEqual(output.returncode,1)
-            self.assertEqual(json.loads(output.stderr)['code'],'SOURCE_MAP_UNSUPPORTED')
+            self.assertEqual(output.returncode,0,output.stderr)
+            self.assertEqual(len(json.loads(output.stdout)['positions']),6)
+
+    def test_json_qualified_ids_use_exact_escaped_tokens_and_character_columns(self):
+        document=tiny(); other=copy.deepcopy(document['functions'][0]);other['id']='other'
+        document['functions'].append(other)
+        source=json.dumps(document,ensure_ascii=False,indent=2)
+        source=source.replace('"id": "z"','"\\u0069d": "\\u007a"')
+        result=self.locate(source,function_id='other',node_id='z')
+        position=result['positions'][0]
+        line=source.split('\n')[position['line']-1]
+        self.assertEqual(line[position['column']-1:position['end_column']-1],'"\\u007a"')
+        self.assertEqual(position['function'],'other')
+        self.assertEqual(result['source_sha256'],hashlib.sha256(source.encode()).hexdigest())
+        self.assertEqual(result['semantic_revision_sha256'],revision(json.loads(source)))
+        self.assertEqual(compile_module(analyze_module(json.loads(source))),compile_module(analyze_module(document)))
+
+    def test_minified_json_indexes_definitions_only_in_physical_order(self):
+        document=tiny(); other=copy.deepcopy(document['functions'][0]);other['id']='other'
+        document['functions'].append(other)
+        # Function ID follows nodes; unrelated metadata must not create definitions.
+        fn=document['functions'][0];fn['id']=fn.pop('id')
+        document['tests']=[{'id':'z','function':'step','set':{},'expect':{'counter':[10]}}]
+        source=json.dumps(document,ensure_ascii=False,separators=(',',':'))
+        result=self.locate(source,node_id='z')
+        self.assertTrue(result['selection_ambiguous'])
+        self.assertEqual([p['function'] for p in result['positions']],['step','other'])
+        for position in result['positions']:
+            self.assertEqual(position['line'],1)
+            self.assertEqual(source[position['column']-1:position['end_column']-1],'"z"')
+        positions=self.locate(source)['positions']
+        self.assertEqual(len(positions),12)
+        self.assertEqual(positions,sorted(positions,key=lambda p:(p['line'],p['column'])))
+
+    def test_json_graph_excludes_contract_and_reference_ids(self):
+        document=json.loads((ROOT/'examples/hello.pact.json').read_text())
+        document['contracts'][0]['id']=document['nodes'][0]['id']
+        document['nodes'][0]['value']='雪\u2028"id": "v0"'
+        document['contracts'][0]['value']=document['nodes'][0]['value']+document['nodes'][1]['value']
+        source=json.dumps(document,ensure_ascii=False,separators=(',',':'))
+        result=self.locate(source,node_id=document['nodes'][0]['id'])
+        self.assertEqual(len(result['positions']),1)
+        self.assertIsNone(result['positions'][0]['function'])
+        self.assertFalse(result['selection_ambiguous'])
+        position=self.locate(source,node_id='v1')['positions'][0]
+        self.assertEqual(position['line'],1)
+        self.assertEqual(source[position['column']-1:position['end_column']-1],'"v1"')
+        for selection in ({'function_id':'missing'},{'node_id':'missing'}):
+            with self.subTest(selection=selection),self.assertRaises(PactError):
+                self.locate(source,**selection)
+
+    def test_json_rejects_invalid_programs_and_duplicate_keys(self):
+        source=json.dumps(tiny()).replace('"cell": "counter"','"cell": "missing"')
+        with self.assertRaises(PactError) as raised:self.locate(source)
+        self.assertEqual(raised.exception.diagnostic['code'],'STATE_MISSING')
+        source=json.dumps(tiny()).replace('"id": "z"','"id": "z", "\\u0069d": "z"')
+        with self.assertRaises(PactError) as raised:self.locate(source)
+        self.assertEqual(raised.exception.diagnostic['code'],'JSON_DUPLICATE_KEY')
+        for source in ('{','[]','null'):
+            with self.subTest(source=source),self.assertRaises(PactError):self.locate(source)
+
+    def test_json_crlf_cli_preserves_snapshot_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'source.json'
+            data=('\t'+json.dumps(tiny(),indent=2)).replace('\n','\r\n').encode()
+            path.write_bytes(data)
+            output=subprocess.run([sys.executable,'-m','pact','locate',str(path),'--function','step','--node','v'],
+                                  cwd=ROOT,capture_output=True,text=True)
+            self.assertEqual(output.returncode,0,output.stderr)
+            result=json.loads(output.stdout)
+            self.assertEqual(result['source_sha256'],hashlib.sha256(data).hexdigest())
+            position=result['positions'][0];line=data.decode().split('\n')[position['line']-1]
+            self.assertEqual(line[position['column']-1:position['end_column']-1],'"v"')

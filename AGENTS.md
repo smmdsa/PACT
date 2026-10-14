@@ -18,7 +18,7 @@ Use --to compact-data for source RLE/shared-symbol compression. Keep baseline0.2
 
 Keep CHANGELOG.md and the public site in sync with concrete implemented/measured scope. Full test suite includes docs build and needs docs/site-requirements.txt; compiler runtime does not. Model trial recorder is not an authenticated evaluator or sandbox; never run generated candidates with trusted local performance fixtures. Performance numbers are local workload evidence, not universal ranks.
 
-Use `pact locate SOURCE --function ID --node ID` for qualified physical positions. Coordinates use Unicode code points and belong to the exact source-byte hash, not just the semantic revision. Ambiguous diagnostic candidates are not permission to guess a scope. JSON maps and runtime replay are not implemented.
+Use `pact locate SOURCE --function ID --node ID` for qualified compact/JSON physical positions. Coordinates use Unicode code points and belong to the exact source-byte hash, not just the semantic revision. JSON spans include ID value quotes/escapes. Ambiguous diagnostic candidates are not permission to guess a scope. Automatic JSON diagnostic attachment and runtime replay are not implemented.
 
 Compiler CLI JSON uses UTF-8/LF on every OS. Keep strict manifest format checks; tampering fixtures must write exact bytes. Traditional Windows trace comparisons explicitly normalize CRLF and retain raw transport hashes; do not confuse this with byte-identical output.
 

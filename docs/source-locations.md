@@ -1,10 +1,11 @@
 # Source locations
 
-PACT's compact-source queries return physical positions without adding metadata to the semantic IR. Revisions, node IDs and compiled bytes remain unchanged.
+PACT's compact and JSON source queries return physical positions without adding metadata to the semantic IR. Revisions, node IDs and compiled bytes remain unchanged.
 
 ```sh
 python3 -m pact locate examples/alien-harvest.inline.pact --function player.move --node n0000
 python3 -m pact locate examples/alien-harvest.inline.pact --function player.move
+python3 -m pact locate examples/alien-harvest.pact.json --function player.move --node n0000
 ```
 
 `--function` and `--node` are optional. A function query includes its declaration and node definitions; a node query may return matching definitions in multiple functions. Supply both for a qualified selection. Unknown selections reject. Text graphs support node queries with `function: null`; a function query on a text graph rejects.
@@ -13,8 +14,12 @@ The response has format `pact.source-map/0.1.0`, `context_only: true`, `buildabl
 
 Each position records `kind`, `function`, `id`, `line`, `column`, and exclusive `end_column`. Coordinates start at one and count Unicode code points. A tab counts as one character, not an expanded display width. Lines are separated only by LF: Unicode separators inside strings do not add physical lines. Normal nodes point to their ID; function declarations point to the function ID; inline constants point to the complete `ID=INTEGER` operand token. This is a definition map, not a complete AST/source range or reference index.
 
+For JSON, spans cover the complete string value of a definition's `id`, including quotes and any escapes. Returned IDs are decoded: `"\\u007a"` selects node `z`, while its span still covers the original eight-character token. Object field order, indentation and minification do not affect identity. Only root graph nodes, module functions and their nodes are indexed; references, tests, cells, contracts and lookalikes in strings are excluded. Positions follow physical source order even when a function's ID occurs after its nodes.
+
+JSON queries reject duplicate decoded keys, malformed JSON and semantically invalid programs before returning positions. The scanner visits only known definition containers and skips unrelated values. Reads remain limited to one 1 MiB snapshot; no host code, model output or runtime candidate is executed.
+
 ## Rejections
 
 Compact parsing errors add a coarse `source_location` containing the physical line and column one. Semantic errors with a unique named declaration add its definition span. When a diagnostic's unqualified ID appears in multiple scopes, `source_candidates` lists possible definitions instead of guessing one. Errors without a named declaration omit a semantic location. Contract metadata is not mapped; IDs colliding with that namespace omit locations to avoid attributing a contract error to a node. Existing rejection codes, node IDs and structured fixes remain available.
 
-These locations describe the original compact snapshot only. JSON physical maps, generated Wasm offsets, runtime trap replay and source-aware patch editing remain planned. Query output validates the entire source; it does not accept a partial or invalid program. Location lookup never executes source as host code.
+Automatic diagnostic attachment still covers compact snapshots only; JSON queries do not add physical spans to compiler rejection diagnostics. Generated Wasm offsets, runtime trap replay and source-aware patch editing remain planned. Query output validates the entire source; it does not accept a partial or invalid program. Location lookup never executes source as host code.

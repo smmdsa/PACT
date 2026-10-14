@@ -46,6 +46,7 @@ jobs:
       - name: Verify source identity and patch
         run: |
           python -m pact locate examples/alien-harvest.inline.pact --function player.move --node n0000 > build/source-location.json
+          python -m pact locate examples/alien-harvest.pact.json --function player.move --node n0000 > build/json-source-location.json
           python -m pact patch examples/alien-harvest.inline.pact --patch examples/patches/jump.patch.json --dry-run
       - uses: actions/upload-artifact@v4
         with:
@@ -53,5 +54,6 @@ jobs:
           path: |
             build/playthrough.json
             build/source-location.json
+            build/json-source-location.json
             site-output/game.wasm
             site-output/game.manifest.json
