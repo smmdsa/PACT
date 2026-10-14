@@ -151,3 +151,7 @@ Opt-in numeric module 0.3 requires at least one declared case per exported funct
 ## Checked flow conditions
 
 Opt-in numeric module 0.4 adds typed `assert` and lazy `guard` nodes for explicit runtime conditions. It inherits the declared-case policy and preserves legacy defaults. Failed guards skip their body; later failures retain earlier writes. [Examples and trap limits](docs/checked-assertions.md). These checks do not introduce rollback or proof.
+
+## Independent trace grading
+
+External counter-four traces can be checked against the frozen oracle and archived candidate byte identity with `python3 -m benchmarks.agent_trace_grader TRACE --candidate SOURCE`. This executes no candidate code and produces a behavioral observation, not full candidate approval or measured model results. See [trace grading](docs/agent-trace-grading.md).

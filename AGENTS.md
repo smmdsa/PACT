@@ -25,3 +25,5 @@ Compiler CLI JSON uses UTF-8/LF on every OS. Keep strict manifest format checks;
 Module 0.3 requires declared cases for every export. Inspection declared_export_tests is a declaration map, not execution. Build manifests add actual tested receipts. Never generate arbitrary expected values just to satisfy missing-case hints. Default migration still targets 0.2; opt into 0.3 explicitly.
 
 Module 0.4 guard/assert nodes check chosen runtime conditions. Guards skip bodies on false; traps retain prior writes. Reference ASSERTION_FAILED IDs and generic Wasm traps are not interchangeable diagnostics. Negative-trap declarations and replay are planned.
+
+Use benchmarks.agent_trace_grader for external counter-four observations bound to archived candidate bytes. It never executes source, authenticates a trace or approves full candidate correctness. behavior_pass is not the trial pass field; candidate_pass remains null until sandbox/interface/policy/embedded-test checks are provided. Synthetic tests are not model results.
