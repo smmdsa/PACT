@@ -57,3 +57,7 @@ Node order is not execution order. References and the entry node define executio
 Duplicate keys/IDs, invalid operations, bad operands and malformed boundaries are rejected. Translation runs the existing type/effect/cycle/budget validator. Conversion preserves IDs, operand ordering and all semantic fields, but not formatting/comments.
 
 Implicit scopes, inline constants, bulk resets, RLE maps and revision-checked patches remain planned. This release changes representation, not execution semantics.
+
+## Optional data frontend0.3
+
+The pact0.3 header adds bounded cells.packed and assets.shared sections; all normal operations/IDs remain. See data-compression.md. Default canonical output remains0.2. Inline literals, runtime bulk resets and scopes are separate pending proposals.

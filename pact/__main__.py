@@ -36,7 +36,7 @@ def parser():
     patch.add_argument('source', type=Path)
     patch.add_argument('--patch', type=Path, required=True)
     patch.add_argument('-o', '--output', type=Path)
-    patch.add_argument('--to', choices=['compact', 'json'], default='compact')
+    patch.add_argument('--to', choices=['compact', 'compact-data', 'json'], default='compact')
     patch.add_argument('--dry-run', action='store_true')
     for name in ('inspect', 'symbols'):
         command = commands.add_parser(name)
@@ -46,7 +46,7 @@ def parser():
     convert = commands.add_parser('convert')
     convert.add_argument('source', type=Path)
     convert.add_argument('-o', '--output', type=Path, required=True)
-    convert.add_argument('--to', choices=['compact', 'json'], required=True)
+    convert.add_argument('--to', choices=['compact', 'compact-data', 'json'], required=True)
     for command in ("check", "interpret", "build"):
         child = commands.add_parser(command)
         child.add_argument("source", type=Path)
@@ -76,7 +76,7 @@ def main(argv=None):
             patch = load_document(args.patch)
             candidate = apply_patch(document, patch)
             _, manifest = build_module(candidate)
-            source = dumps(candidate) if args.to == 'compact' else json.dumps(candidate, ensure_ascii=False, indent=2) + '\n'
+            source = dumps(candidate, compressed=args.to == 'compact-data') if args.to != 'json' else json.dumps(candidate, ensure_ascii=False, indent=2) + '\n'
             data = source.encode('utf-8')
             require(len(data) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Candidate source exceeds 1 MiB.')
             receipt = {'format': 'pact.patch-receipt/0.1.0',
@@ -99,7 +99,7 @@ def main(argv=None):
         if args.command == 'convert':
             from .compact import dumps, validate_document
             validate_document(document)
-            source = dumps(document) if args.to == 'compact' else json.dumps(document, ensure_ascii=False, indent=2) + '\n'
+            source = dumps(document, compressed=args.to == 'compact-data') if args.to != 'json' else json.dumps(document, ensure_ascii=False, indent=2) + '\n'
             atomic_write(args.output, source.encode('utf-8'))
             print(json.dumps({'status': 'converted', 'to': args.to, 'output': str(args.output)}))
             return 0

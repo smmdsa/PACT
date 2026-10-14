@@ -14,7 +14,8 @@ Goal: lower total agent cost per correct change, with explicit semantics. Alien-
 | Model-task baseline | Planned | Real trials, correct edits, retries, failures and tool overhead |
 | Selective inspection | Done | Function discovery, call relationships, effects and test summaries without whole-file agent reads |
 | Transactional edits | Done | Stable node/data/test replacements, revision guards, executable CLI tests and no-clobber new candidates |
-| Data compression | Next | Inline literals, bulk resets, palette sharing and RLE with equivalence tests |
+| Initial data compression | Done | Bounded RLE and shared symbol dictionaries, exact IR/revision/Wasm equivalence, real token reports |
+| Inline literals and bulk resets | Next | Preserve explicit IDs/effects or version semantics; independent equivalence tests |
 | Contracts and units | Planned | Preconditions, postconditions, nominal units, public-function evidence policy |
 | Diagnostics and replay | Planned | Source locations, structured fixes and debugger |
 | Portability | Planned | Windows/macOS/Linux CI and real browser tests |

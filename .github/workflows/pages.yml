@@ -32,6 +32,8 @@ jobs:
           python3 -m benchmarks.token_counts --encoding cl100k_base > build/tokens-cl100k_base.json
           python3 -m benchmarks.traditional --encoding o200k_base --require-c > build/tokens-traditional-o200k_base.json
           python3 -m benchmarks.traditional --encoding cl100k_base --require-c > build/tokens-traditional-cl100k_base.json
+          python3 -m benchmarks.data_compression --encoding o200k_base > build/tokens-data-o200k_base.json
+          python3 -m benchmarks.data_compression --encoding cl100k_base > build/tokens-data-cl100k_base.json
       - uses: actions/upload-artifact@v4
         with:
           name: token-baselines
@@ -41,6 +43,10 @@ jobs:
           python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json --dry-run
           python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json -o build/higher-jump.pact
           python3 -m pact check build/higher-jump.pact
+      - name: Validate compressed source and revision compatibility
+        run: |
+          python3 -m pact check examples/alien-harvest.data.pact
+          python3 -m pact patch examples/alien-harvest.data.pact --patch examples/patches/jump.patch.json --dry-run
       - name: Compile checked examples and site
         run: python3 -m tools.build_site
       - name: Verify greeting capability host

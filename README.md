@@ -2,7 +2,7 @@
 
 Experimental agent-first programming: explicit dataflow, checked effects, stable node IDs and deterministic WebAssembly compilation.
 
-Compact frontend **0.2** translates to text graph **0.0.1** or numeric module **0.1.0**. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
+Compact frontend **0.2**, with optional data compression **0.3**, translates to text graph **0.0.1** or numeric module **0.1.0**. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
 
 [Documentation and game](https://smmdsa.github.io/PACT/) · [Syntax](docs/syntax.md) · [Security](docs/security.md) · [Roadmap](ROADMAP.md)
 
@@ -51,6 +51,14 @@ python3 -m pact inspect examples/alien-harvest.pact --function player.move
 Responses are deterministic JSON with a source revision, selected body, helper signatures, call relationships, referenced constants, cell metadata and test summaries. Initial cell arrays, assets, helper bodies and test-case bodies are omitted explicitly. Inspect helpers separately when their behavior matters. Call relationships are not a complete dependency analysis through shared state. See [inspection](docs/inspection.md) and [agent contributions](docs/agent-contributions.md).
 
 Optional real-token measurements use `benchmarks/requirements.txt` and `python3 -m benchmarks.token_counts`. They measure source representations with named encodings, not model productivity. The independent compiler remains dependency-free. With `o200k_base`, the game uses 24,851 compact-source tokens versus 35,903 minified-JSON tokens (30.8% fewer). The `player.move` inspection returns 6,229 tokens, with omissions stated explicitly; additional reads may be needed. See frozen reports in `benchmarks/results/`.
+
+## Compressed initial data and atlas
+
+```sh
+python3 -m pact convert examples/alien-harvest.pact --to compact-data -o build/game.data.pact
+```
+
+[Compressed game source](examples/alien-harvest.data.pact) reconstructs the same IR, IDs, revision and Wasm. RLE arrays and shared symbol dictionaries reduce this source to 43,543 bytes and 18,328 o200k_base tokens, versus 51,244 bytes and 24,851 tokens in0.2. Runtime memory and behavior are unchanged. Inline literals and bulk runtime resets are still pending. See [data compression](docs/data-compression.md).
 
 ## Revision-checked edits
 

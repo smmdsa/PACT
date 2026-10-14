@@ -6,6 +6,7 @@ from .diagnostics import PactError
 from .schema import IDENTIFIER, MAX_SOURCE_BYTES, require
 
 HEADER = 'pact 0.2'
+DATA_HEADER = 'pact 0.3'
 WORD = IDENTIFIER
 FIELDS = {
     'i32.const': ('value',), 'utf8.literal': ('value',),
@@ -101,7 +102,9 @@ def loads(source):
         require(len(source.encode('utf-8')) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Source exceeds 1 MiB.')
         lines = [(n, line.strip()) for n, line in enumerate(source.split('\n'), 1)
                  if line.strip() and not line.lstrip().startswith('#')]
-        require(bool(lines) and lines[0][1] == HEADER, 'COMPACT_INVALID', 'Expected pact 0.2 header.')
+        require(bool(lines) and lines[0][1] in (HEADER, DATA_HEADER), 'COMPACT_INVALID', 'Expected pact 0.2 or pact 0.3 header.')
+        data_version = lines[0][1] == DATA_HEADER
+        packed_sections = False
         document, function, ids = {}, None, set()
         for line_number, line in lines[1:]:
             if line.startswith('fn '):
@@ -130,13 +133,29 @@ def loads(source):
             else:
                 key, separator, value = line.partition(' ')
                 require(bool(separator), 'COMPACT_INVALID', 'Expected section and JSON value.')
+                packed = key in ('cells.packed', 'assets.shared')
+                if packed:
+                    require(data_version and function is None, 'COMPACT_INVALID', 'Compressed sections require module-level pact 0.3.')
+                    encoded_key = key
+                    key = 'cells' if key == 'cells.packed' else 'assets'
                 target = function if function is not None else document
                 require(key not in target and key not in {'nodes', 'functions', 'id'},
                         'COMPACT_INVALID', f'Duplicate or reserved field: {key}')
                 if function is not None:
                     require(key in FUNCTION_FIELDS, 'COMPACT_INVALID', 'Unknown function field.')
-                target[key] = json.loads(value, object_pairs_hook=_pairs)
+                record = json.loads(value, object_pairs_hook=_pairs)
+                if packed:
+                    if encoded_key == 'cells.packed':
+                        from .data_codec import decode_cells
+                        record = decode_cells(record)
+                    else:
+                        from .atlas_codec import decode_assets
+                        record = decode_assets(record)
+                    packed_sections = True
+                target[key] = record
         require(function is None, 'COMPACT_INVALID', 'Unterminated function.')
+        require(not packed_sections or document.get('format') == 'pact.module/0.1.0',
+                'COMPACT_INVALID', 'Compressed sections support numeric modules only.')
         validate_document(document)
         return document
     except (ValueError, RecursionError) as error:
@@ -167,10 +186,10 @@ def _emit_node(node):
     return f"{node['id']} = {SHORT.get(node['op'], node['op'])}" + (' ' + ' '.join(operands) if operands else '')
 
 
-def dumps(document):
+def dumps(document, compressed=False):
     """Serialize validated IR; canonical formatting preserves all semantic fields."""
     validate_document(document)
-    lines = [HEADER]
+    lines = [DATA_HEADER if compressed else HEADER]
     for key, value in document.items():
         if key == 'nodes':
             lines.extend(_emit_node(node) for node in value)
@@ -181,5 +200,13 @@ def dumps(document):
                 lines.extend(_emit_node(node) for node in function['nodes'])
                 lines.extend(['return ' + function['entry'], 'end'])
         else:
-            lines.append(key + ' ' + _json(value))
+            plain = key + ' ' + _json(value)
+            encoded = plain
+            if compressed and key == 'cells':
+                from .data_codec import encode_cells
+                encoded = 'cells.packed ' + _json(encode_cells(value))
+            elif compressed and key == 'assets':
+                from .atlas_codec import encode_assets
+                encoded = 'assets.shared ' + _json(encode_assets(value))
+            lines.append(encoded if len(encoded.encode('utf-8')) < len(plain.encode('utf-8')) else plain)
     return '\n'.join(lines) + '\n'

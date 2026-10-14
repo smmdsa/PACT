@@ -23,23 +23,23 @@ def page(title, body):
             '<nav><a href="index.html">PACT</a><a href="syntax.html">Syntax</a>'
             '<a href="security.html">Security</a><a href="roadmap.html">Roadmap</a><a href="inspection.html">Agent tools</a>'
             '<a href="https://github.com/smmdsa/PACT">GitHub ↗</a></nav>' + body +
-            '<footer>Experimental language · Compact frontend 0.2 · Graph 0.0.1 / module 0.1.0</footer>'
+            '<footer>Experimental language · Compact frontend0.2 / data0.3 · Graph 0.0.1 / module 0.1.0</footer>'
             '</main></body></html>')
 
 
 def main():
     output = ROOT/'site-output'
     output.mkdir(exist_ok=True)
-    game = load_document(ROOT/'examples/alien-harvest.pact')
+    game = load_document(ROOT/'examples/alien-harvest.data.pact')
     binary, manifest = build_module(game)
     (output/'game.wasm').write_bytes(binary)
     (output/'game.manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     (output/'game.html').write_bytes(game_html(game,binary,manifest))
     if pact_cli(['build', str(ROOT/'examples/hello.pact'), '-o', str(output/'hello.wasm')]) != 0:
         raise RuntimeError('Greeting build failed.')
-    for name in ('hello.pact','hello.pact.json','alien-harvest.pact','alien-harvest.pact.json'):
+    for name in ('hello.pact','hello.pact.json','alien-harvest.pact','alien-harvest.pact.json','alien-harvest.data.pact'):
         shutil.copyfile(ROOT/'examples'/name,output/name)
-    documents = [('syntax','docs/syntax.md'),('security','docs/security.md'),('roadmap','ROADMAP.md'),('inspection','docs/inspection.md'),('agents','docs/agent-contributions.md'),('benchmarks','benchmarks/README.md'),('transactions','docs/transactions.md'),('comparison','docs/traditional-comparison.md'),('resources','docs/resource-bounds.md')]
+    documents = [('syntax','docs/syntax.md'),('security','docs/security.md'),('roadmap','ROADMAP.md'),('inspection','docs/inspection.md'),('agents','docs/agent-contributions.md'),('benchmarks','benchmarks/README.md'),('transactions','docs/transactions.md'),('comparison','docs/traditional-comparison.md'),('resources','docs/resource-bounds.md'),('compression','docs/data-compression.md')]
     for slug, path in documents:
         text = (ROOT/path).read_text(encoding='utf-8')
         body = f'<h1>{slug.title()}</h1><p><a href="https://github.com/smmdsa/PACT/blob/main/{path}">View formatted document on GitHub ↗</a></p><pre>{html.escape(text)}</pre>'
@@ -56,7 +56,7 @@ def main():
 node host/run.mjs build/hello.wasm --allow stdout</pre>
 <p>Python 3.10+ and Node 20+. No third-party packages needed. The generated game HTML runs independently in a WebAssembly-capable browser.</p>
 <h2>Inspect only what you need</h2><pre>python3 -m pact symbols examples/alien-harvest.pact
-python3 -m pact inspect examples/alien-harvest.pact --function player.move</pre><p>Get stable function IDs, call dependencies, effects and relevant test summaries without the complete map and atlas. <a href="inspection.html">Inspection specification</a> · <a href="benchmarks.html">Benchmark protocol</a> · <a href="agents.html">Contribute with an agent</a></p><h2>Checked changes, without overwriting source</h2><pre>python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json --dry-run</pre><p>Revision guards, full candidate validation and actual Wasm tests. <a href="transactions.html">Transaction specification →</a></p><h2>Traditional languages: measured honestly</h2><table><thead><tr><th>Source tokens · o200k_base</th><th>PACT</th><th>Python</th><th>JavaScript</th><th>C</th></tr></thead><tbody><tr><td>Greeting</td><td>78</td><td>10</td><td>11</td><td>27</td></tr><tr><td>Wrapping counter</td><td>163</td><td>74</td><td>76</td><td>138</td></tr></tbody></table><p>PACT costs more source tokens in these two kernels. Drivers are measured separately; the language policies differ. This is not an agent-productivity comparison. <a href="comparison.html">Methodology and full results →</a></p><h2>A concrete test of the language</h2><p>Alien Harvest includes jumping, climbing, throwable vegetables, enemies, a checkpoint and a boss. Its gameplay and internal pixel atlas are declared in PACT. The host supplies rendering, input and sound.</p>
+python3 -m pact inspect examples/alien-harvest.pact --function player.move</pre><p>Get stable function IDs, call dependencies, effects and relevant test summaries without the complete map and atlas. <a href="inspection.html">Inspection specification</a> · <a href="benchmarks.html">Benchmark protocol</a> · <a href="agents.html">Contribute with an agent</a></p><h2>Same game, less source context</h2><p>Bounded RLE and shared symbol maps reduce the game to 18,328 o200k_base tokens from 24,851. The IR, revision, atlas and Wasm are identical. <a href="compression.html">Data compression specification</a> · <a href="alien-harvest.data.pact" download>Compressed game source</a></p><h2>Checked changes, without overwriting source</h2><pre>python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json --dry-run</pre><p>Revision guards, full candidate validation and actual Wasm tests. <a href="transactions.html">Transaction specification →</a></p><h2>Traditional languages: measured honestly</h2><table><thead><tr><th>Source tokens · o200k_base</th><th>PACT</th><th>Python</th><th>JavaScript</th><th>C</th></tr></thead><tbody><tr><td>Greeting</td><td>78</td><td>10</td><td>11</td><td>27</td></tr><tr><td>Wrapping counter</td><td>163</td><td>74</td><td>76</td><td>138</td></tr></tbody></table><p>PACT costs more source tokens in these two kernels. Drivers are measured separately; the language policies differ. This is not an agent-productivity comparison. <a href="comparison.html">Methodology and full results →</a></p><h2>A concrete test of the language</h2><p>Alien Harvest includes jumping, climbing, throwable vegetables, enemies, a checkpoint and a boss. Its gameplay and internal pixel atlas are declared in PACT. The host supplies rendering, input and sound.</p>
 <p><small>Prototype limitations: no proof of agent productivity, no general semantic responsibility checker, no full standard library or package manager. Real-browser compatibility and visual QA remain open. No open-source license has been selected yet.</small></p>'''
     (output/'index.html').write_text(page('Agent-first programming',body),encoding='utf-8')
     (output/'.nojekyll').write_text('',encoding='utf-8')
