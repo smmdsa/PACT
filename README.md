@@ -138,7 +138,7 @@ The owner has not selected an open-source license. Public availability alone doe
 
 ## Physical source context
 
-`python3 -m pact locate examples/alien-harvest.inline.pact --function player.move --node n0000` returns qualified physical positions and exact source-byte identity separately from the semantic revision. The same query supports `examples/alien-harvest.pact.json`, including escaped IDs and minified JSON. Compact and JSON semantic diagnostics locate unique definitions or list ambiguous candidates. Explicit JSON migration also attaches spans from its original snapshot. Bounded reference replay is available with revision-checked call recordings; compiled-Wasm replay remains planned. See [replay](docs/replay.md). See [source locations](docs/source-locations.md).
+`python3 -m pact locate examples/alien-harvest.inline.pact --function player.move --node n0000` returns qualified physical positions and exact source-byte identity separately from the semantic revision. The same query supports `examples/alien-harvest.pact.json`, including escaped IDs and minified JSON. Compact and JSON semantic diagnostics locate unique definitions or list ambiguous candidates. Explicit JSON migration also attaches spans from its original snapshot. Revision-checked call recordings can replay on the reference interpreter, compiled Wasm, or compare per-call outcomes/state hashes. Wasm traps remain generic; instruction mapping is planned. See [replay](docs/replay.md). See [source locations](docs/source-locations.md).
 
 ## Platform and browser evidence
 

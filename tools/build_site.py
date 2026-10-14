@@ -17,7 +17,7 @@ DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.
  ('browser-validation','Browser validation','docs/browser-validation.md'),
  ('portability','Portability','docs/portability.md'),
  ('locations','Source locations','docs/source-locations.md'),
- ('replay','Reference replay','docs/replay.md'),
+ ('replay','Execution replay','docs/replay.md'),
  ('syntax','Syntax','docs/syntax.md'),('literals','Literal definitions','docs/literals.md'),
  ('inline-literals-and-resets','Inline literals and resets','docs/inline-literals-and-resets.md'),
  ('inspection','Selective inspection','docs/inspection.md'),('transactions','Transactions','docs/transactions.md'),

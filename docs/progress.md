@@ -1,3 +1,7 @@
+## Wasm replay and comparison — 2026-10-14
+
+Added fresh-instance Wasm call replay and per-call reference comparison. Reports preserve generic Wasm traps, artifact/runtime hashes and Node/V8 versions. Tests cover success/trap state equivalence, changed intermediate hashes, incomplete reference traces and missing/timeout runtime errors. Wasm instruction mapping, interactive debugging and real model trials remain pending.
+
 ## Bounded reference replay — 2026-10-14
 
 Implemented revision-checked call recordings, deterministic reports, state hashes, qualified runtime spans and a shared evaluation budget. Tests compare selected success/trap states with actual Wasm. Fixed reference store trap ordering. This executes the reference interpreter; compiled-Wasm replay, debugger and real model trials remain pending.
