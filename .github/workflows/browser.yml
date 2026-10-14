@@ -1,0 +1,39 @@
+name: Verify PACT in Chromium
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pact-browser-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Build checked game and docs
+        run: |
+          python -m pip install --disable-pip-version-check -r docs/site-requirements.txt
+          python -m tools.build_site
+      - name: Install pinned browser test tools
+        run: |
+          npm ci --prefix browser-tests --ignore-scripts
+          browser-tests/node_modules/.bin/playwright install --with-deps chromium
+      - name: Check rendered documentation and game interaction
+        run: node browser-tests/smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chromium-smoke-evidence
+          path: build/browser-smoke
+          if-no-files-found: warn
