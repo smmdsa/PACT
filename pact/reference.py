@@ -9,8 +9,7 @@ class Machine:
         self.plan = analyze_module(document)
         self.document = document
         self.initial_state = {cell['id']: list(cell['values']) for cell in document['cells']}
-        self.state = {cell['id']: list(values) for cell_id, values in self.initial_state.items()
-                      for cell in [ {'id': cell_id} ]}
+        self.state = {cell_id: list(values) for cell_id, values in self.initial_state.items()}
         self.functions = {fn['id']: fn for fn in document['functions']}
 
     def call(self, name, *args):
