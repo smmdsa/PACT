@@ -10,6 +10,7 @@ import sys
 import uuid
 
 from .agent_trace_grader import frozen_oracle, grade_trace, ORACLE_SHA256, pairs, snapshot
+from .agent_candidate_policy import audit_candidate
 
 
 def create_command(container,image):
@@ -82,8 +83,8 @@ def run_candidate(candidate_path,image):
     trace={'format':'pact.agent-execution-trace/0.1','task':'counter-four','language':'pact',
            'candidate_sha256':hashlib.sha256(candidate).hexdigest(),'oracle_sha256':ORACLE_SHA256,
            'executor':{'command':'python3 -I -B /opt/worker.py','revision':image,'log_sha256':log_hash},**observations}
-    return {'format':'pact.agent-sandbox-receipt/0.1','image_id':image,'backend':'docker',
-            'trace':trace,'grade':grade_trace(trace,candidate),'log':log,
+    return {'format':'pact.agent-sandbox-receipt/0.2','image_id':image,'backend':'docker',
+            'trace':trace,'grade':grade_trace(trace,candidate),'policy':audit_candidate(candidate),'log':log,
             'isolation_configuration_checked':True,'candidate_pass':None,'model_trial':False}
 
 
@@ -94,7 +95,7 @@ def main(argv=None):
     try:
         report=run_candidate(args.candidate,args.image)
         print(json.dumps(report,sort_keys=True,indent=2))
-        return 0 if report['grade']['behavior_pass'] else 2
+        return 0 if report['grade']['behavior_pass'] and report['policy']['policy_pass'] else 2
     except (ValueError,TypeError,KeyError,OSError,RecursionError) as error:
         print(json.dumps({'status':'rejected','code':'AGENT_SANDBOX_REJECTED','message':str(error)}),file=sys.stderr)
         return 1
