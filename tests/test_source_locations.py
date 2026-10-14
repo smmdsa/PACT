@@ -19,6 +19,60 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class SourceLocationTests(unittest.TestCase):
+    def test_json_cli_semantic_rejection_uses_original_escaped_crlf_span(self):
+        source=json.dumps(tiny(),indent=2).replace('"cell": "counter"','"cell": "missing"')
+        source=source.replace('"id": "v"','"id": "\\u0076"').replace('\n','\r\n')
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'source.json';path.write_bytes(source.encode())
+            for command in ('check','symbols','convert'):
+                args=[sys.executable,'-m','pact',command,str(path)]
+                if command=='convert':args+=['--to','compact','-o',str(Path(tmp)/'out.pact')]
+                output=subprocess.run(args,cwd=ROOT,capture_output=True,text=True)
+                self.assertEqual(output.returncode,1)
+                diagnostic=json.loads(output.stderr)
+                self.assertEqual(diagnostic['code'],'STATE_MISSING')
+                position=diagnostic.get('source_location',{})
+                self.assertEqual(position.get('function'),'step')
+                line=source.split('\n')[position['line']-1]
+                self.assertEqual(line[position['column']-1:position['end_column']-1],'"\\u0076"')
+
+    def test_json_semantic_rejection_lists_ambiguous_candidates(self):
+        document=tiny();other=copy.deepcopy(document['functions'][0]);other['id']='other'
+        document['functions'].append(other)
+        document['functions'][0]['nodes'][1]['cell']='missing'
+        with self.assertRaises(PactError) as raised:self.locate(json.dumps(document))
+        diagnostic=raised.exception.diagnostic
+        self.assertNotIn('source_location',diagnostic)
+        self.assertEqual([p['function'] for p in diagnostic.get('source_candidates',[])],['step','other'])
+
+    def test_json_function_rejection_retains_structured_fix(self):
+        document=tiny();document['functions'][0]['writes']=[]
+        with self.assertRaises(PactError) as raised:self.locate(json.dumps(document))
+        diagnostic=raised.exception.diagnostic
+        self.assertEqual(diagnostic['source_location']['kind'],'function')
+        self.assertEqual(diagnostic['source_location']['id'],'step')
+        self.assertEqual(diagnostic['fix']['op'],'set_writes')
+
+    def test_json_contract_collision_omits_definition_location(self):
+        document=json.loads((ROOT/'examples/hello.pact.json').read_text())
+        document['contracts'][0]['id']=document['nodes'][0]['id']
+        document['contracts'][0]['value']='wrong output'
+        with self.assertRaises(PactError) as raised:self.locate(json.dumps(document))
+        diagnostic=raised.exception.diagnostic
+        self.assertEqual(diagnostic['code'],'CONTRACT_FAILED')
+        self.assertNotIn('source_location',diagnostic)
+        self.assertNotIn('source_candidates',diagnostic)
+
+    def test_json_malformed_definition_containers_preserve_rejections(self):
+        from pact.graph import load_document
+        for nodes in (None, {}, [None], [{'id':[]} ]):
+            document=tiny();document['functions'][0]['nodes']=nodes
+            with self.subTest(nodes=nodes),tempfile.TemporaryDirectory() as tmp:
+                path=Path(tmp)/'source.json';path.write_text(json.dumps(document))
+                with self.assertRaises(PactError) as raised:load_document(path,validate_source=True)
+                self.assertNotIn('source_location',raised.exception.diagnostic)
+
+
     def locate(self, source, **selection):
         try:
             module = importlib.import_module('pact.source_locations')

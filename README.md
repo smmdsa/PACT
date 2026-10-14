@@ -138,7 +138,7 @@ The owner has not selected an open-source license. Public availability alone doe
 
 ## Physical source context
 
-`python3 -m pact locate examples/alien-harvest.inline.pact --function player.move --node n0000` returns qualified physical positions and exact source-byte identity separately from the semantic revision. The same query supports `examples/alien-harvest.pact.json`, including escaped IDs and minified JSON. Compact diagnostics locate unique definitions or list ambiguous candidates; JSON diagnostic attachment and runtime replay remain planned. See [source locations](docs/source-locations.md).
+`python3 -m pact locate examples/alien-harvest.inline.pact --function player.move --node n0000` returns qualified physical positions and exact source-byte identity separately from the semantic revision. The same query supports `examples/alien-harvest.pact.json`, including escaped IDs and minified JSON. Compact and JSON semantic diagnostics locate unique definitions or list ambiguous candidates. JSON migration attachment and runtime replay remain planned. See [source locations](docs/source-locations.md).
 
 ## Platform and browser evidence
 

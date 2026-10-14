@@ -14,7 +14,7 @@ def _unique_pairs(pairs):
     return result
 
 
-def load_document(path, migrate_legacy=False):
+def load_document(path, migrate_legacy=False, validate_source=False):
     try:
         with Path(path).open("rb") as stream:
             data = stream.read(MAX_SOURCE_BYTES + 1)
@@ -24,6 +24,9 @@ def load_document(path, migrate_legacy=False):
             from .compact import loads
             return loads(text, migrate_legacy=migrate_legacy)
         document = json.loads(text, object_pairs_hook=_unique_pairs)
+        if validate_source:
+            from .source_locations import validate_json_source
+            validate_json_source(text, document)
         from .module import FORMATS, migrate_module
         if migrate_legacy and isinstance(document, dict) and document.get('format') == FORMATS[0]:
             return migrate_module(document)

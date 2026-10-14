@@ -63,7 +63,7 @@ def index_source(source):
     return positions
 
 
-def attach_semantic_location(diagnostic, source, document):
+def attach_semantic_location(diagnostic, source, document, json_source=False):
     name = diagnostic.get('node')
     if name is None:
         return
@@ -71,11 +71,33 @@ def attach_semantic_location(diagnostic, source, document):
     if isinstance(contracts, list) and any(isinstance(c, dict) and c.get('id') == name for c in contracts):
         # Contract IDs occupy a separate namespace; an unqualified ID is insufficient.
         return
-    positions = [p for p in index_source(source) if p['id'] == name]
+    if json_source:
+        # Invalid schemas may not contain traversable definition containers.
+        if not isinstance(document, dict):
+            return
+        containers = [document] if 'nodes' in document else document.get('functions', [])
+        if not isinstance(containers, list) or any(
+                not isinstance(c, dict) or not isinstance(c.get('nodes'), list) or
+                ('functions' in document and not isinstance(c.get('id'), str)) or
+                any(not isinstance(n, dict) or not isinstance(n.get('id'), str) for n in c['nodes'])
+                for c in containers):
+            return
+    index = index_json_source if json_source else index_source
+    positions = [p for p in index(source) if p['id'] == name]
     if len(positions) == 1:
         diagnostic['source_location'] = positions[0]
     elif positions:
         diagnostic['source_candidates'] = positions
+
+
+def validate_json_source(source, document):
+    """Attach positions to semantic rejections from the same parsed snapshot."""
+    from .compact import validate_document
+    try:
+        return validate_document(document)
+    except PactError as error:
+        attach_semantic_location(error.diagnostic, source, document, json_source=True)
+        raise
 
 
 def _json_entries(source, start):
@@ -136,7 +158,7 @@ def index_json_source(source):
 
 def locate_source(source, function_id=None, node_id=None):
     """Validate one snapshot and return deterministic qualified locations."""
-    from .compact import loads, validate_document
+    from .compact import loads
     from .graph import _unique_pairs
     from .revision import revision
     require(len(source.encode('utf-8')) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Source exceeds 1 MiB.')
@@ -151,7 +173,7 @@ def locate_source(source, function_id=None, node_id=None):
             raise
         except (ValueError, RecursionError) as error:
             raise PactError('SOURCE_INVALID', str(error)) from None
-        validate_document(document)
+        validate_json_source(source, document)
         positions = index_json_source(source)
     if function_id is not None:
         require(any(p['kind'] == 'function' and p['id'] == function_id for p in positions),
