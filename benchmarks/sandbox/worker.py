@@ -1,6 +1,7 @@
 """Container worker: Python candidate execution is allowed only inside Docker."""
 import json
 import base64
+import os
 from pathlib import Path
 import sys
 
@@ -41,6 +42,10 @@ try:
     request=json.loads(data)
     candidate=base64.b64decode(request['candidate_base64'],validate=True)
     if len(candidate)>1024*1024:raise ValueError('Candidate exceeds 1 MiB')
+    if request.get('language')=='javascript':
+        Path('/tmp/request.json').write_bytes(data)
+        # Replace this process: the outer Docker capture/timeout governs Node directly.
+        os.execv('/usr/local/bin/node',['node','/opt/javascript_worker.mjs','/tmp/request.json'])
     if request.get('language','pact')=='python':
         scope=python_scope(candidate)
         result['initial_counter']=list(scope['counter']);result['execution_status']='error'

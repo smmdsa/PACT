@@ -9,6 +9,23 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class AgentCandidatePolicyTests(unittest.TestCase):
+    def test_javascript_policy_accepts_exact_edit_and_crlf(self):
+        source=(ROOT/'benchmarks/agent_trials/counter.mjs').read_bytes()
+        correct=source.replace(b'i < 3',b'i < 4')
+        for candidate in (correct,correct.replace(b'\n',b'\r\n')):
+            report=self.module().audit_candidate(candidate,language='javascript')
+            self.assertTrue(report['policy_pass'])
+            self.assertFalse(report['runtime_executed'])
+            self.assertEqual(report['scope'],'counter-four exact JavaScript source edit/0.1')
+
+    def test_javascript_policy_rejects_other_changes_without_execution(self):
+        source=(ROOT/'benchmarks/agent_trials/counter.mjs').read_bytes()
+        correct=source.replace(b'i < 3',b'i < 4')
+        for candidate in (source,correct+b'// comment\n',correct.replace(b'RangeError',b'Error'),
+                          b'broken',b'\xff',b' '*1_048_577,None):
+            with self.subTest(candidate=str(candidate)[:30]):
+                self.assertFalse(self.module().audit_candidate(candidate,language='javascript')['policy_pass'])
+
     def test_python_policy_accepts_only_canonical_ast_edit(self):
         source=(ROOT/'benchmarks/agent_trials/counter.py').read_bytes()
         correct=source.replace(b'range(3)',b'range(4)')

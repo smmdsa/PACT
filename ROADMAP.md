@@ -14,7 +14,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | Traditional-language source baseline | Done | Frozen greeting/counter traces, four executed languages, both encodings and explicit asymmetry |
 | Parser and benchmark-read bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads; general containment/peak-memory claims excluded |
 | Model trial material and recorder | Done | Same task prompt, frozen contexts/oracle, external provenance and failed-trial accounting |
-| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python counter adapters and restricted canonical-IR policy implemented; JavaScript/C, broader policy/limit probes, provider integration and real trials pending |
+| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript counter adapters and restricted IR/AST/exact-source policies implemented; C, broader policy/limit probes, provider integration and real trials pending |
 | Runtime microbenchmark | Done | Warmup/fresh samples, independent state oracle, source hashes and local measurements |
 | Readable docs and progress | Done | Safe static Markdown, navigation, TOC and committed change log |
 | Numeric-module selective inspection | Done | Function discovery, call relationships, effects and test summaries; text graphs and full dependency/coverage proof excluded |
@@ -32,7 +32,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 
 | Order | Backlog IDs | Concrete next outcome |
 | --- | --- | --- |
-| 1 | E1, E2 | Add JavaScript/C isolated adapters, pre-register their source policies and execute embedded-test/policy checks; current PACT/Python policies accept only canonical IR/AST edits |
+| 1 | E1, E2 | Add the C isolated adapter, pre-register their source policies and execute embedded-test/policy checks; current PACT/Python/JavaScript policies accept only canonical IR/AST/exact-source edits |
 | 2 | E3 | Exercise hostile resource/filesystem/network attempts and cleanup failures on the actual isolation backend; configuration flags and authored fixtures are not sufficient containment evidence |
 | 3 | E4, E5 | Configure provider/backend, run fresh paired real trials with actual usage/failures/retries, then broaden tasks and retrieval/repair experiments |
 | 4 | L1, L2 | Versioned expected-trap cases, then nominal units and stronger contracts |
