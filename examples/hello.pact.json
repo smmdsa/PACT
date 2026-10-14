@@ -1,0 +1,15 @@
+{
+  "format": "pact.graph/0.0.1",
+  "responsibility": "demo.alien_greeting",
+  "entry": "e0",
+  "effects": ["stdout"],
+  "nodes": [
+    {"id": "v0", "op": "utf8.literal", "value": "hola mundo, "},
+    {"id": "v1", "op": "utf8.literal", "value": "from an alien language\n"},
+    {"id": "v2", "op": "utf8.concat", "args": ["v0", "v1"]},
+    {"id": "e0", "op": "stdout.emit", "args": ["v2"]}
+  ],
+  "contracts": [
+    {"id": "c0", "op": "stdout.exact", "value": "hola mundo, from an alien language\n"}
+  ]
+}

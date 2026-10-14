@@ -1,0 +1,56 @@
+name: Verify and publish PACT
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pact-pages-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Test compiler and game
+        run: python3 -m unittest discover -v
+      - name: Measure representation sizes
+        run: python3 -m benchmarks.source_sizes
+      - name: Compile checked examples and site
+        run: python3 -m tools.build_site
+      - name: Verify greeting capability host
+        run: node host/run.mjs site-output/hello.wasm --allow stdout
+      - name: Win through input-only playthrough
+        run: |
+          mkdir -p build
+          node tools/playthrough.mjs site-output/game.wasm site-output/game.manifest.json build/playthrough.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-site
+          path: site-output
+      - uses: actions/upload-pages-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          path: site-output
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/configure-pages@v5
+      - uses: actions/deploy-pages@v4
+        id: deployment

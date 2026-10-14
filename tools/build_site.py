@@ -1,0 +1,66 @@
+"""Compile checked examples and create a dependency-free GitHub Pages site."""
+import html
+import json
+import shutil
+from pathlib import Path
+
+from pact.browser import game_html
+from pact.graph import analyze, load_document
+from pact.module_build import build_module
+from pact.wasm import compile_plan
+
+ROOT = Path(__file__).resolve().parents[1]
+STYLE = '''
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#10121c;color:#e9edf5;font:17px/1.65 system-ui,sans-serif}main{max-width:1050px;margin:auto;padding:48px 24px}a{color:#a8c7ff}nav{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:54px}nav a{text-decoration:none}h1{font-size:clamp(44px,8vw,78px);line-height:1.05;letter-spacing:-3px;margin:18px 0}h2{line-height:1.2}p{max-width:760px}.tag{color:#bda8ff;letter-spacing:2px;font-size:13px;text-transform:uppercase}.lead{font-size:22px;color:#b6bfd4}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin:34px 0}.card{background:#1a1e2e;border:1px solid #30394e;border-radius:12px;padding:24px}.card strong{font-size:27px;display:block}.button{display:inline-block;background:#adbcff;color:#13162a;border-radius:8px;padding:12px 22px;text-decoration:none;font-weight:700;margin:8px 12px 8px 0}pre{font:14px/1.7 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#181c2a;border:1px solid #30394e;border-radius:12px;padding:24px}footer{border-top:1px solid #30394e;margin-top:50px;padding-top:20px;color:#aab4ca}small{color:#aab4ca}
+'''
+
+
+def page(title, body):
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<meta name="description" content="PACT: explicit graphs, checked effects and compact agent-first source.">'
+            f'<title>{html.escape(title)} · PACT</title><style>{STYLE}</style></head><body><main>'
+            '<nav><a href="index.html">PACT</a><a href="syntax.html">Syntax</a>'
+            '<a href="security.html">Security</a><a href="roadmap.html">Roadmap</a>'
+            '<a href="https://github.com/smmdsa/PACT">GitHub ↗</a></nav>' + body +
+            '<footer>Experimental language · Compact frontend 0.2 · Graph 0.0.1 / module 0.1.0</footer>'
+            '</main></body></html>')
+
+
+def main():
+    output = ROOT/'site-output'
+    output.mkdir(exist_ok=True)
+    game = load_document(ROOT/'examples/alien-harvest.pact')
+    binary, manifest = build_module(game)
+    (output/'game.wasm').write_bytes(binary)
+    (output/'game.manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
+    (output/'game.html').write_bytes(game_html(game,binary,manifest))
+    greeting = load_document(ROOT/'examples/hello.pact')
+    (output/'hello.wasm').write_bytes(compile_plan(analyze(greeting)))
+    for name in ('hello.pact','hello.pact.json','alien-harvest.pact','alien-harvest.pact.json'):
+        shutil.copyfile(ROOT/'examples'/name,output/name)
+    documents = [('syntax','docs/syntax.md'),('security','docs/security.md'),('roadmap','ROADMAP.md')]
+    for slug, path in documents:
+        text = (ROOT/path).read_text(encoding='utf-8')
+        body = f'<h1>{slug.title()}</h1><p><a href="https://github.com/smmdsa/PACT/blob/main/{path}">View formatted document on GitHub ↗</a></p><pre>{html.escape(text)}</pre>'
+        (output/f'{slug}.html').write_text(page(slug.title(),body),encoding='utf-8')
+    hello = html.escape((ROOT/'examples/hello.pact').read_text(encoding='utf-8'))
+    body = '''<span class="tag">Agent-first programming · research prototype</span>
+<h1>Explicit intent.<br>Checked execution.</h1>
+<p class="lead">PACT pairs compact source with a validated graph and deterministic WebAssembly. Explore the language through a real platformer.</p>
+<a class="button" href="game.html">Play Alien Harvest</a><a href="syntax.html">Read the specification →</a>
+<div class="grid"><div class="card"><strong>42% fewer bytes</strong>Compact game source versus minified JSON. Token efficiency remains unmeasured.</div><div class="card"><strong>Explicit effects</strong>Declared writes, bounded execution and checked array access.</div><div class="card"><strong>Same execution</strong>Compact and JSON sources reconstruct identical IR and Wasm.</div></div>
+<h2>Hello from an alien language</h2>'''+f'<pre>{hello}</pre>'+'''
+<p><a href="hello.pact" download>Download greeting source</a> · <a href="alien-harvest.pact" download>Download platformer source</a> · <a href="game.html" download>Download standalone game</a></p>
+<h2>Run it locally</h2><pre>python3 -m pact build examples/hello.pact -o build/hello.wasm
+node host/run.mjs build/hello.wasm --allow stdout</pre>
+<p>Python 3.10+ and Node 20+. No third-party packages needed. The generated game HTML runs independently in a WebAssembly-capable browser.</p>
+<h2>A concrete test of the language</h2><p>Alien Harvest includes jumping, climbing, throwable vegetables, enemies, a checkpoint and a boss. Its gameplay and internal pixel atlas are declared in PACT. The host supplies rendering, input and sound.</p>
+<p><small>Prototype limitations: no proof of agent productivity, no general semantic responsibility checker, no full standard library or package manager. Real-browser compatibility and visual QA remain open. No open-source license has been selected yet.</small></p>'''
+    (output/'index.html').write_text(page('Agent-first programming',body),encoding='utf-8')
+    (output/'.nojekyll').write_text('',encoding='utf-8')
+    print(json.dumps({'status':'built','site':str(output),'wasm_bytes':len(binary),'evidence':manifest['evidence']}))
+
+
+if __name__ == '__main__':
+    main()
