@@ -1,6 +1,6 @@
 # Executable cases for public functions
 
-Numeric module `pact.module/0.3.0` adds an opt-in structural evidence policy: every exported function must have at least one declared test targeting it. The operation set and runtime behavior stay the same as module 0.2. Legacy 0.1/0.2 modules keep their previous validation rules, including the ability to have no declared tests.
+Numeric module `pact.module/0.3.0` adds an opt-in structural evidence policy: every exported function must have at least one declared test targeting it. The operation set and runtime behavior stay the same as module 0.2. Module 0.4 inherits this policy and adds [checked conditions](checked-assertions.md). Legacy 0.1/0.2 modules keep their previous validation rules, including the ability to have no declared tests.
 
 ```sh
 python -m pact check examples/counter.tested.pact
@@ -18,7 +18,7 @@ The example counter starts at 3, adds its declared amount 7 and expects 10. Chan
 
 ## Explicit migration
 
-Ordinary reading and source-format conversion preserve the numeric version. API `migrate_module(document, target_format=...)` or CLI `migrate --to` permits 0.1→0.2, 0.1→0.3 and 0.2→0.3. Defaults remain 0.1→0.2 for compatibility. No-op and downgrade requests reject. Missing declared cases reject migration to 0.3; existing files remain untouched because validation happens before publication.
+Ordinary reading and source-format conversion preserve the numeric version. API `migrate_module(document, target_format=...)` or CLI `migrate --to` permits 0.1→0.2, 0.1→0.3, 0.2→0.3, and forward migration from any earlier version to 0.4. Defaults remain 0.1→0.2 for compatibility. No-op and downgrade requests reject. Missing declared cases reject migration to 0.3; existing files remain untouched because validation happens before publication.
 
 Successful migration changes only the format and semantic revision and compiles to identical Wasm. Regenerate revision-checked patches only after reviewing that deliberate version change. The separate 0.3 example does not replace frozen game/benchmark sources.
 

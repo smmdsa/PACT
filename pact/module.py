@@ -7,7 +7,8 @@ from .schema import closed_record, identifier, require
 
 FORMAT = 'pact.module/0.2.0'
 TESTED_FORMAT = 'pact.module/0.3.0'
-FORMATS = ('pact.module/0.1.0', FORMAT, TESTED_FORMAT)
+CHECKED_FORMAT = 'pact.module/0.4.0'
+FORMATS = ('pact.module/0.1.0', FORMAT, TESTED_FORMAT, CHECKED_FORMAT)
 BINARY = {
     'i32.add_wrap': 0x6a, 'i32.sub_wrap': 0x6b, 'i32.mul_wrap': 0x6c,
     'i32.div_s': 0x6d, 'i32.rem_s': 0x6f, 'i32.eq': 0x46, 'i32.ne': 0x47,
@@ -15,9 +16,11 @@ BINARY = {
     'i32.and': 0x71, 'i32.or': 0x72,
 }
 OPERATIONS = set(BINARY) | {'i32.const', 'const.load', 'local.get', 'local.set',
-    'state.load', 'state.store', 'state.reset', 'flow.if', 'flow.sequence', 'flow.repeat', 'call', 'i32.eqz'}
+    'state.load', 'state.store', 'state.reset', 'flow.if', 'flow.sequence', 'flow.repeat',
+    'flow.assert', 'flow.guard', 'call', 'i32.eqz'}
 # pact.module/0.1.0 operations (docs/superpowers/specs/2026-10-13-platformer.md); preserved exactly.
-OPERATIONS_0_1_0 = OPERATIONS - {'state.reset'}
+OPERATIONS_0_2_0 = OPERATIONS - {'flow.assert', 'flow.guard'}
+OPERATIONS_0_1_0 = OPERATIONS_0_2_0 - {'state.reset'}
 MAX_WORK = 2_000_000
 
 
@@ -72,7 +75,8 @@ def analyze_module(document):
         raise PactError('SCHEMA_INVALID', 'Module must contain finite JSON data.') from None
     closed_record(document, {'format', 'constants', 'cells', 'functions', 'exports', 'assets', 'presentation', 'tests'})
     require(document['format'] in FORMATS, 'FORMAT_UNSUPPORTED', 'Unsupported module format.')
-    operations = OPERATIONS_0_1_0 if document['format'] == FORMATS[0] else OPERATIONS
+    operations = (OPERATIONS_0_1_0 if document['format'] == FORMATS[0] else
+                  OPERATIONS if document['format'] == CHECKED_FORMAT else OPERATIONS_0_2_0)
     constants = document['constants']
     require(isinstance(constants, dict) and len(constants) <= 1024, 'SCHEMA_INVALID', 'Expected bounded constants.')
     for key, value in constants.items():
@@ -196,6 +200,12 @@ def analyze_module(document):
                 result, arity = 'unit', 0
                 writes.update(node['cells'])
             elif op == 'state.load': arity = 1
+            elif op == 'flow.assert': result, arity = 'unit', 1
+            elif op == 'flow.guard':
+                arity = 2
+                require(len(args) == arity, 'ARITY_INVALID', 'Invalid operand count.', name)
+                require(argtypes[0] == 'i32', 'TYPE_MISMATCH', 'guard requires an i32 predicate.', name)
+                result = argtypes[1]
             elif op == 'flow.if':
                 arity = 3
                 require(len(argtypes) == 3 and argtypes[0] == 'i32' and argtypes[1] == argtypes[2], 'TYPE_MISMATCH', 'if requires matching branches.', name)
@@ -209,7 +219,7 @@ def analyze_module(document):
                 arity, result = len(target['params']), target['result']
                 writes.update(effects[node['target']])
             if arity is not None: require(len(args) == arity, 'ARITY_INVALID', 'Invalid operand count.', name)
-            if op not in ('flow.if', 'flow.sequence', 'flow.repeat'):
+            if op not in ('flow.if', 'flow.sequence', 'flow.repeat', 'flow.guard'):
                 require(all(kind == 'i32' for kind in argtypes), 'TYPE_MISMATCH', 'Expected i32 operands.', name)
             depth = 1 + max((depths[ref] for ref in args), default=0)
             if op == 'call': depth += function_depth[node['target']]
@@ -264,7 +274,7 @@ def analyze_module(document):
                 require(category != 'set' or layout[cell]['mutable'], 'STATE_IMMUTABLE', 'Tests cannot overwrite immutable cells.')
                 for value in values: integer(value)
     export_evidence = None
-    if document['format'] == TESTED_FORMAT:
+    if document['format'] in FORMATS[2:]:
         export_evidence = {key: sorted(test['id'] for test in document['tests']
                                       if test['function'] == key) for key in sorted(exports)}
         missing = [key for key, cases in export_evidence.items() if not cases]

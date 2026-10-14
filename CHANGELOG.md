@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — optional export evidence
+## Latest — checked flow conditions
+
+- Optional numeric module 0.4 adds typed assert and lazy guard nodes, inheriting declared public cases.
+- False guards skip their body; postcondition failures retain earlier writes. No rollback or static proof claimed.
+- Reference diagnostics and generic Wasm traps have explicitly different granularity.
+- Existing sources, defaults, frozen hashes and game execution remain unchanged.
+
+## Optional export evidence
 
 - Numeric module 0.3 requires a declared executable case per exported function.
 - Check/inspection shows declarations; build runs real Wasm tests and rejects wrong expectations.

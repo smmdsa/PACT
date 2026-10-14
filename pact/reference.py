@@ -1,4 +1,5 @@
 from .module import analyze_module
+from .diagnostics import PactError
 
 
 def wrap(value): return (value + 2**31) % 2**32 - 2**31
@@ -30,6 +31,12 @@ class Machine:
                     self.state[cell_id] = list(self.initial_state[cell_id])
                 return None
             if op == 'flow.if': return evaluate(refs[1] if evaluate(refs[0]) else refs[2])
+            if op in ('flow.assert', 'flow.guard'):
+                if not evaluate(refs[0]):
+                    error = PactError('ASSERTION_FAILED', 'Runtime predicate was zero.', key)
+                    error.diagnostic['function'] = name
+                    raise error
+                return evaluate(refs[1]) if op == 'flow.guard' else None
             if op == 'flow.sequence':
                 for ref in refs: evaluate(ref)
                 return None

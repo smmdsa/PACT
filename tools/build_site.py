@@ -12,6 +12,7 @@ from tools.markdown_docs import render_markdown
 
 ROOT=Path(__file__).resolve().parents[1]
 DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.md'),
+ ('checked-assertions','Checked conditions','docs/checked-assertions.md'),
  ('export-evidence','Export evidence','docs/export-evidence.md'),
  ('browser-validation','Browser validation','docs/browser-validation.md'),
  ('portability','Portability','docs/portability.md'),
@@ -33,7 +34,7 @@ def page(title,body,current='index',toc=None):
     for slug,label,_ in DOCUMENTS:
         navigation+=f'<a href="{slug}.html"'+(' aria-current="page"' if current==slug else '')+f'>{html.escape(label)}</a>'
     contents=''.join(f'<li class="level{item["level"]}"><a href="#{html.escape(item["id"],quote=True)}">{html.escape(item["title"])}</a></li>' for item in toc or [] if item['level'] in (2,3))
-    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="PACT: explicit graphs, checked effects and measured agent-first programming."><title>{html.escape(title)} · PACT</title><style>{STYLE}</style></head><body><a class="skip" href="#main-content">Skip to content</a><header class="topbar"><a class="brand" href="index.html">PACT <small>AGENT-FIRST LANGUAGE LAB</small></a><div class="toplinks"><a href="progress.html">Progress</a><a href="game.html">Play demo</a><a href="https://github.com/smmdsa/PACT">GitHub ↗</a></div></header><div class="layout"><aside class="sidebar"><span class="label">Documentation</span><nav aria-label="Documentation">{navigation}</nav></aside><main id="main-content">{body}<footer>Research prototype · Source 0.2 / data 0.3 / literals 0.4 · Graph 0.0.1 / module 0.1.0 / 0.2.0 / 0.3.0</footer></main><aside class="toc" aria-label="On this page"><span class="eyebrow">On this page</span><ul>{contents}</ul></aside></div></body></html>'''
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="PACT: explicit graphs, checked effects and measured agent-first programming."><title>{html.escape(title)} · PACT</title><style>{STYLE}</style></head><body><a class="skip" href="#main-content">Skip to content</a><header class="topbar"><a class="brand" href="index.html">PACT <small>AGENT-FIRST LANGUAGE LAB</small></a><div class="toplinks"><a href="progress.html">Progress</a><a href="game.html">Play demo</a><a href="https://github.com/smmdsa/PACT">GitHub ↗</a></div></header><div class="layout"><aside class="sidebar"><span class="label">Documentation</span><nav aria-label="Documentation">{navigation}</nav></aside><main id="main-content">{body}<footer>Research prototype · Source 0.2 / data 0.3 / literals 0.4 · Graph 0.0.1 / module 0.1.0 / 0.2.0 / 0.3.0 / 0.4.0</footer></main><aside class="toc" aria-label="On this page"><span class="eyebrow">On this page</span><ul>{contents}</ul></aside></div></body></html>'''
 
 
 

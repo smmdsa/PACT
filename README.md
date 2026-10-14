@@ -2,7 +2,7 @@
 
 Experimental agent-first programming: explicit dataflow, checked effects, stable node IDs and deterministic WebAssembly compilation.
 
-Compact frontend **0.2**, with optional data compression **0.3** and stable-ID literal definitions and inline arguments **0.4**, translates to text graph **0.0.1** or numeric module **0.1.0** / **0.2.0** / **0.3.0**. Loading preserves the declared module version; checked runtime `state.reset` requires explicit migration to module 0.2.0 or 0.3.0. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
+Compact frontend **0.2**, with optional data compression **0.3** and stable-ID literal definitions and inline arguments **0.4**, translates to text graph **0.0.1** or numeric module **0.1.0** / **0.2.0** / **0.3.0** / **0.4.0**. Loading preserves the declared module version; checked runtime `state.reset` requires a supported numeric format from 0.2.0 onward. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
 
 [Documentation and game](https://smmdsa.github.io/PACT/) · [Syntax](docs/syntax.md) · [Security](docs/security.md) · [Roadmap](ROADMAP.md)
 
@@ -147,3 +147,7 @@ The full suite and game flow have passed on Linux, Windows and macOS CI. A separ
 ## Public-function cases
 
 Opt-in numeric module 0.3 requires at least one declared case per exported function. `check` verifies case declarations; `build` executes them against actual Wasm before publishing. Legacy modules and default migration remain unchanged. [Example](examples/counter.tested.pact) · [Policy, migration and limits](docs/export-evidence.md). Case presence does not establish adequate coverage or naming truth.
+
+## Checked flow conditions
+
+Opt-in numeric module 0.4 adds typed `assert` and lazy `guard` nodes for explicit runtime conditions. It inherits the declared-case policy and preserves legacy defaults. Failed guards skip their body; later failures retain earlier writes. [Examples and trap limits](docs/checked-assertions.md). These checks do not introduce rollback or proof.

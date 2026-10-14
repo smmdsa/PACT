@@ -51,6 +51,10 @@ jobs:
         run: |
           python3 -m pact check examples/counter.tested.pact
           python3 -m pact build examples/counter.tested.pact -o build/counter.tested.wasm
+      - name: Build module 0.4 checked flow examples
+        run: |
+          python3 -m pact build examples/identity.guarded.pact -o build/identity.guarded.wasm
+          python3 -m pact build examples/counter.checked.pact -o build/counter.checked.wasm
       - name: Validate a revision-checked candidate
         run: |
           python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json --dry-run
