@@ -1,12 +1,14 @@
-# Reference replay
+# Reference and Wasm replay
 
-`pact replay` executes a recorded sequence against the numeric reference interpreter. It checks the expected semantic revision before executing calls, starts from declared initial state, and stops at the first runtime trap or evaluation-budget exhaustion. It does not execute Wasm or host-language source.
+`pact replay` executes a recorded sequence against the numeric reference interpreter by default. It checks the expected semantic revision before executing calls, starts from declared initial state, and stops at the first runtime trap or evaluation-budget exhaustion. `--engine wasm` executes freshly compiler-produced Wasm in Node. `--engine compare` compares both engines on the same recording; neither mode accepts arbitrary third-party bytecode or evaluates host-language source from a recording.
 
 ```sh
 python3 -m pact replay examples/counter.checked.pact --record examples/counter.checked.replay.json
+python3 -m pact replay examples/counter.checked.pact --record examples/counter.checked.replay.json --engine wasm
+python3 -m pact replay examples/counter.checked.pact --record examples/counter.checked.replay.json --engine compare
 ```
 
-The example's first call writes 10; its second call fails the chosen precondition. Exit code 2 is expected. Earlier writes remain committed.
+The example's first call writes 10; its second call fails the chosen precondition. Exit code 2 is expected for either individual engine. Comparison exits 0 when both observed traces match, including matching trap/state outcomes. Earlier writes remain committed.
 
 [Source](../examples/counter.checked.pact) · [Recording](../examples/counter.checked.replay.json)
 
@@ -22,7 +24,7 @@ A recording is a closed JSON object:
 }
 ```
 
-The hash must equal the validated program's semantic revision; the placeholder above must be replaced. All calls are validated before execution. Only exported functions can be selected, with the exact parameter count and signed-i32 integer arguments; booleans reject. There are 1–64 calls, a single shared budget of 100,000 evaluated nodes, and no initial-state overrides. Helpers retain their own identities when they trap. Evaluation counts describe this reference implementation, not CPU time or Wasm instruction counts.
+The hash must equal the validated program's semantic revision; the placeholder above must be replaced. All calls are validated before execution. Only exported functions can be selected, with the exact parameter count and signed-i32 integer arguments; booleans reject. There are 1–64 calls, a single shared reference budget of 100,000 evaluated nodes, and no initial-state overrides. Reference helpers retain their own identities when they trap. Evaluation counts describe this reference implementation, not CPU time or Wasm instruction counts.
 
 Source and recording files each use one bounded UTF-8 binary snapshot of at most 1 MiB. Duplicate decoded JSON keys reject. Compact and JSON source formatting can differ while sharing the same semantic revision. Exact source and recording byte hashes are reported separately. No source, recording or output artifact is modified by the command.
 
@@ -36,6 +38,10 @@ Reports use `pact.replay-report/0.1.0`, identify `engine: reference`, and contai
 | 1 | Invalid source, recording, signature or stale revision | Rejection diagnostic on stderr |
 | 2 | First runtime trap or reference evaluation limit | Report on stdout with status `trapped` or `limited` |
 
+Comparison reports use `pact.replay-comparison/0.1.0`, nest both engine reports and return status `matched`, `mismatch` or `incomplete`. Matching checks the source revision, call index/function/arguments, result versus trap outcome, initial state hash, every call's state hash and final state. Trap categories and node identities are deliberately not compared: Wasm exposes only a generic `WASM_TRAP`. A limited reference trace yields `incomplete` without executing Wasm. Comparison exit 0 means matching observations; exit 2 means mismatch or incomplete. It does not mean all calls succeeded or prove equivalence for other inputs.
+
+Wasm replay requires Node, uses a fresh instance, and stops at its first trap. It compiles the validated document directly without running declared build cases. The host accepts only its compiler-produced module and generated layout/calls. Source bounds, compiler structural/work limits, at most 64 calls and a 15-second subprocess timeout apply. The reference node budget does not instrument Wasm; a timeout rejects with `REPLAY_TIMEOUT` on stderr and exit 1, with no partial report. Compiled replay binaries are limited to 8 MiB and captured reports to 1 MiB. These are execution limits, not a sandbox or independent bytecode verifier. Reports include Wasm/runtime-script hashes and Node/V8 versions; temporary files are removed after execution. Runtime-script identity describes the captured bytes actually executed.
+
 Runtime diagnostics identify the actual failing function and node: `ASSERTION_FAILED`, `STATE_BOUNDS`, `ARITHMETIC_TRAP`, or `REPLAY_LIMIT`. File reports add a qualified physical definition span when available, using the original source snapshot. These IDs come from reference evaluation, not reconstruction of a Wasm trap. A failed assertion or budget exhaustion does not roll back earlier writes. Bounds checks for stores precede value evaluation, matching the emitted Wasm order.
 
-The input recording is reproducible under this interpreter version and revision. Reports are observations, not authenticated evidence, proof of test adequacy or a sandbox for arbitrary model-generated code. Compiled-Wasm replay, instruction/source mapping, browser-input recording, interactive stepping, negative-trap declarations and authenticated model trials remain pending. Tests compare representative success states and trap-state retention against actual Wasm; that finite comparison is not universal equivalence proof.
+The input recording is reproducible under the recorded engine version and revision. Reports are observations, not authenticated evidence, proof of test adequacy or a sandbox for arbitrary model-generated code. Instruction/source mapping for Wasm, browser-input recording, interactive stepping, negative-trap declarations and authenticated model trials remain pending. Tests compare representative success states and trap-state retention against actual Wasm; that finite comparison is not universal equivalence proof.

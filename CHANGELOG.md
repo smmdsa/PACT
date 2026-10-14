@@ -2,7 +2,15 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — bounded reference replay
+## Latest — Wasm replay and comparison
+
+- `pact replay --engine wasm` executes compiler-produced modules in a fresh Node instance; `--engine compare` compares results, trap occurrence and state hashes for each recorded call.
+- Wasm reports include artifact/runtime hashes and Node/V8 versions. Traps stay generic; reference node identities are not asserted for Wasm.
+- Node execution has a 15-second timeout; reference-budget exhaustion produces an incomplete comparison without starting Wasm.
+- Compiled bytecode/report sizes are bounded. Declared build cases are not run by replay.
+- Wasm instruction mapping, interactive debugging and real model trials remain pending.
+
+## Bounded reference replay
 
 - Revision-checked exported-call recordings execute deterministically on the numeric reference interpreter.
 - Reports include results, per-call state hashes, final state and qualified runtime diagnostic spans; traps stop execution without rollback.

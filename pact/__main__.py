@@ -35,6 +35,7 @@ def parser():
     replay = commands.add_parser('replay')
     replay.add_argument('source', type=Path)
     replay.add_argument('--record', type=Path, required=True)
+    replay.add_argument('--engine', choices=['reference','wasm','compare'], default='reference')
     patch = commands.add_parser('patch')
     patch.add_argument('source', type=Path)
     patch.add_argument('--patch', type=Path, required=True)
@@ -78,9 +79,9 @@ def main(argv=None):
         args = parser().parse_args(argv)
         if args.command == 'replay':
             from .replay import replay_file
-            report = replay_file(args.source, args.record)
+            report = replay_file(args.source, args.record, engine=args.engine)
             print(json.dumps(report,ensure_ascii=False,sort_keys=True))
-            return 0 if report['status']=='completed' else 2
+            return 0 if report['status'] in ('completed','matched') else 2
         if args.command == 'locate':
             from .source_locations import locate_file
             print(json.dumps(locate_file(args.source, args.function, args.node), ensure_ascii=False, sort_keys=True))

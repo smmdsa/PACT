@@ -20,6 +20,71 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class ReplayTests(unittest.TestCase):
+    def test_wasm_replay_matches_reference_state_hashes(self):
+        document=tiny();calls=[{'function':'step','args':[]}]*2
+        reference=self.replay(document,calls)
+        wasm=self.replay(document,calls,engine='wasm')
+        self.assertEqual(wasm['engine'],'wasm')
+        self.assertEqual(wasm['status'],'completed')
+        self.assertEqual(wasm['final_state'],reference['final_state'])
+        self.assertEqual([e['state_sha256'] for e in wasm['events']],
+                         [e['state_sha256'] for e in reference['events']])
+        self.assertEqual(len(wasm['wasm_sha256']),64)
+
+    def test_compare_traps_without_claiming_wasm_node_identity(self):
+        document=checked('flow.assert');document['functions'][0]['nodes'][-1]['args']=['s','check']
+        result=self.replay(document,[{'function':'step','args':[0]}],engine='compare')
+        self.assertEqual(result['status'],'matched')
+        self.assertEqual(result['reference']['status'],'trapped')
+        self.assertEqual(result['wasm']['status'],'trapped')
+        self.assertEqual(result['wasm']['events'][0]['diagnostic']['code'],'WASM_TRAP')
+        self.assertNotIn('node',result['wasm']['events'][0]['diagnostic'])
+        self.assertEqual(result['wasm']['final_state'],{'counter':[10]})
+
+    def test_comparison_detects_changed_intermediate_state(self):
+        module=importlib.import_module('pact.replay')
+        result=self.replay(tiny(),[{'function':'step','args':[]}]*2,engine='compare')
+        self.assertEqual(result['status'],'matched')
+        changed=copy.deepcopy(result['wasm'])
+        changed['events'][0]['state_sha256']='0'*64
+        self.assertEqual(module.compare_reports(result['reference'],changed)['status'],'mismatch')
+
+    def test_compare_numeric_results_and_signed_wrap(self):
+        numeric=self.replay(checked(numeric=True),[{'function':'step','args':[-1]}],engine='compare')
+        self.assertEqual(numeric['status'],'matched')
+        self.assertEqual(numeric['wasm']['events'][0]['result'],10)
+        document=tiny();document['cells'][0]['values']=[2147483647];document['constants']['amount']=1
+        wrapped=self.replay(document,[{'function':'step','args':[]}],engine='compare')
+        self.assertEqual(wrapped['status'],'matched')
+        self.assertEqual(wrapped['wasm']['final_state'],{'counter':[-2147483648]})
+
+
+    def test_limited_comparison_skips_wasm(self):
+        module=importlib.import_module('pact.replay')
+        with patch.object(module,'MAX_EVALUATIONS',1),patch.object(module.subprocess,'run',side_effect=AssertionError('Wasm must not execute')):
+            result=self.replay(tiny(),[{'function':'step','args':[]}],engine='compare')
+        self.assertEqual(result['status'],'incomplete')
+        self.assertIsNone(result['wasm'])
+
+    def test_wasm_timeout_and_missing_runtime_have_explicit_rejections(self):
+        module=importlib.import_module('pact.replay')
+        for error,code in [(FileNotFoundError(),'REPLAY_RUNTIME_MISSING'),
+                           (subprocess.TimeoutExpired('node',15),'REPLAY_TIMEOUT')]:
+            with self.subTest(code=code),patch.object(module.subprocess,'run',side_effect=error):
+                with self.assertRaises(PactError) as raised:self.replay(tiny(),[{'function':'step','args':[]}],engine='wasm')
+                self.assertEqual(raised.exception.diagnostic['code'],code)
+
+    def test_cli_comparison_reports_matched_trap_with_reference_location(self):
+        result=subprocess.run([sys.executable,'-m','pact','replay','examples/counter.checked.pact',
+                               '--record','examples/counter.checked.replay.json','--engine','compare'],
+                              cwd=ROOT,capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+        report=json.loads(result.stdout)
+        self.assertEqual(report['status'],'matched')
+        self.assertIn('source_location',report['reference']['events'][-1]['diagnostic'])
+        self.assertNotIn('source_location',report['wasm']['events'][-1]['diagnostic'])
+
+
     def test_shipped_recording_traps_after_first_success(self):
         module=importlib.import_module('pact.replay')
         report=module.replay_file(ROOT/'examples/counter.checked.pact',ROOT/'examples/counter.checked.replay.json')
