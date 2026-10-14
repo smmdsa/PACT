@@ -13,7 +13,7 @@ Goal: lower total agent cost per correct change, with explicit semantics. Alien-
 | Resource bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads |
 | Model-task baseline | Planned | Real trials, correct edits, retries, failures and tool overhead |
 | Selective inspection | Done | Function discovery, call relationships, effects and test summaries without whole-file agent reads |
-| Transactional edits | Done | Stable node/data/test replacements, revision guards, executable CLI tests and no-op clean commits |
+| Transactional edits | Done | Stable node/data/test replacements, revision guards, executable CLI tests and no-clobber new candidates |
 | Initial data compression | Done | Bounded RLE and shared symbol dictionaries, exact IR/revision/Wasm equivalence and structural benchmark logging |
 | Inline literals and bulk resets | Done | Explicit-ID inline literals (`pact 0.4`), checked `state.reset` (`reset`) and Reference/Wasm equivalence checks |
 | Contracts and units | Next | Preconditions, postconditions, nominal units, public-function evidence policy |
