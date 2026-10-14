@@ -32,6 +32,11 @@ def atomic_write(path, data):
 def parser():
     root = Parser(description="PACT toolchain with compact frontend 0.2")
     commands = root.add_subparsers(dest="command", required=True)
+    for name in ('inspect', 'symbols'):
+        command = commands.add_parser(name)
+        command.add_argument('source', type=Path)
+        if name == 'inspect':
+            command.add_argument('--function', required=True)
     convert = commands.add_parser('convert')
     convert.add_argument('source', type=Path)
     convert.add_argument('-o', '--output', type=Path, required=True)
@@ -51,6 +56,11 @@ def main(argv=None):
     try:
         args = parser().parse_args(argv)
         document = load_document(args.source)
+        if args.command in ('inspect', 'symbols'):
+            from .inspection import inspect_function, symbols
+            response = inspect_function(document, args.function) if args.command == 'inspect' else symbols(document)
+            print(json.dumps(response, ensure_ascii=False, sort_keys=True, separators=(',', ':')))
+            return 0
         if args.command == 'convert':
             from .compact import dumps, validate_document
             validate_document(document)

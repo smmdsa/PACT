@@ -21,7 +21,7 @@ def page(title, body):
             '<meta name="description" content="PACT: explicit graphs, checked effects and compact agent-first source.">'
             f'<title>{html.escape(title)} · PACT</title><style>{STYLE}</style></head><body><main>'
             '<nav><a href="index.html">PACT</a><a href="syntax.html">Syntax</a>'
-            '<a href="security.html">Security</a><a href="roadmap.html">Roadmap</a>'
+            '<a href="security.html">Security</a><a href="roadmap.html">Roadmap</a><a href="inspection.html">Agent tools</a>'
             '<a href="https://github.com/smmdsa/PACT">GitHub ↗</a></nav>' + body +
             '<footer>Experimental language · Compact frontend 0.2 · Graph 0.0.1 / module 0.1.0</footer>'
             '</main></body></html>')
@@ -39,7 +39,7 @@ def main():
         raise RuntimeError('Greeting build failed.')
     for name in ('hello.pact','hello.pact.json','alien-harvest.pact','alien-harvest.pact.json'):
         shutil.copyfile(ROOT/'examples'/name,output/name)
-    documents = [('syntax','docs/syntax.md'),('security','docs/security.md'),('roadmap','ROADMAP.md')]
+    documents = [('syntax','docs/syntax.md'),('security','docs/security.md'),('roadmap','ROADMAP.md'),('inspection','docs/inspection.md'),('agents','docs/agent-contributions.md'),('benchmarks','benchmarks/README.md')]
     for slug, path in documents:
         text = (ROOT/path).read_text(encoding='utf-8')
         body = f'<h1>{slug.title()}</h1><p><a href="https://github.com/smmdsa/PACT/blob/main/{path}">View formatted document on GitHub ↗</a></p><pre>{html.escape(text)}</pre>'
@@ -49,13 +49,14 @@ def main():
 <h1>Explicit intent.<br>Checked execution.</h1>
 <p class="lead">PACT pairs compact source with a validated graph and deterministic WebAssembly. Explore the language through a real platformer.</p>
 <a class="button" href="game.html">Play Alien Harvest</a><a href="syntax.html">Read the specification →</a>
-<div class="grid"><div class="card"><strong>42% fewer bytes</strong>Compact game source versus minified JSON. Token efficiency remains unmeasured.</div><div class="card"><strong>Explicit effects</strong>Declared writes, bounded execution and checked array access.</div><div class="card"><strong>Same execution</strong>Compact and JSON sources reconstruct identical IR and Wasm.</div></div>
+<div class="grid"><div class="card"><strong>42% fewer bytes</strong>Compact game source versus minified JSON. Measured tokens: 24,851 versus 35,903 with o200k_base; full task cost remains unmeasured.</div><div class="card"><strong>Explicit effects</strong>Declared writes, bounded execution and checked array access.</div><div class="card"><strong>Same execution</strong>Compact and JSON sources reconstruct identical IR and Wasm.</div></div>
 <h2>Hello from an alien language</h2>'''+f'<pre>{hello}</pre>'+'''
 <p><a href="hello.pact" download>Download greeting source</a> · <a href="alien-harvest.pact" download>Download platformer source</a> · <a href="game.html" download>Download standalone game</a></p>
 <h2>Run it locally</h2><pre>python3 -m pact build examples/hello.pact -o build/hello.wasm
 node host/run.mjs build/hello.wasm --allow stdout</pre>
 <p>Python 3.10+ and Node 20+. No third-party packages needed. The generated game HTML runs independently in a WebAssembly-capable browser.</p>
-<h2>A concrete test of the language</h2><p>Alien Harvest includes jumping, climbing, throwable vegetables, enemies, a checkpoint and a boss. Its gameplay and internal pixel atlas are declared in PACT. The host supplies rendering, input and sound.</p>
+<h2>Inspect only what you need</h2><pre>python3 -m pact symbols examples/alien-harvest.pact
+python3 -m pact inspect examples/alien-harvest.pact --function player.move</pre><p>Get stable function IDs, call dependencies, effects and relevant test summaries without the complete map and atlas. <a href="inspection.html">Inspection specification</a> · <a href="benchmarks.html">Benchmark protocol</a> · <a href="agents.html">Contribute with an agent</a></p><h2>A concrete test of the language</h2><p>Alien Harvest includes jumping, climbing, throwable vegetables, enemies, a checkpoint and a boss. Its gameplay and internal pixel atlas are declared in PACT. The host supplies rendering, input and sound.</p>
 <p><small>Prototype limitations: no proof of agent productivity, no general semantic responsibility checker, no full standard library or package manager. Real-browser compatibility and visual QA remain open. No open-source license has been selected yet.</small></p>'''
     (output/'index.html').write_text(page('Agent-first programming',body),encoding='utf-8')
     (output/'.nojekyll').write_text('',encoding='utf-8')

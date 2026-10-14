@@ -2,7 +2,7 @@
 
 Experimental agent-first programming: explicit dataflow, checked effects, stable node IDs and deterministic WebAssembly compilation.
 
-Compact frontend **0.2** translates to text graph **0.0.1** or numeric module **0.1.0**. JSON remains an interchange format. Agent productivity and token efficiency have not yet been established experimentally.
+Compact frontend **0.2** translates to text graph **0.0.1** or numeric module **0.1.0**. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
 
 [Documentation and game](https://smmdsa.github.io/PACT/) · [Syntax](docs/syntax.md) · [Security](docs/security.md) · [Roadmap](ROADMAP.md)
 
@@ -41,6 +41,17 @@ python3 -m pact convert examples/alien-harvest.pact -o build/alien-harvest.json 
 
 Both formats pass the same validator. Tests check exact IR reconstruction and byte-identical Wasm. Game: **51,244 bytes** of compact source versus **88,379 bytes** of minified JSON, **42.0% fewer bytes**. These are not token counts; see [benchmarks](benchmarks/README.md).
 
+## Selective agent context
+
+```sh
+python3 -m pact symbols examples/alien-harvest.pact
+python3 -m pact inspect examples/alien-harvest.pact --function player.move
+```
+
+Responses are deterministic JSON with a source revision, selected body, helper signatures, call relationships, referenced constants, cell metadata and test summaries. Initial cell arrays, assets, helper bodies and test-case bodies are omitted explicitly. Inspect helpers separately when their behavior matters. Call relationships are not a complete dependency analysis through shared state. See [inspection](docs/inspection.md) and [agent contributions](docs/agent-contributions.md).
+
+Optional real-token measurements use `benchmarks/requirements.txt` and `python3 -m benchmarks.token_counts`. They measure source representations with named encodings, not model productivity. The independent compiler remains dependency-free. With `o200k_base`, the game uses 24,851 compact-source tokens versus 35,903 minified-JSON tokens (30.8% fewer). The `player.move` inspection returns 6,229 tokens, with omissions stated explicitly; additional reads may be needed. See frozen reports in `benchmarks/results/`.
+
 ## Verification and site
 
 ```sh
@@ -51,7 +62,7 @@ node tools/playthrough.mjs site-output/game.wasm site-output/game.manifest.json 
 
 The automated player wins using inputs without modifying gameplay state. Tests compare the reference VM with actual Wasm. Browser layout, mobile behavior and audible audio need real-browser QA; native Canvas checks do not replace it.
 
-The Pages workflow tests, compiles and runs the playthrough before publishing. Enable **Settings → Pages → Source → GitHub Actions**. The linked URL is the intended address, not evidence of completed deployment.
+The Pages workflow tests, compiles and runs the playthrough before publishing. Enable **Settings → Pages → Source → GitHub Actions**. The public site is live; deployment status is verified in GitHub Actions.
 
 | Path | Purpose |
 | --- | --- |

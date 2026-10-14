@@ -4,6 +4,10 @@ Read README.md, docs/syntax.md and docs/security.md before changing semantics. R
 
 Prefer focused function/dependency reads. Keep IDs stable. Do not replace semantic names with undocumented opcodes. Effects, array indices, overflow and grants remain explicit.
 
+Use `python3 -m pact symbols SOURCE` for discovery and `python3 -m pact inspect SOURCE --function ID` for selected context. Inspect helper bodies separately when needed. Responses are not buildable modules; omitted state/test bodies require further reads. Revisions identify semantic source contents, not signatures or transactional authority.
+
+Parallel contributors must own nonoverlapping files and report executed checks. Read docs/agent-contributions.md before preparing a contribution.
+
 Compact and JSON examples must reconstruct identical IR. After authoring changes regenerate JSON then explicitly convert to compact; inspect the diff before overwriting hand edits.
 
 Run the full unittest suite for compiler changes and input-only playthrough for gameplay. Representation-only changes must preserve compiled bytes. Never report bytes as tokens or prepared deployment as live. Do not select a license without the owner.

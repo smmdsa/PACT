@@ -7,10 +7,11 @@ Goal: lower total agent cost per correct change, with explicit semantics. Alien-
 | 0.0 Text kernel | Done | Greeting, exact output, capability host |
 | 0.1 Stateful kernel | Done | Checked effects, atlas and playable platformer |
 | 0.2 Compact frontend | Done | Reversible IR, identical Wasm, malformed input rejection |
-| Public project | Prepared | Docs/examples/CI/Pages; owner enables Pages |
-| Token/task baseline | Next | Versioned tokenizer/model results, correct edits, retries, tool overhead |
-| Selective inspection | Planned | Symbol/dependency/contract/impact queries without whole-file reads |
-| Transactional edits | Planned | Stable node patches, revision guards, atomic validation |
+| Public project | Live | Public docs, examples, CI and GitHub Pages |
+| Representation-token baseline | Done | Versioned tokenizer results, exact input hashes and explicit measurement scope |
+| Model-task baseline | Planned | Real trials, correct edits, retries, failures and tool overhead |
+| Selective inspection | Done | Function discovery, call relationships, effects and test summaries without whole-file agent reads |
+| Transactional edits | Next | Stable node patches, revision guards, atomic validation |
 | Data compression | Planned | Inline literals, bulk resets, palette sharing and RLE with equivalence tests |
 | Contracts and units | Planned | Preconditions, postconditions, nominal units, public-function evidence policy |
 | Diagnostics and replay | Planned | Source locations, structured fixes and debugger |

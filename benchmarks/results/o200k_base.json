@@ -1,0 +1,57 @@
+{
+  "agent_task_trials_run": false,
+  "format": "pact.token-baseline/0.1",
+  "metric": "representation_tokens",
+  "results": [
+    {
+      "compact": {
+        "bytes": 314,
+        "sha256": "299301dbac0befe6d8e2bb4a5cfda34afcd611023872deb3a784bc70d5c4cfff",
+        "tokens": 105
+      },
+      "example": "hello",
+      "minified_json": {
+        "bytes": 422,
+        "sha256": "51ff1d98f299468ffa21c918aca906836998af68b68d08726a5c4415952ef5c0",
+        "tokens": 135
+      }
+    },
+    {
+      "compact": {
+        "bytes": 51244,
+        "sha256": "d469bf0ce8ab9f442e39ba17ac42985456b786354ef2e47faf6bbaa89cbf4f51",
+        "tokens": 24851
+      },
+      "example": "alien-harvest",
+      "minified_json": {
+        "bytes": 88379,
+        "sha256": "ac8f7fbfdd51613cc10039bfcddb7cfd2dcc8aedd83de5d82e69a5c04bc45109",
+        "tokens": 35903
+      }
+    }
+  ],
+  "scope": "exact compact file and minified JSON; excludes prompts and tool framing",
+  "selective_context": [
+    {
+      "buildable": false,
+      "bytes": 17340,
+      "context_only": true,
+      "example": "alien-harvest",
+      "function": "player.move",
+      "omitted": [
+        "dependency_function_bodies",
+        "cell_initial_values",
+        "assets",
+        "test_case_bodies"
+      ],
+      "scope": "selective CLI context subset; not equivalent executable source",
+      "sha256": "0dc69b5c32ae9dde8318a88cfedb9e1df0d43ebee518f3a3d57ef586f4f48293",
+      "tokens": 6229
+    }
+  ],
+  "tokenizer": {
+    "encoding": "o200k_base",
+    "package": "tiktoken",
+    "version": "0.12.0"
+  }
+}

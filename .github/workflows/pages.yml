@@ -24,6 +24,16 @@ jobs:
         run: python3 -m unittest discover -v
       - name: Measure representation sizes
         run: python3 -m benchmarks.source_sizes
+      - name: Count source tokens with pinned benchmark tooling
+        run: |
+          python3 -m pip install --disable-pip-version-check -r benchmarks/requirements.txt
+          mkdir -p build
+          python3 -m benchmarks.token_counts --encoding o200k_base > build/tokens-o200k_base.json
+          python3 -m benchmarks.token_counts --encoding cl100k_base > build/tokens-cl100k_base.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: token-baselines
+          path: build/tokens-*.json
       - name: Compile checked examples and site
         run: python3 -m tools.build_site
       - name: Verify greeting capability host

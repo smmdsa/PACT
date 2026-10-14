@@ -1,0 +1,2 @@
+# Optional benchmark tools only. The compiler remains dependency-free.
+tiktoken==0.12.0
