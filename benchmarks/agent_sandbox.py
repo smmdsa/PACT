@@ -1,4 +1,4 @@
-"""Run a PACT counter candidate in an explicitly configured local Docker image."""
+"""Run a PACT/Python counter candidate in an explicitly configured Docker image."""
 import argparse
 import base64
 import hashlib
@@ -11,6 +11,7 @@ import uuid
 
 from .agent_trace_grader import frozen_oracle, grade_trace, ORACLE_SHA256, pairs, snapshot
 from .agent_candidate_policy import audit_candidate
+from .bounded_process import run_bounded
 
 
 def create_command(container,image):
@@ -46,7 +47,8 @@ def verify_configuration(info,image):
     if info['Image']!=image or info['Config']['User']!='65534:65534':raise ValueError('Container identity differs')
 
 
-def run_candidate(candidate_path,image):
+def run_candidate(candidate_path,image,language='pact'):
+    if language not in ('pact','python'):raise ValueError('Unsupported isolated candidate language')
     create_command('validation',image)
     if sys.platform!='linux':raise ValueError('The Docker counter adapter currently requires Linux')
     candidate=snapshot(candidate_path);oracle=frozen_oracle()
@@ -55,45 +57,49 @@ def run_candidate(candidate_path,image):
         raise ValueError('Image identity differs or declares automatic volumes')
     container='pact-trial-'+uuid.uuid4().hex
     command=create_command(container,image)
-    stdout=stderr=b'';timed_out=False;runtime_failed=False
+    stdout=stderr=b'';timed_out=False;runtime_failed=False;output_limited=False;termination_reason=None
     try:
         control(command)
         info=json.loads(control(['docker','inspect',container]))[0]
         verify_configuration(info,image)
         request=json.dumps({'cases':[c['args'] for c in oracle['cases']],
             'reset_args':oracle['embedded_test_after_edit']['args'],
-            'candidate_base64':base64.b64encode(candidate).decode()}).encode()
-        try:
-            result=subprocess.run(['docker','start','--attach','--interactive',container],input=request,
-                                  capture_output=True,timeout=15)
-            stdout,stderr=result.stdout,result.stderr
-            runtime_failed=result.returncode!=0
-        except subprocess.TimeoutExpired as error:
-            timed_out=True;stdout=error.stdout or b'';stderr=error.stderr or b''
-        if len(stdout)+len(stderr)>1048576:raise ValueError('Container output exceeds 1 MiB')
+            'language':language,'candidate_base64':base64.b64encode(candidate).decode()}).encode()
+        result=run_bounded(['docker','start','--attach','--interactive',container],request)
+        stdout,stderr=result['stdout'],result['stderr']
+        runtime_failed=result['returncode']!=0;timed_out=result['timed_out'];output_limited=result['output_limited']
     finally:
         # Removal also stops a timed-out container; failure prevents a success receipt.
         control(['docker','rm','--force',container])
-    observations=({'execution_status':'timeout' if timed_out else 'error','initial_counter':None,'cases':[],'reset_case':None}
-                  if timed_out or runtime_failed else json.loads(stdout.decode('utf-8'),object_pairs_hook=pairs))
-    if set(observations)!={'execution_status','initial_counter','cases','reset_case'}:
-        raise ValueError('Unexpected worker output')
+    failed={'execution_status':'timeout' if timed_out else 'error','initial_counter':None,'cases':[],'reset_case':None}
+    termination_reason='output_limit' if output_limited else 'timeout' if timed_out else 'runtime_error' if runtime_failed else None
+    try:
+        observations=failed if termination_reason else json.loads(stdout.decode('utf-8'),object_pairs_hook=pairs)
+        if not isinstance(observations,dict) or set(observations)!=set(failed):raise ValueError('Unexpected worker output')
+    except (ValueError,TypeError,RecursionError):
+        observations=failed;termination_reason='invalid_worker_output'
     log={'stdout_base64':base64.b64encode(stdout).decode(),'stderr_base64':base64.b64encode(stderr).decode()}
     log_hash=hashlib.sha256(json.dumps(log,sort_keys=True,separators=(',',':')).encode()).hexdigest()
-    trace={'format':'pact.agent-execution-trace/0.1','task':'counter-four','language':'pact',
+    trace={'format':'pact.agent-execution-trace/0.1','task':'counter-four','language':language,
            'candidate_sha256':hashlib.sha256(candidate).hexdigest(),'oracle_sha256':ORACLE_SHA256,
            'executor':{'command':'python3 -I -B /opt/worker.py','revision':image,'log_sha256':log_hash},**observations}
-    return {'format':'pact.agent-sandbox-receipt/0.2','image_id':image,'backend':'docker',
-            'trace':trace,'grade':grade_trace(trace,candidate),'policy':audit_candidate(candidate),'log':log,
+    try:grade=grade_trace(trace,candidate)
+    except (ValueError,TypeError,KeyError,RecursionError):
+        trace.update(failed);termination_reason='invalid_worker_output';grade=grade_trace(trace,candidate)
+    return {'format':'pact.agent-sandbox-receipt/0.3','image_id':image,'backend':'docker',
+            'trace':trace,'grade':grade,'policy':audit_candidate(candidate,language=language),'log':log,
+            'termination_reason':termination_reason,'output_limit_bytes':1048576,
+            'timed_out':timed_out,'output_limited':output_limited,
             'isolation_configuration_checked':True,'candidate_pass':None,'model_trial':False}
 
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('candidate');parser.add_argument('--image',required=True)
+    parser.add_argument('--language',choices=['pact','python'],default='pact')
     args=parser.parse_args(argv)
     try:
-        report=run_candidate(args.candidate,args.image)
+        report=run_candidate(args.candidate,args.image,language=args.language)
         print(json.dumps(report,sort_keys=True,indent=2))
         return 0 if report['grade']['behavior_pass'] and report['policy']['policy_pass'] else 2
     except (ValueError,TypeError,KeyError,OSError,RecursionError) as error:
