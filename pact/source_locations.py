@@ -1,9 +1,11 @@
-"""Physical compact-source locations, separate from semantic IR and revisions."""
+"""Physical source locations, separate from semantic IR and revisions."""
+from bisect import bisect_right
 import hashlib
 import json
 import re
 
 from .schema import MAX_SOURCE_BYTES, require
+from .diagnostics import PactError
 
 _ID = r'[A-Za-z][A-Za-z0-9_.:\-]{0,63}'
 _FUNCTION = re.compile(r'^\s*fn\s+(' + _ID + r')\s*$')
@@ -76,16 +78,81 @@ def attach_semantic_location(diagnostic, source, document):
         diagnostic['source_candidates'] = positions
 
 
+def _json_entries(source, start):
+    """Walk one validated container; skip unrelated values without descending."""
+    decoder = json.JSONDecoder()
+    is_object = source[start] == '{'
+    end_token = '}' if is_object else ']'
+    cursor, index = start + 1, 0
+    while True:
+        while source[cursor] in ' \t\r\n':
+            cursor += 1
+        if source[cursor] == end_token:
+            return
+        key = index
+        if is_object:
+            key, cursor = decoder.raw_decode(source, cursor)
+            while source[cursor] in ' \t\r\n:':
+                cursor += 1
+        value_start = cursor
+        value, cursor = decoder.raw_decode(source, cursor)
+        yield key, value, value_start, cursor
+        index += 1
+        while source[cursor] in ' \t\r\n':
+            cursor += 1
+        if source[cursor] == ',':
+            cursor += 1
+
+
+def index_json_source(source):
+    """Index definition ID values only, including their quotes and escapes."""
+    line_starts = [0] + [match.end() for match in re.finditer('\n', source)]
+    positions = []
+
+    def definition(kind, function, name, start, end):
+        line = bisect_right(line_starts, start)
+        positions.append({'kind':kind, 'function':function, 'id':name, 'line':line,
+                          'column':start-line_starts[line-1]+1,
+                          'end_column':end-line_starts[line-1]+1})
+
+    def nodes(start, function):
+        for _, _, node_start, _ in _json_entries(source, start):
+            for key, value, begin, end in _json_entries(source, node_start):
+                if key == 'id':
+                    definition('node', function, value, begin, end)
+
+    for key, _, start, _ in _json_entries(source, len(source)-len(source.lstrip())):
+        if key == 'nodes':
+            nodes(start, None)
+        elif key == 'functions':
+            for _, function, fn_start, _ in _json_entries(source, start):
+                for field, value, begin, end in _json_entries(source, fn_start):
+                    if field == 'id':
+                        definition('function', function['id'], value, begin, end)
+                    elif field == 'nodes':
+                        nodes(begin, function['id'])
+    return sorted(positions, key=lambda p:(p['line'], p['column']))
+
+
 def locate_source(source, function_id=None, node_id=None):
-    """Validate a compact snapshot and return deterministic qualified locations."""
-    from .compact import loads
+    """Validate one snapshot and return deterministic qualified locations."""
+    from .compact import loads, validate_document
+    from .graph import _unique_pairs
     from .revision import revision
     require(len(source.encode('utf-8')) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Source exceeds 1 MiB.')
     first = next((line.strip() for line in source.split('\n') if line.strip() and not line.lstrip().startswith('#')), '')
-    require(first.startswith('pact '), 'SOURCE_MAP_UNSUPPORTED',
-            'Physical source maps support compact source only; JSON locations are unsupported.')
-    document = loads(source)
-    positions = index_source(source)
+    if first.startswith('pact '):
+        document = loads(source)
+        positions = index_source(source)
+    else:
+        try:
+            document = json.loads(source, object_pairs_hook=_unique_pairs)
+        except PactError:
+            raise
+        except (ValueError, RecursionError) as error:
+            raise PactError('SOURCE_INVALID', str(error)) from None
+        validate_document(document)
+        positions = index_json_source(source)
     if function_id is not None:
         require(any(p['kind'] == 'function' and p['id'] == function_id for p in positions),
                 'FUNCTION_MISSING', 'Selected function does not exist.')
@@ -105,7 +172,6 @@ def locate_source(source, function_id=None, node_id=None):
 def locate_file(path, function_id=None, node_id=None):
     """Read one bounded binary snapshot, retaining CRLF and exact byte identity."""
     from pathlib import Path
-    from .diagnostics import PactError
     try:
         with Path(path).open('rb') as stream:
             data = stream.read(MAX_SOURCE_BYTES + 1)

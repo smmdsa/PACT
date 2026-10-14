@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — checked flow conditions
+## Latest — JSON source locations
+
+- `pact locate` now queries validated JSON graphs and numeric modules as well as compact sources.
+- Qualified definition spans preserve original quotes/escapes, Unicode columns, CRLF byte identity and physical ordering.
+- Duplicate decoded keys and invalid programs reject; references and unrelated ID namespaces are excluded.
+- No IR, revision or Wasm changes. Automatic JSON diagnostic attachment and runtime replay remain planned.
+
+## Checked flow conditions
 
 - Optional numeric module 0.4 adds typed assert and lazy guard nodes, inheriting declared public cases.
 - False guards skip their body; postcondition failures retain earlier writes. No rollback or static proof claimed.
