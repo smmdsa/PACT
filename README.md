@@ -2,7 +2,7 @@
 
 Experimental agent-first programming: explicit dataflow, checked effects, stable node IDs and deterministic WebAssembly compilation.
 
-Compact frontend **0.2**, with optional data compression **0.3** and inline syntax extension **0.4**, translates to text graph **0.0.1** or numeric module **0.1.0**. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
+Compact frontend **0.2**, with optional data compression **0.3** and inline syntax extension **0.4**, translates to text graph **0.0.1** or numeric module **0.2.0** (0.1.0 migrates). JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
 
 [Documentation and game](https://smmdsa.github.io/PACT/) · [Syntax](docs/syntax.md) · [Security](docs/security.md) · [Roadmap](ROADMAP.md)
 
@@ -58,7 +58,7 @@ Optional real-token measurements use `benchmarks/requirements.txt` and `python3 
 python3 -m pact convert examples/alien-harvest.pact --to compact-data -o build/game.data.pact
 ```
 
-[Compressed game source](examples/alien-harvest.data.pact) reconstructs the same IR, IDs, revision and Wasm. RLE arrays and shared symbol dictionaries reduce this source to 43,543 bytes and 18,328 o200k_base tokens, versus 51,244 bytes and 24,851 tokens in0.2. Runtime memory and behavior are unchanged. Inline literals (`pact 0.4`) and checked runtime bulk resets (`state.reset`) are available; see [inline literals and resets](docs/inline-literals-and-resets.md) and [data compression](docs/data-compression.md).
+[Compressed game source](examples/alien-harvest.data.pact) reconstructs the same IR, IDs, revision and Wasm. RLE arrays and shared symbol dictionaries reduce this source to 43,543 bytes and 18,328 o200k_base tokens, versus 51,244 bytes and 24,851 tokens in0.2. Runtime memory and behavior are unchanged. Inline literals (`pact 0.4`) and checked runtime bulk resets (`state.reset`, `pact.module/0.2.0`) are available; see [inline literals and resets](docs/inline-literals-and-resets.md) and [data compression](docs/data-compression.md).
 
 ## Revision-checked edits
 

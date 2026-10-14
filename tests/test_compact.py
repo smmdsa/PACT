@@ -70,11 +70,15 @@ class CompactTests(unittest.TestCase):
         doc['nodes'][0]['id'] = 'value:0'
         doc['nodes'][2]['args'][0] = 'value:0'
         self.assertEqual(compact.loads(compact.dumps(doc)), doc)
+        from pact.module import migrate_module
         from tests.test_module import tiny
         numeric = tiny()
+        numeric['format'] = 'pact.module/0.2.0'
         numeric['functions'][0]['id'] = 'game:step'
         numeric['exports'][0] = 'game:step'
         self.assertEqual(compact.loads(compact.dumps(numeric)), numeric)
+        legacy = tiny()
+        self.assertEqual(compact.loads(compact.dumps(legacy)), migrate_module(legacy))
 
     def test_unicode_separators_inside_json_are_not_source_lines(self):
         compact = self.frontend()

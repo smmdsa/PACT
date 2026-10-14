@@ -18,7 +18,7 @@ python3 -m pact patch examples/alien-harvest.inline.pact --patch examples/patche
 
 ### Invariants preserved
 
-- **Exact IR and revision identity**: `loads()` expands `n0000=0` into `{"id": "n0000", "op": "i32.const", "value": 0}` immediately before the consumer node in `function["nodes"]` and places `"n0000"` in `node["args"]`. The decoded `pact.module/0.1.0` document, canonical `revision(document)` SHA-256 hash, `pact inspect` output, `pact patch` targets, and compiled WebAssembly bytes are 100% identical to `pact 0.2` and `pact 0.3`.
+- **Exact IR and revision identity**: `loads()` expands `n0000=0` into `{"id": "n0000", "op": "i32.const", "value": 0}` immediately before the consumer node in `function["nodes"]` and places `"n0000"` in `node["args"]`. Inline literals require a `pact.module/0.2.0` document; on such a document the decoded IR, canonical `revision(document)` SHA-256 hash, `pact inspect` output, `pact patch` targets, and compiled WebAssembly bytes are 100% identical to `pact 0.2` and `pact 0.3`.
 - **Shared constants remain explicit**: Any `i32.const` node referenced more than once (`refcount > 1`) remains a standalone line.
 - **Strict validation**: Inline literals are rejected in `pact 0.2`/`0.3`, in top-level text graphs, in fixed non-`args` fields, when `NODE_ID` duplicates any node ID in the function, or when `INT` is not a canonical signed 32-bit integer (`-2147483648..2147483647`).
 
@@ -33,9 +33,9 @@ python3 -m pact patch examples/alien-harvest.inline.pact --patch examples/patche
 
 *(Note: Exact UTF-8 byte counts and SHA-256 digests are verified in the offline test environment; optional `tiktoken` token counts can be generated in environments with cached `tiktoken 0.12.0` resources.)*
 
-## 2. Checked runtime bulk state resets (`state.reset` / `reset`)
+## 2. Checked runtime bulk state resets (`state.reset` / `reset`) — `pact.module/0.2.0`
 
-Numeric modules support resetting 1..128 mutable state cells to their declared initial values in a single checked operation:
+`state.reset` changes accepted module semantics, so it ships as numeric module version `pact.module/0.2.0`; `pact.module/0.1.0` validation is preserved unchanged and rejects `state.reset` (`OP_UNKNOWN`). 0.2.0 modules support resetting 1..128 mutable state cells to their declared initial values in a single checked operation:
 
 ```pact
 n0000 = reset ["input.left","input.right","game.phase"]
@@ -44,6 +44,10 @@ n0000 = reset ["input.left","input.right","game.phase"]
 - **Explicit effect checking**: Every cell listed in `cells` is added to the function's observed write set and checked against `fn["writes"]` (`WRITE_MISMATCH`), cell existence (`STATE_MISSING`), mutability (`STATE_IMMUTABLE`), uniqueness (`ID_DUPLICATE`), and single-consumer unit sequencing (`EFFECT_SHARED`).
 - **Bounded work accounting**: Contributes `sum(layout[cell]["count"] for cell in node["cells"])` to `MAX_WORK` and `COMPILER_BUDGET`.
 - **Reference VM & Wasm equivalence**: Both `Machine` (`pact/reference.py`) and `compile_module` (`pact/module_wasm.py`) reset the listed cells to their initial values. Replacing the 373-node `game.init` in Alien Harvest with a single `reset` node reduces `game.init` from 373 nodes to 1 node and reduces the compiled WebAssembly binary from 28,940 bytes to 25,843 bytes (-3,097 bytes) with identical runtime state.
+
+### Migration from `pact.module/0.1.0`
+
+`python3 -m pact migrate SOURCE -o OUTPUT` (API: `pact.module.migrate_module(document)`) re-validates a `pact.module/0.1.0` document and emits the same document under `pact.module/0.2.0`. The migration adds no `state.reset` nodes — every cell write remains an explicit `state.store` — so the migrated module compiles to byte-identical WebAssembly. The canonical semantic revision changes because the format version is semantic content: revision-checked patches expected against a 0.1.0 source must be regenerated after migration. `pact.compact.loads` migrates 0.1.0 compact/JSON input in memory, so existing sources remain readable everywhere. The Alien Harvest example sources are migrated to 0.2.0, `examples/patches/jump.patch.json` carries the migrated source revision, and `examples/patches/counter-amount.patch.json` demonstrates patching a migrated 0.1.0 module.
 
 ## 3. Structured diagnostic fixes (`pact/diagnostics.py`)
 

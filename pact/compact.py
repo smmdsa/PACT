@@ -27,8 +27,8 @@ FUNCTION_FIELDS = ('params', 'locals', 'result', 'writes')
 
 def validate_document(document):
     from .graph import analyze
-    from .module import FORMAT, analyze_module
-    if isinstance(document, dict) and document.get('format') == FORMAT:
+    from .module import FORMATS, analyze_module
+    if isinstance(document, dict) and document.get('format') in FORMATS:
         return analyze_module(document)
     return analyze(document)
 
@@ -131,6 +131,7 @@ def loads(source):
         data_version = lines[0][1] in (DATA_HEADER, INLINE_HEADER)
         inline_version = lines[0][1] == INLINE_HEADER
         packed_sections = False
+        inline_literals = False
         document, function, ids = {}, None, set()
         for line_number, line in lines[1:]:
             if line.startswith('fn '):
@@ -153,6 +154,7 @@ def loads(source):
                         'COMPACT_INVALID', 'Module nodes must be inside a function.')
                 if inline_version and function is not None:
                     inline_nodes, node = _node(line, allow_inline=True)
+                    inline_literals = inline_literals or bool(inline_nodes)
                 else:
                     inline_nodes, node = [], _node(line)
                 target = function if function is not None else document
@@ -187,8 +189,18 @@ def loads(source):
                     packed_sections = True
                 target[key] = record
         require(function is None, 'COMPACT_INVALID', 'Unterminated function.')
-        require(not packed_sections or document.get('format') == 'pact.module/0.1.0',
+        from .module import FORMAT, FORMATS, migrate_module
+        require(not packed_sections or document.get('format') in FORMATS,
                 'COMPACT_INVALID', 'Compressed sections support numeric modules only.')
+        if document.get('format') == FORMATS[0]:
+            require(not inline_literals, 'COMPACT_INVALID',
+                    'Inline literals require pact.module/0.2.0; migrate the document first.')
+            document = migrate_module(document)
+        elif document.get('format') == FORMAT:
+            pass
+        else:
+            require(not inline_literals, 'COMPACT_INVALID',
+                    'Inline literals require numeric module pact.module/0.2.0.')
         validate_document(document)
         return document
     except (ValueError, RecursionError) as error:

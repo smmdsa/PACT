@@ -47,6 +47,6 @@ The receipt identifies the source snapshot that was read. This operation does no
 
 The helper preserves the existing inspection revision exactly. It differs from compiler plan hashes that normalize some declaration arrays. Compare patch revisions with inspection's `semantic_revision_sha256`, not a build plan's `source_sha256`.
 
-A revision identifies content, without authenticating its author or approving its intent. It is not a signature, authorization token or proof that executable tests are complete. Transactions introduce no guest authority, evaluation of host-language source or new execution semantics. Source versions remain compact `0.2` and numeric module `0.1.0`; text graph transactions are unsupported.
+A revision identifies content, without authenticating its author or approving its intent. It is not a signature, authorization token or proof that executable tests are complete. Transactions introduce no guest authority, evaluation of host-language source or new execution semantics. Source versions remain compact `0.2` and numeric module `0.1.0`/`0.2.0` (0.1.0 input is migrated in memory before validation); text graph transactions are unsupported.
 
 JSON publication uses a .json candidate filename; a .pact suffix with --to json is rejected before writing. Both dry-run and publication check the serialized source limit. Atomic publication requires hard-link support on the output filesystem; an unsupported filesystem produces an IO error without overwriting existing paths.

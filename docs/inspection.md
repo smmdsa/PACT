@@ -1,6 +1,6 @@
 # Selective numeric-module inspection
 
-Use `python3 -m pact symbols SOURCE` to discover functions and `python3 -m pact inspect SOURCE --function ID` to retrieve one function's context. Compact and JSON source reconstruct the same module IR before inspection. The compiler validates the entire source, including functions and assets absent from the response. Numeric module `pact.module/0.1.0` is supported; text graph `pact.graph/0.0.1` inspection is explicitly unsupported.
+Use `python3 -m pact symbols SOURCE` to discover functions and `python3 -m pact inspect SOURCE --function ID` to retrieve one function's context. Compact and JSON source reconstruct the same module IR before inspection (0.1.0 input migrates to 0.2.0). The compiler validates the entire source, including functions and assets absent from the response. Numeric modules `pact.module/0.1.0` and `pact.module/0.2.0` are supported; text graph `pact.graph/0.0.1` inspection is explicitly unsupported.
 
 Python callers use `pact.inspection.inspect_function(document, function_id)` and `pact.inspection.symbols(document)`. Both return ordinary JSON-compatible dictionaries and raise `PactError` for rejected input. An unknown selected function produces `FUNCTION_MISSING`; text graphs produce `INSPECTION_UNSUPPORTED`. Invalid modules retain the existing analyzer's diagnostics.
 

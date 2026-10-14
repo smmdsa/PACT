@@ -1,0 +1,25 @@
+{
+  "format": "pact.patch/0.1.0",
+  "expected_revision_sha256": "44be32a893bc236eeb61b5cc31f8e1d0fb2396d19a229e4680c2c17c0878ba43",
+  "operations": [
+    {
+      "op": "set_constant",
+      "name": "amount",
+      "value": 8
+    },
+    {
+      "op": "replace_test",
+      "id": "step.test",
+      "test": {
+        "id": "step.test",
+        "function": "step",
+        "set": {},
+        "expect": {
+          "counter": [
+            11
+          ]
+        }
+      }
+    }
+  ]
+}

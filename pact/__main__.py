@@ -47,6 +47,9 @@ def parser():
     convert.add_argument('source', type=Path)
     convert.add_argument('-o', '--output', type=Path, required=True)
     convert.add_argument('--to', choices=['compact', 'compact-data', 'compact-inline', 'json'], required=True)
+    migrate = commands.add_parser('migrate')
+    migrate.add_argument('source', type=Path)
+    migrate.add_argument('-o', '--output', type=Path, required=True)
     for command in ("check", "interpret", "build"):
         child = commands.add_parser(command)
         child.add_argument("source", type=Path)
@@ -107,7 +110,16 @@ def main(argv=None):
             atomic_write(args.output, source.encode('utf-8'))
             print(json.dumps({'status': 'converted', 'to': args.to, 'output': str(args.output)}))
             return 0
-        if isinstance(document, dict) and document.get('format') == 'pact.module/0.1.0':
+        if args.command == 'migrate':
+            from .compact import dumps
+            from .module import FORMAT, migrate_module
+            migrated = migrate_module(document)
+            source = dumps(migrated) if args.output.suffix == '.pact' else json.dumps(migrated, ensure_ascii=False, indent=2) + '\n'
+            atomic_write(args.output, source.encode('utf-8'))
+            print(json.dumps({'status': 'migrated', 'to': FORMAT, 'output': str(args.output)}))
+            return 0
+        from .module import FORMATS
+        if isinstance(document, dict) and document.get('format') in FORMATS:
             from .module import analyze_module
             from .module_build import build_module
             if args.command == 'check':

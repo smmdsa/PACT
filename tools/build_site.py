@@ -23,7 +23,7 @@ def page(title, body):
             '<nav><a href="index.html">PACT</a><a href="syntax.html">Syntax</a>'
             '<a href="security.html">Security</a><a href="roadmap.html">Roadmap</a><a href="inspection.html">Agent tools</a>'
             '<a href="https://github.com/smmdsa/PACT">GitHub ↗</a></nav>' + body +
-            '<footer>Experimental language · Compact frontend0.2 / data0.3 · Graph 0.0.1 / module 0.1.0</footer>'
+            '<footer>Experimental language · Compact frontend0.2 / data0.3 / inline0.4 · Graph 0.0.1 / module 0.2.0</footer>'
             '</main></body></html>')
 
 
