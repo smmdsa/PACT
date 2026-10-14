@@ -2,7 +2,16 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — initial isolated PACT counter adapter
+## Latest — code-backed roadmap audit and restricted source policy
+
+- Audited every roadmap area against implementation/tests, narrowed overbroad completed labels and added a prioritized backlog with concrete missing acceptance criteria.
+- Corrected stale guard/replay/security guidance. No real model measurements, general source-policy proof or complete instruction debugger is claimed.
+- Counter-four sandbox receipts now include a static canonical-IR policy: only the repeat count and independent embedded expectation may change.
+- Sandbox receipt 0.2 makes CLI success require both behavioral and policy matches; historical 0.1 receipts are not retroactively approved.
+- Behavioral match and policy match remain separate; a matching trace with an unapproved semantic edit is rejected by the policy. Full candidate approval remains unset.
+- Other language adapters, broader policies, hostile containment probes, provider runs, expected-trap cases, units, standard library and releases remain pending.
+
+## Initial isolated PACT counter adapter
 
 - A Linux/Docker adapter produces finite counter-four observations from a fixed reference worker, using an immutable local image ID.
 - Candidate execution requests no network/host mounts, a read-only filesystem, dropped privileges and explicit resource/time limits; effective configuration is inspected before execution.

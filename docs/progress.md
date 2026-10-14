@@ -1,3 +1,7 @@
+## Code-backed roadmap audit — 2026-10-14
+
+[Implementation audit](roadmap-audit.md) links each area to source/tests and lists concrete unfinished criteria. Added a restricted canonical counter-four source policy and an integration fixture where behavior matches but source policy fails. Corrected stale guard/replay/security text. Broader evaluation adapters/policies, actual model trials and language/distribution milestones remain pending.
+
 ## Initial isolated PACT adapter — 2026-10-14
 
 Added a Linux/Docker counter-four worker and runner with immutable image identity, inspected restrictions, bounded execution, cleanup and trace-grade receipts. Missing Docker rejects locally; dedicated CI exercises actual container fixtures. Broader adapters, adversarial containment validation, source-policy verification and real model trials remain pending.
