@@ -21,7 +21,7 @@ Goal: lower total agent cost per correct change, with explicit semantics. Alien-
 | Stable-ID literal definitions | Done | Optional source 0.4 integer/string definitions preserve IR/revision/Wasm |
 | Inline argument literals and bulk resets | Done | Explicit-ID inline literals (`pact 0.4`), versioned checked `state.reset` (`pact.module/0.2.0`) and reference/Wasm equivalence checks |
 | Contracts and units | In progress | Module 0.3 export cases and 0.4 explicit guard/assert conditions; nominal units and stronger contract tooling planned |
-| Diagnostics and replay | In progress | Structured fixes, qualified compact/JSON positions and JSON semantic diagnostic attachment; explicit migration attachment implemented; runtime replay/debugger planned |
+| Diagnostics and replay | In progress | Structured fixes, qualified compact/JSON positions and JSON semantic diagnostic attachment; explicit migration attachment and bounded reference replay implemented; Wasm replay/debugger planned |
 | Portability | In progress | Linux/Windows/macOS correctness matrix and real Chromium smoke passed; other engines and real devices planned |
 | Standard library | Planned | Actual versioned math/color/input modules with explicit effects |
 | Distribution | Planned | Owner-selected license and reproducible releases |

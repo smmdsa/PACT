@@ -32,6 +32,9 @@ def atomic_write(path, data):
 def parser():
     root = Parser(description="PACT toolchain with compact frontend 0.2/0.3/0.4")
     commands = root.add_subparsers(dest="command", required=True)
+    replay = commands.add_parser('replay')
+    replay.add_argument('source', type=Path)
+    replay.add_argument('--record', type=Path, required=True)
     patch = commands.add_parser('patch')
     patch.add_argument('source', type=Path)
     patch.add_argument('--patch', type=Path, required=True)
@@ -73,6 +76,11 @@ def main(argv=None):
             stream.reconfigure(encoding='utf-8', newline='\n')
     try:
         args = parser().parse_args(argv)
+        if args.command == 'replay':
+            from .replay import replay_file
+            report = replay_file(args.source, args.record)
+            print(json.dumps(report,ensure_ascii=False,sort_keys=True))
+            return 0 if report['status']=='completed' else 2
         if args.command == 'locate':
             from .source_locations import locate_file
             print(json.dumps(locate_file(args.source, args.function, args.node), ensure_ascii=False, sort_keys=True))

@@ -2,7 +2,15 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — explicit migration diagnostic locations
+## Latest — bounded reference replay
+
+- Revision-checked exported-call recordings execute deterministically on the numeric reference interpreter.
+- Reports include results, per-call state hashes, final state and qualified runtime diagnostic spans; traps stop execution without rollback.
+- All recording inputs validate before execution; reads, call counts and evaluated nodes are bounded.
+- Reference store bounds checks now precede value evaluation, matching Wasm trap ordering.
+- Actual Wasm comparisons cover success and trap-state retention. Wasm replay, debugger and model trials remain pending.
+
+## Explicit migration diagnostic locations
 
 - JSON migration semantic errors now use definition spans from the original single bounded read, including escaped IDs and CRLF.
 - Existing format/migration rejection codes, default target, structured fixes and ambiguous candidates are preserved.

@@ -1,0 +1,14 @@
+{
+  "format": "pact.replay-input/0.1.0",
+  "expected_revision_sha256": "80f800f4e67e67a7e29495aba95bbca4392682836c1220f68a4be75d446a60c8",
+  "calls": [
+    {
+      "function": "step.checked",
+      "args": []
+    },
+    {
+      "function": "step.checked",
+      "args": []
+    }
+  ]
+}
