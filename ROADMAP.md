@@ -12,7 +12,7 @@ Goal: lower total agent cost per correct change, with explicit semantics. Alien-
 | Traditional-language source baseline | Done | Frozen greeting/counter traces, four executed languages, both encodings and explicit asymmetry |
 | Resource bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads |
 | Model trial material and recorder | Done | Same task prompt, frozen contexts/oracle, external provenance and failed-trial accounting |
-| Model-task trials and sandbox verifier | Planned | Real trials, independent execution, correct edits, retries, failures and tool overhead |
+| Model-task trials and sandbox verifier | In progress | External trace grader implemented; isolated execution, source-policy checks and real trials with failures/tool overhead remain pending |
 | Runtime microbenchmark | Done | Warmup/fresh samples, independent state oracle, source hashes and local measurements |
 | Readable docs and progress | Done | Safe static Markdown, navigation, TOC and committed change log |
 | Selective inspection | Done | Function discovery, call relationships, effects and test summaries without whole-file agent reads |

@@ -1,3 +1,7 @@
+## External trace grading — 2026-10-14
+
+Implemented language-independent comparison of external counter-four traces, pinned oracle/candidate identity, bounds-state preservation and explicit failed/incomplete outcomes. Behavioral match does not approve candidate source or authenticate execution. Sandbox adapters, source-policy checks and real model measurements remain pending.
+
 ## Exact Wasm trap sites — 2026-10-14
 
 Mapped compiler-emitted traps to qualified nodes using actual Node function-index/byte-offset frames and exact binary identity. Tests cover helpers, repeated definitions, bounds, arithmetic and unmapped fallback. Eleven numeric example binaries match the prior compiler exactly. Full instruction maps, interactive debugger and real model trials remain pending.

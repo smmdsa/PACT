@@ -12,6 +12,7 @@ from tools.markdown_docs import render_markdown
 
 ROOT=Path(__file__).resolve().parents[1]
 DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.md'),
+ ('trace-grading','Trace grading','docs/agent-trace-grading.md'),
  ('checked-assertions','Checked conditions','docs/checked-assertions.md'),
  ('export-evidence','Export evidence','docs/export-evidence.md'),
  ('browser-validation','Browser validation','docs/browser-validation.md'),

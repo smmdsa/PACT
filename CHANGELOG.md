@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — exact Wasm trap locations
+## Latest — independent external trace grading
+
+- External counter-four observations can be graded for PACT, Python, JavaScript and C against exact candidate bytes and a pinned, independently derived oracle.
+- Initial/reset state, ordered cases, bounds-state preservation and incomplete/error outcomes are checked; identity and malformed-input rejections retain provenance.
+- No candidate code or model is executed. Behavioral match is separate from full candidate approval, with unauthenticated execution and outstanding checks explicit.
+- Sandbox adapters, policy verification and real model measurements remain pending.
+
+## Exact Wasm trap locations
 
 - Compiler-generated trap maps bind qualified node IDs and absolute opcode offsets to the exact binary hash and semantic revision.
 - Node replay attaches IDs only when the actual innermost Wasm frame exactly matches a trap site; generic WASM_TRAP codes are preserved.

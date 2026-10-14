@@ -40,6 +40,10 @@ Each prompt, context, and oracle has its own SHA-256 and byte count in the pack.
 
 The external verifier should pin its revision and toolchains; compile/parse under the appropriate language; independently invoke the exported interface; reset state; normalize success/bounds outcomes; compare all frozen states; check the PACT embedded test and preserved declarations; and review that the minimal edit did not alter interfaces, initial values, dependencies, or bounds checks. It should reject candidate attempts to edit drivers/oracles or weaken policies. Use signed-i32 arguments, not language-specific coercions. Record every failed compilation, timeout, malformed answer and trace mismatch. Add hidden/pre-registered generated edge cases for larger studies, with independent mathematical expectations. Never let candidate-authored tests or expectations decide a pass. Freeze exact verifier commands and log bytes, recording SHA-256 provenance for both passing and failing trials.
 
+## Optional external trace grading
+
+A separate [trace grader](agent-trace-grading.md) now compares externally supplied observations against the pinned, independently derived counter oracle and exact archived candidate bytes. It executes no candidate code. Its `behavior_pass` is a finite trace match, while `candidate_pass` remains null; sandbox execution and source-policy checks still belong to the external verifier. Recorder formats and flags remain unchanged.
+
 ## External record contract
 
 Each JSON-array entry requires exactly these top-level fields; missing or unknown fields are rejected:
