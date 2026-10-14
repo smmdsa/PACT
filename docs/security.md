@@ -1,6 +1,6 @@
 # Security and guarantees
 
-Compact source reconstructs the same closed-schema IR as JSON and passes the same semantic validation. Host-language source is never evaluated.
+Compact source reconstructs the same closed-schema IR as JSON and passes the same semantic validation. The PACT toolchain does not evaluate host-language source as a PACT program. The separate benchmark Python adapter intentionally executes Python only inside its configured Docker container and has no host-execution fallback; see [isolated adapters](agent-sandbox.md).
 
 ## Numeric module
 

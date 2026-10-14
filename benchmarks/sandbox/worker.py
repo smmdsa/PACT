@@ -1,4 +1,4 @@
-"""Trusted container worker: closed-schema PACT only, no host-language eval."""
+"""Container worker: Python candidate execution is allowed only inside Docker."""
 import json
 import base64
 from pathlib import Path
@@ -19,6 +19,21 @@ def observe(machine,args):
     return {'args':args,'status':status,'counter':list(machine.state['counter'])}
 
 
+def python_scope(candidate):
+    scope={'__name__':'candidate'}
+    exec(compile(candidate.decode('utf-8'),'/tmp/candidate.py','exec'),scope)
+    if not callable(scope.get('advance')) or not isinstance(scope.get('counter'),list) or len(scope['counter'])!=2:
+        raise ValueError('Expected advance and two-element counter')
+    return scope
+
+
+def observe_python(scope,args):
+    status='ok'
+    try:scope['advance'](*args)
+    except IndexError:status='bounds'
+    return {'args':args,'status':status,'counter':list(scope['counter'])}
+
+
 result={'execution_status':'compile_error','initial_counter':None,'cases':[],'reset_case':None}
 try:
     data=sys.stdin.buffer.read(2*1024*1024+1)
@@ -26,6 +41,13 @@ try:
     request=json.loads(data)
     candidate=base64.b64decode(request['candidate_base64'],validate=True)
     if len(candidate)>1024*1024:raise ValueError('Candidate exceeds 1 MiB')
+    if request.get('language','pact')=='python':
+        scope=python_scope(candidate)
+        result['initial_counter']=list(scope['counter']);result['execution_status']='error'
+        for args in request['cases']:result['cases'].append(observe_python(scope,args))
+        result['reset_case']=observe_python(python_scope(candidate),request['reset_args'])
+        result['execution_status']='completed'
+        print(json.dumps(result,sort_keys=True));sys.exit(0)
     Path('/tmp/candidate.pact').write_bytes(candidate)
     document=load_document('/tmp/candidate.pact',validate_source=True)
     machine=Machine(document,evaluation_limit=100000,runtime_diagnostics=True)

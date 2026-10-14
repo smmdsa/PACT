@@ -45,3 +45,11 @@ class AgentSandboxTests(unittest.TestCase):
             with patch.object(module.sys,'platform','linux'),patch.object(module.subprocess,'run',side_effect=FileNotFoundError):
                 with self.assertRaisesRegex(ValueError,'no local execution fallback'):
                     module.run_candidate(candidate,'sha256:'+'a'*64)
+
+    def test_python_backend_missing_also_rejects_without_host_execution(self):
+        module=self.module()
+        with tempfile.TemporaryDirectory() as tmp:
+            candidate=Path(tmp)/'candidate';candidate.write_bytes(b'raise RuntimeError("must not run on host")')
+            with patch.object(module.sys,'platform','linux'),patch.object(module.subprocess,'run',side_effect=FileNotFoundError):
+                with self.assertRaisesRegex(ValueError,'no local execution fallback'):
+                    module.run_candidate(candidate,'sha256:'+'a'*64,language='python')

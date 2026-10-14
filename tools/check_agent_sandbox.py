@@ -23,3 +23,19 @@ with tempfile.TemporaryDirectory() as tmp:
         assert result['candidate_pass'] is None
         print(json.dumps({'fixture':label,'behavior_pass':expected,'policy_pass':policy,'image_id':image,'model_trial':False}))
         (receipts/(label+'.receipt.json')).write_text(json.dumps(result,sort_keys=True,indent=2))
+    baseline_py=Path('benchmarks/agent_trials/counter.py').read_text()
+    correct_py=baseline_py.replace('range(3)','range(4)')
+    for label,source,expected,reason in [('python-baseline',baseline_py,False,None),
+            ('python-edited',correct_py,True,None),('python-invalid','def broken(',False,None),
+            ('python-noisy',correct_py+'\nprint("noise")\n',False,'invalid_worker_output'),
+            ('python-output-limit','import os\nwhile True: os.write(1,b"x"*4096)\n',False,'output_limit'),
+            ('python-timeout','import time\ntime.sleep(60)\n',False,'timeout')]:
+        path=root/(label+'.py');path.write_text(source)
+        result=run_candidate(path,image,language='python')
+        assert result['grade']['behavior_pass']==expected,(label,result)
+        assert result['policy']['policy_pass']==expected,(label,result)
+        assert result['termination_reason']==reason,(label,result)
+        assert result['candidate_pass'] is None
+        print(json.dumps({'fixture':label,'behavior_pass':expected,'termination_reason':reason,
+                          'image_id':image,'model_trial':False}))
+        (receipts/(label+'.receipt.json')).write_text(json.dumps(result,sort_keys=True,indent=2))

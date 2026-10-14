@@ -9,6 +9,13 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class AgentCandidatePolicyTests(unittest.TestCase):
+    def test_python_policy_accepts_only_canonical_ast_edit(self):
+        source=(ROOT/'benchmarks/agent_trials/counter.py').read_bytes()
+        correct=source.replace(b'range(3)',b'range(4)')
+        self.assertTrue(self.module().audit_candidate(correct,language='python')['policy_pass'])
+        self.assertTrue(self.module().audit_candidate(b'# comment\n'+correct,language='python')['policy_pass'])
+        for candidate in (source,correct+b'\nimport os\n',b'not valid python!',correct.replace(b'amount)',b'index)')):
+            self.assertFalse(self.module().audit_candidate(candidate,language='python')['policy_pass'])
     def module(self):
         try:return importlib.import_module('benchmarks.agent_candidate_policy')
         except ImportError:self.fail('Candidate source policy is missing')

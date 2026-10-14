@@ -19,7 +19,7 @@ This audit checks repository implementation and tests, not just changelog claims
 | Portability | OS matrix, Chromium smoke, Node input-only game playthrough | No Firefox/WebKit, physical-device run or full browser victory evidence |
 | Trial material and recorder | `benchmarks/agent_trials.py`, frozen prompt/contexts/oracle; recorder tests | Records external claims; no provider requests or real trial-result dataset |
 | Trace grading | `benchmarks/agent_trace_grader.py`, trace-grader tests | Finite external observations; `candidate_pass` stays null and execution is unauthenticated |
-| Isolated counter execution | `benchmarks/agent_sandbox.py`, `benchmarks/sandbox/worker.py`, dedicated Docker CI | Linux/Docker, PACT reference interpreter and one task; other languages and adversarial containment probes absent |
+| Isolated counter execution | `benchmarks/agent_sandbox.py`, `benchmarks/sandbox/worker.py`, dedicated Docker CI | Linux/Docker, PACT reference interpreter and Python, one task; JavaScript/C and wider adversarial containment probes remain absent |
 | Restricted source policy (this increment) | `benchmarks/agent_candidate_policy.py`, policy tests and container fixtures | Canonical counter-four IR edit only; not a general minimal-diff or intent verifier |
 | Public documentation | `tools/markdown_docs.py`, `tools/build_site.py`, documentation tests and Pages workflow | Generated Markdown pages; deployment must be checked separately from local build |
 
@@ -27,7 +27,7 @@ This audit checks repository implementation and tests, not just changelog claims
 
 | ID | Priority | Missing implementation / evidence | Completion criterion |
 | --- | --- | --- | --- |
-| E1 | Next | Docker candidate adapters for Python, JavaScript and C | Same frozen calls and reset, bounded isolated execution and archived pass/failure receipts for each language; no trusted local performance-driver fallback |
+| E1 | Next | Docker candidate adapters for JavaScript and C (Python now implemented) | Same frozen calls and reset, bounded isolated execution and archived pass/failure receipts for each language; no trusted local performance-driver fallback |
 | E2 | Next | Broader source-policy verification and embedded-test execution | Pre-registered allowed changes, preserved interfaces/policies, actual embedded tests and negative fixtures; report policy asymmetries across languages |
 | E3 | Next | Adversarial execution-limit probes | Demonstrate timeout/CPU, memory, output, process, filesystem and network denials on the deployed backend, retaining failed observations and cleanup evidence |
 | E4 | After E1–E3 | Provider integration and real trials | Pinned provider/model/settings, fresh paired trials, actual usage, failed attempts/retries/tool overhead and archived raw candidates/responses; credentials/backend must be configured |
@@ -41,7 +41,7 @@ This audit checks repository implementation and tests, not just changelog claims
 | R1 | Planned | Wider runtime/build measurements | More workloads, compile cost/peak memory and hardware/toolchain-controlled comparisons |
 | X1 | Owner decision + implementation | License and reproducible releases | Owner chooses licensing; add reproducible packaging, pinned toolchains/dependencies and release verification. No license file or release workflow currently supplies this |
 
-No provider SDK/client or real trial records exist in the current benchmark path. The Dockerfile uses a mutable base tag for building; a runtime image ID pins execution but does not make rebuilding reproducible. The initial sandbox inspects selected Docker settings and tests authored fixtures; hostile containment testing remains E3.
+No provider SDK/client or real trial records exist in the current benchmark path. The Dockerfile uses a mutable base tag for building; a runtime image ID pins execution but does not make rebuilding reproducible. The sandbox inspects selected Docker settings and tests authored fixtures plus Python output/timeout probes; broader hostile containment testing remains E3.
 
 ## Corrections made to the roadmap and guidance
 

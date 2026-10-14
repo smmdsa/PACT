@@ -2,7 +2,16 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — code-backed roadmap audit and restricted source policy
+## Latest — isolated Python counter adapter and bounded output
+
+- `--language python` runs candidate code only in the Docker worker; PACT remains the default. Both use the same frozen calls, reset and trace grader.
+- Added a frozen-baseline Python AST policy allowing only the canonical range(3)→range(4) edit, separate from trace grading.
+- Streaming capture limits combined stdout/stderr before unbounded allocation; excess output and timeout kill the Docker CLI and force container cleanup.
+- Receipt 0.3 retains termination reasons, bounded raw logs and separate policy/behavior outcomes. Malformed/noisy worker output becomes a failed observation.
+- Docker CI covers baseline, edited, malformed/noisy source, output flood and timeout fixtures. These are authored integration tests, not model measurements.
+- JavaScript/C adapters, wider containment probes, broader policies and actual model runs remain pending.
+
+## Code-backed roadmap audit and restricted source policy
 
 - Audited every roadmap area against implementation/tests, narrowed overbroad completed labels and added a prioritized backlog with concrete missing acceptance criteria.
 - Corrected stale guard/replay/security guidance. No real model measurements, general source-policy proof or complete instruction debugger is claimed.

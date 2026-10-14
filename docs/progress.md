@@ -1,3 +1,7 @@
+## Isolated Python adapter — 2026-10-14
+
+Added Python candidate execution inside Docker, a restricted canonical AST policy, shared-budget streaming output capture and explicit output/timeout/malformed-protocol failure receipts. CI executes authored Python success/failure and output/timeout probes. JavaScript/C, wider hostile containment checks and real model trials remain pending.
+
 ## Code-backed roadmap audit — 2026-10-14
 
 [Implementation audit](roadmap-audit.md) links each area to source/tests and lists concrete unfinished criteria. Added a restricted canonical counter-four source policy and an integration fixture where behavior matches but source policy fails. Corrected stale guard/replay/security text. Broader evaluation adapters/policies, actual model trials and language/distribution milestones remain pending.
