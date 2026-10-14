@@ -181,12 +181,19 @@ class ModuleTests(unittest.TestCase):
             original['tests'] = [{'id': 'step.test', 'function': 'step', 'set': {}, 'expect': {'counter': [10]}}]
             source = root/'source.json'
             source.write_text(json.dumps(original), encoding='utf-8')
+            compact_source = root/'source.pact'
+            compact_source.write_text(dumps(original), encoding='utf-8')
             for target in (root/'candidate.json', root/'candidate.pact'):
                 result = subprocess.run([sys.executable, '-m', 'pact', 'migrate', str(source), '-o', str(target)],
                                         cwd=ROOT, capture_output=True, text=True)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(json.loads(result.stdout)['to'], 'pact.module/0.2.0')
+            result = subprocess.run([sys.executable, '-m', 'pact', 'migrate', str(compact_source),
+                                     '-o', str(root/'compact-candidate.json')],
+                                    cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
             migrated = json.loads((root/'candidate.json').read_text())
+            self.assertEqual(json.loads((root/'compact-candidate.json').read_text()), migrated)
             self.assertEqual(migrated['format'], 'pact.module/0.2.0')
             self.assertEqual({key: value for key, value in migrated.items() if key != 'format'},
                              {key: value for key, value in original.items() if key != 'format'})

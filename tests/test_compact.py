@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 from pact.diagnostics import PactError
-from pact.graph import analyze
+from pact.graph import analyze, load_document
 from pact.module import analyze_module
 from pact.module_wasm import compile_module
 from pact.wasm import compile_plan
@@ -79,6 +79,24 @@ class CompactTests(unittest.TestCase):
         self.assertEqual(compact.loads(compact.dumps(numeric)), numeric)
         legacy = tiny()
         self.assertEqual(compact.loads(compact.dumps(legacy)), migrate_module(legacy))
+
+    def test_legacy_module_json_and_compact_load_to_same_ir(self):
+        compact = self.frontend()
+        from pact.module import migrate_module
+        from pact.revision import revision
+        from tests.test_module import tiny
+        legacy = tiny()
+        with tempfile.TemporaryDirectory() as tmp:
+            json_path = Path(tmp)/'legacy.json'
+            compact_path = Path(tmp)/'legacy.pact'
+            json_path.write_text(json.dumps(legacy), encoding='utf-8')
+            compact_path.write_text(compact.dumps(legacy), encoding='utf-8')
+            json_document = load_document(json_path)
+            compact_document = load_document(compact_path)
+        expected = migrate_module(legacy)
+        self.assertEqual(json_document, expected)
+        self.assertEqual(compact_document, expected)
+        self.assertEqual(revision(json_document), revision(compact_document))
 
     def test_unicode_separators_inside_json_are_not_source_lines(self):
         compact = self.frontend()

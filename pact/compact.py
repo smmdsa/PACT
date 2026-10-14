@@ -119,7 +119,7 @@ def _node(line, allow_inline=False):
     return (inline_nodes, node) if allow_inline else node
 
 
-def loads(source):
+def loads(source, migrate_legacy=True):
     """Parse and validate; never evaluate source as host code."""
     line_number = 0
     try:
@@ -195,7 +195,8 @@ def loads(source):
         if document.get('format') == FORMATS[0]:
             require(not inline_literals, 'COMPACT_INVALID',
                     'Inline literals require pact.module/0.2.0; migrate the document first.')
-            document = migrate_module(document)
+            if migrate_legacy:
+                document = migrate_module(document)
         elif document.get('format') == FORMAT:
             pass
         else:

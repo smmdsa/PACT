@@ -1,5 +1,4 @@
 import copy
-import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -19,7 +18,9 @@ class PatchCliTests(unittest.TestCase):
         doc['tests'] = [{'id': 'step.test', 'function': 'step', 'set': {}, 'expect': {'counter': [10]}}]
         source = root/'source.json'
         source.write_text(json.dumps(doc), encoding='utf-8')
-        expected = hashlib.sha256(json.dumps(doc,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
+        from pact.module import migrate_module
+        from pact.revision import revision
+        expected = revision(migrate_module(doc))
         patch = {'format':'pact.patch/0.1.0','expected_revision_sha256':expected,'operations':[
             {'op':'set_constant','name':'amount','value':8},
             {'op':'replace_test','id':'step.test','test':{
@@ -125,7 +126,8 @@ class PatchCliTests(unittest.TestCase):
                     'result':'i32','writes':[],'entry':level[0],'nodes':nodes})
             source.write_text(json.dumps(doc,separators=(',',':')),encoding='utf-8')
             from pact.revision import revision
-            patch['expected_revision_sha256'] = revision(doc)
+            from pact.module import migrate_module
+            patch['expected_revision_sha256'] = revision(migrate_module(doc))
             patch_path.write_text(json.dumps(patch),encoding='utf-8')
             before = source.read_bytes()
             self.assertLess(len(before),1024*1024)

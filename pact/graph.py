@@ -14,7 +14,7 @@ def _unique_pairs(pairs):
     return result
 
 
-def load_document(path):
+def load_document(path, migrate_legacy=True):
     try:
         with Path(path).open("rb") as stream:
             data = stream.read(MAX_SOURCE_BYTES + 1)
@@ -22,8 +22,12 @@ def load_document(path):
         text = data.decode("utf-8")
         if Path(path).suffix == '.pact' or text.lstrip().startswith('pact '):
             from .compact import loads
-            return loads(text)
-        return json.loads(text, object_pairs_hook=_unique_pairs)
+            return loads(text, migrate_legacy=migrate_legacy)
+        document = json.loads(text, object_pairs_hook=_unique_pairs)
+        from .module import FORMATS, migrate_module
+        if migrate_legacy and isinstance(document, dict) and document.get('format') == FORMATS[0]:
+            return migrate_module(document)
+        return document
     except PactError:
         raise
     except (OSError, ValueError, RecursionError) as error:
