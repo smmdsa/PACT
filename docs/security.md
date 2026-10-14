@@ -13,6 +13,8 @@ Compact source reconstructs the same closed-schema IR as JSON and passes the sam
 - Explicit wrapping arithmetic and Wasm signed division/remainder traps.
 - Declared tests execute against actual Wasm before publishing build outputs.
 
+Module 0.3 optionally requires a declared executable case for every export; builds run the cases. This is structural presence plus case execution, not proof of relevant assertions or adequate coverage. See [export evidence](export-evidence.md).
+
 These constraints do not prove naming, single responsibility, universal correctness or intent. The numeric host consumes compiler-produced artifacts and is not an independent verifier of arbitrary third-party Wasm. The embedding host can modify exported memory.
 
 ## Text graph

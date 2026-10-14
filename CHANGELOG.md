@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — browser smoke validation
+## Latest — optional export evidence
+
+- Numeric module 0.3 requires a declared executable case per exported function.
+- Check/inspection shows declarations; build runs real Wasm tests and rejects wrong expectations.
+- Explicit forward migration; legacy formats, default migration and frozen sources remain unchanged.
+- Test relevance, boundary coverage, single responsibility, pre/postconditions and units remain separate work.
+
+## Browser smoke validation
 
 - Pinned Chromium workflow added for desktop and mobile-shaped viewport checks.
 - Real DOM input, canvas, pause and documentation layout assertions; screenshots/result artifacts.

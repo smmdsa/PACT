@@ -54,6 +54,7 @@ def parser():
     migrate = commands.add_parser('migrate')
     migrate.add_argument('source', type=Path)
     migrate.add_argument('-o', '--output', type=Path, required=True)
+    migrate.add_argument('--to', choices=['pact.module/0.2.0', 'pact.module/0.3.0'], default='pact.module/0.2.0')
     for command in ("check", "interpret", "build"):
         child = commands.add_parser(command)
         child.add_argument("source", type=Path)
@@ -124,11 +125,11 @@ def main(argv=None):
             return 0
         if args.command == 'migrate':
             from .compact import dumps
-            from .module import FORMAT, migrate_module
-            migrated = migrate_module(document)
+            from .module import migrate_module
+            migrated = migrate_module(document, target_format=args.to)
             source = dumps(migrated) if args.output.suffix == '.pact' else json.dumps(migrated, ensure_ascii=False, indent=2) + '\n'
             atomic_write(args.output, source.encode('utf-8'))
-            print(json.dumps({'status': 'migrated', 'to': FORMAT, 'output': str(args.output)}))
+            print(json.dumps({'status': 'migrated', 'to': migrated['format'], 'output': str(args.output)}))
             return 0
         from .module import FORMATS
         if isinstance(document, dict) and document.get('format') in FORMATS:
@@ -136,7 +137,10 @@ def main(argv=None):
             from .module_build import build_module
             if args.command == 'check':
                 plan = analyze_module(document)
-                print(json.dumps({'status':'accepted','format':plan['format'],'layout':plan['layout'],'function_types':plan['function_types'],'work':plan['work']},sort_keys=True))
+                response = {'status':'accepted','format':plan['format'],'layout':plan['layout'],'function_types':plan['function_types'],'work':plan['work']}
+                if 'declared_export_tests' in plan:
+                    response['declared_export_tests'] = plan['declared_export_tests']
+                print(json.dumps(response, sort_keys=True))
                 return 0
             require(args.command == 'build', 'CLI_INVALID', 'Use module build/tests for numeric execution.')
             require(args.output.suffix == '.wasm', 'CLI_INVALID', 'Output must end in .wasm.')

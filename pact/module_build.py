@@ -30,4 +30,6 @@ def build_module(document):
         'wasm_sha256':hashlib.sha256(binary).hexdigest(),'layout':plan['layout'],'tiles':plan['tiles'],
         'presentation':document['presentation'],'exports':document['exports'],'constants':document['constants'],
         'evidence':evidence,'work':plan['work']}
+    if 'declared_export_tests' in plan:
+        manifest['declared_export_tests']=plan['declared_export_tests']
     return binary,manifest

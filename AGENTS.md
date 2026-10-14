@@ -1,6 +1,6 @@
 # Agent guidance
 
-Read README.md, docs/syntax.md and docs/security.md before changing semantics. ROADMAP.md describes planned work. Compact 0.2, compressed data 0.3 and literal/inline source 0.4 wrap graph 0.0.1 or numeric modules 0.1.0/0.2.0; preserve these distinctions. Reading/converting preserves revisions. Only explicit migration changes numeric format; state.reset requires 0.2.0.
+Read README.md, docs/syntax.md and docs/security.md before changing semantics. ROADMAP.md describes planned work. Compact 0.2, compressed data 0.3 and literal/inline source 0.4 wrap graph 0.0.1 or numeric modules 0.1.0/0.2.0/0.3.0; preserve these distinctions. Reading/converting preserves revisions. Only explicit migration changes numeric format; state.reset requires module 0.2.0 or 0.3.0.
 
 Prefer focused function/dependency reads. Keep IDs stable. Do not replace semantic names with undocumented opcodes. Effects, array indices, overflow and grants remain explicit.
 
@@ -21,3 +21,5 @@ Keep CHANGELOG.md and the public site in sync with concrete implemented/measured
 Use `pact locate SOURCE --function ID --node ID` for qualified physical positions. Coordinates use Unicode code points and belong to the exact source-byte hash, not just the semantic revision. Ambiguous diagnostic candidates are not permission to guess a scope. JSON maps and runtime replay are not implemented.
 
 Compiler CLI JSON uses UTF-8/LF on every OS. Keep strict manifest format checks; tampering fixtures must write exact bytes. Traditional Windows trace comparisons explicitly normalize CRLF and retain raw transport hashes; do not confuse this with byte-identical output.
+
+Module 0.3 requires declared cases for every export. Inspection declared_export_tests is a declaration map, not execution. Build manifests add actual tested receipts. Never generate arbitrary expected values just to satisfy missing-case hints. Default migration still targets 0.2; opt into 0.3 explicitly.

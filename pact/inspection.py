@@ -92,12 +92,14 @@ def inspect_function(document, function_id):
                            if test['function'] in affected | {function_id}],
         'omitted': list(_OMITTED),
     })
+    if 'declared_export_tests' in plan:
+        result['declared_export_tests'] = plan['declared_export_tests']
     return result
 
 
 def symbols(document):
     """List signatures and transitive syntactic footprints for discovery."""
-    _, functions, calls, callers = _index(document)
+    plan, functions, calls, callers = _index(document)
     result = _provenance(document, 'pact.symbols/0.1.0')
     summaries = []
     for key in sorted(functions):
@@ -115,4 +117,6 @@ def symbols(document):
     result.update({'functions': summaries,
                    'omitted': ['function_bodies', 'constant_values', 'cell_initial_values',
                                'assets', 'test_case_bodies']})
+    if 'declared_export_tests' in plan:
+        result['declared_export_tests'] = plan['declared_export_tests']
     return result
