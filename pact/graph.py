@@ -14,21 +14,30 @@ def _unique_pairs(pairs):
     return result
 
 
-def load_document(path, migrate_legacy=False, validate_source=False):
+def load_document(path, migrate_legacy=False, validate_source=False, migrate_to=None):
     try:
         with Path(path).open("rb") as stream:
             data = stream.read(MAX_SOURCE_BYTES + 1)
         require(len(data) <= MAX_SOURCE_BYTES, "SOURCE_LIMIT", "Source exceeds 1 MiB.")
         text = data.decode("utf-8")
-        if Path(path).suffix == '.pact' or text.lstrip().startswith('pact '):
+        compact_source = Path(path).suffix == '.pact' or text.lstrip().startswith('pact ')
+        if compact_source:
             from .compact import loads
-            return loads(text, migrate_legacy=migrate_legacy)
-        document = json.loads(text, object_pairs_hook=_unique_pairs)
-        if validate_source:
-            from .source_locations import validate_json_source
-            validate_json_source(text, document)
+            document = loads(text, migrate_legacy=migrate_legacy)
+        else:
+            document = json.loads(text, object_pairs_hook=_unique_pairs)
+            if validate_source:
+                from .source_locations import validate_json_source
+                validate_json_source(text, document)
         from .module import FORMATS, migrate_module
-        if migrate_legacy and isinstance(document, dict) and document.get('format') == FORMATS[0]:
+        if migrate_to is not None:
+            try:
+                return migrate_module(document, target_format=migrate_to)
+            except PactError as error:
+                from .source_locations import attach_semantic_location
+                attach_semantic_location(error.diagnostic, text, document, json_source=not compact_source)
+                raise
+        if not compact_source and migrate_legacy and isinstance(document, dict) and document.get('format') == FORMATS[0]:
             return migrate_module(document)
         return document
     except PactError:
