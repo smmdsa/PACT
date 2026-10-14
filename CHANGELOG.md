@@ -5,7 +5,8 @@ Every entry distinguishes implemented behavior from measured evidence and planne
 ## Latest — operating-system validation
 
 - Dedicated compiler/host/docs/game matrix introduced for Linux, Windows and macOS.
-- Runner correctness evidence is pending; real browser validation remains planned.
+- Corrected matrix passed 208 tests and the game flow on each system; [run evidence](https://github.com/smmdsa/PACT/actions/runs/38523715398).
+- Windows fixes preserve strict manifest checks and explicit raw stdout provenance; real browser validation remains planned.
 - LF source checkout and explicit UTF-8 mode preserve text interpretation and frozen hashes.
 
 ## Physical source locations
