@@ -28,6 +28,11 @@ def measure_file(path, encoding):
     return measure_bytes(Path(path).read_bytes(), encoding)
 
 
+def normalize_trace(actual):
+    # Preserve frozen fixtures; Windows text-mode stdout transports LF as CRLF.
+    return actual.replace(b'\r\n', b'\n') if sys.platform == 'win32' else actual
+
+
 def verify_trace(task, language, actual, expected):
     if actual != expected:
         raise BenchmarkError('TRACE_MISMATCH', f'{task}/{language}: output differs from frozen expected trace')
@@ -79,13 +84,17 @@ def execute_suite(require_c=False):
                 elif language == 'javascript':
                     command = ['node', str(source if task=='greeting' else FIXTURES/'counter-driver.mjs')]
                 else:
-                    executable = work/(task+'-c')
+                    executable = work/(task+'-c'+('.exe' if sys.platform == 'win32' else ''))
                     compile_command = [gcc, '-std=c11', '-Wall', '-Wextra', '-Werror', '-O2', str(source)]
                     if task == 'counter':
                         compile_command.append(str(FIXTURES/'counter-driver.c'))
                     run(compile_command+['-o', str(executable)])
                     command = [str(executable)]
-                actual = run(command, stdin)
+                transport = run(command, stdin)
+                actual = normalize_trace(transport)
+                if sys.platform == 'win32':
+                    row['stdout_transport'] = {'normalization':'CRLF to LF', 'bytes':len(transport),
+                                               'sha256':hashlib.sha256(transport).hexdigest()}
                 verify_trace(task, language, actual, expected)
                 rows.append({**row, 'status':'verified', 'stdout':actual.decode('utf-8'),
                              'trace_sha256':hashlib.sha256(actual).hexdigest()})

@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — physical source locations
+## Latest — operating-system validation
+
+- Dedicated compiler/host/docs/game matrix introduced for Linux, Windows and macOS.
+- Corrected matrix passed 208 tests and the game flow on each system; [run evidence](https://github.com/smmdsa/PACT/actions/runs/38523715398).
+- Windows fixes preserve strict manifest checks and explicit raw stdout provenance; real browser validation remains planned.
+- LF source checkout and explicit UTF-8 mode preserve text interpretation and frozen hashes.
+
+## Physical source locations
 
 - `pact locate` queries qualified node/function definitions, including inline constants.
 - Source maps are separate from IR; source-byte hashes and semantic revisions have distinct meanings.
