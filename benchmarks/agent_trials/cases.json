@@ -1,0 +1,19 @@
+{
+  "task": "counter-four",
+  "initial_counter": [2147483646, -2147483647],
+  "domain": "index and amount are signed i32 integers; calls are sequential on the same state",
+  "derivation": "For 0 <= index < 2, selected state becomes ((old + 4*amount + 2^31) mod 2^32) - 2^31; otherwise both cells are unchanged. No baseline executor generated these expectations.",
+  "cases": [
+    {"args": [0, 1], "status": "ok", "counter": [-2147483646, -2147483647]},
+    {"args": [1, -1], "status": "ok", "counter": [-2147483646, 2147483645]},
+    {"args": [0, -2], "status": "ok", "counter": [2147483642, 2147483645]},
+    {"args": [1, -2147483648], "status": "ok", "counter": [2147483642, 2147483645]},
+    {"args": [-1, 5], "status": "bounds", "counter": [2147483642, 2147483645]},
+    {"args": [2, 5], "status": "bounds", "counter": [2147483642, 2147483645]},
+    {"args": [2147483647, 5], "status": "bounds", "counter": [2147483642, 2147483645]},
+    {"args": [-2147483648, 5], "status": "bounds", "counter": [2147483642, 2147483645]},
+    {"args": [0, 0], "status": "ok", "counter": [2147483642, 2147483645]},
+    {"args": [1, 2147483647], "status": "ok", "counter": [2147483642, 2147483641]}
+  ],
+  "embedded_test_after_edit": {"reset": [2147483646, -2147483647], "args": [0, 1], "counter": [-2147483646, -2147483647]}
+}

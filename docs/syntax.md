@@ -60,4 +60,15 @@ Implicit scopes remain planned. Inline literals and checked runtime bulk resets 
 
 ## Optional data frontend0.3
 
-The pact0.3 header adds bounded cells.packed and assets.shared sections; all normal operations/IDs remain. See data-compression.md. Default canonical output remains0.2. Inline literals (`pact 0.4`) and checked runtime bulk resets (`state.reset`) are specified in [inline literals and resets](inline-literals-and-resets.md); scopes remain a separate pending proposal.
+The `pact 0.3` header adds bounded `cells.packed` and `assets.shared` sections; all normal operations and IDs remain. See [data compression](data-compression.md). Default canonical output remains 0.2. Scopes remain a separate pending proposal.
+
+## Literal syntax 0.4
+
+The `pact 0.4` header supports two reversible forms:
+
+- [Stable-ID literal definitions](literals.md), such as `zero = 0` and `greeting = "hola mundo"`, lower to `i32.const` and `utf8.literal`. Use `--to compact-agent`.
+- [Explicit-ID inline argument literals](inline-literals-and-resets.md), such as `n0002 = set input.left n0000=0 n0001=0`, reconstruct ordinary `i32.const` nodes immediately before their consumer. Use `--to compact-inline`.
+
+Both forms preserve IR, semantic revisions, compiled bytes and the declared module version. Numeric literals support both numeric module versions; text graphs accept string literal definitions under their existing type rules. Checked runtime `state.reset` is an operation in `pact.module/0.2.0`, and requires explicit migration from 0.1.0 rather than a source-header change.
+
+[Evaluation protocol](agent-evaluation.md) · [Runtime measurements](runtime-performance.md) · [Progress](../CHANGELOG.md).

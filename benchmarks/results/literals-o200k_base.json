@@ -1,0 +1,41 @@
+{
+  "agent_task_trials_run": false,
+  "example": "alien-harvest",
+  "format": "pact.data-compression-baseline/0.1.0",
+  "results": [
+    {
+      "bytes": 88379,
+      "representation": "minified_json",
+      "sha256": "ac8f7fbfdd51613cc10039bfcddb7cfd2dcc8aedd83de5d82e69a5c04bc45109",
+      "tokens": 35903
+    },
+    {
+      "bytes": 51244,
+      "representation": "compact_0_2",
+      "sha256": "d469bf0ce8ab9f442e39ba17ac42985456b786354ef2e47faf6bbaa89cbf4f51",
+      "tokens": 24851
+    },
+    {
+      "bytes": 43543,
+      "representation": "compact_0_3",
+      "sha256": "8cfe3a35674ea512769a77bbdbae973ead26685c7573960011e73e60b840223a",
+      "tokens": 18328
+    },
+    {
+      "bytes": 38273,
+      "representation": "compact_0_4",
+      "sha256": "6e6ae987d3443df49bc186b84d4e14bb6c4360be711953a7a68bbd14ae2d9050",
+      "tokens": 16747
+    }
+  ],
+  "same_ir": true,
+  "same_wasm": true,
+  "scope": "exact equivalent sources; excludes prompts, tools and model edits",
+  "semantic_revision_sha256": "48f56ce6dcea4e647144ba1048d997ce352e0f37f60a970347af7512c67155d2",
+  "tokenizer": {
+    "encoding": "o200k_base",
+    "package": "tiktoken",
+    "version": "0.12.0"
+  },
+  "wasm_sha256": "d3d6713334cce5ad60fb463b40f9c833036431ea06052039707525e9cdd3ec76"
+}

@@ -87,6 +87,17 @@ def _node(line, allow_inline=False):
     name, expression = line.split('=', 1)
     name = name.strip()
     require(bool(WORD.fullmatch(name)), 'COMPACT_INVALID', 'Invalid node ID.')
+    expression = expression.strip()
+    if allow_inline and expression and (expression[0] in '-"' or expression[0].isdigit()):
+        values = _values(expression)
+        require(len(values) == 1, 'COMPACT_INVALID', 'Expected one literal value.')
+        value = values[0]
+        require(type(value) is int or isinstance(value, str), 'COMPACT_INVALID', 'Expected i32 or UTF-8 literal.')
+        if type(value) is int:
+            require(-2147483648 <= value <= 2147483647, 'COMPACT_INVALID', 'Literal exceeds signed i32.')
+            require(expression == str(value), 'COMPACT_INVALID', 'Expected canonical integer.')
+        node = {'id': name, 'op': 'i32.const' if type(value) is int else 'utf8.literal', 'value': value}
+        return [], node
     parts = expression.strip().split(maxsplit=1)
     require(bool(parts), 'COMPACT_INVALID', 'Missing operation.')
     op = ALIASES.get(parts[0], parts[0])
@@ -152,7 +163,7 @@ def loads(source, migrate_legacy=False):
             elif re.match(r'^[A-Za-z][A-Za-z0-9_.:\-]*\s*=', line):
                 require(function is not None or 'functions' not in document,
                         'COMPACT_INVALID', 'Module nodes must be inside a function.')
-                if inline_version and function is not None:
+                if inline_version:
                     inline_nodes, node = _node(line, allow_inline=True)
                     inline_literals = inline_literals or bool(inline_nodes)
                 else:
@@ -212,7 +223,9 @@ def _operand(value, literal=False):
     return value if isinstance(value, str) and WORD.fullmatch(value) and not literal else _json(value)
 
 
-def _emit_node(node, inlined=None):
+def _emit_node(node, inlined=None, literals=False):
+    if literals and node['op'] in ('i32.const', 'utf8.literal'):
+        return f"{node['id']} = {_json(node['value'])}"
     fields = _schema(node['op'])
     operands = []
     for field in fields:
@@ -226,10 +239,10 @@ def _emit_node(node, inlined=None):
     return f"{node['id']} = {SHORT.get(node['op'], node['op'])}" + (' ' + ' '.join(operands) if operands else '')
 
 
-def _emit_function_nodes(function, inline=False):
+def _emit_function_nodes(function, inline=False, literals=False):
     nodes = function['nodes']
     if not inline:
-        return [_emit_node(node) for node in nodes]
+        return [_emit_node(node, literals=literals) for node in nodes]
     refs = {}
     for node in nodes:
         for ref in node.get('args', []):
@@ -256,24 +269,24 @@ def _emit_function_nodes(function, inline=False):
                 index = cursor + 1
                 continue
         index += 1
-    return [_emit_node(node, inlined_map) for node in nodes if node['id'] not in skip_ids]
+    return [_emit_node(node, inlined_map, literals=literals) for node in nodes if node['id'] not in skip_ids]
 
 
-def dumps(document, compressed=False, inline=False):
+def dumps(document, compressed=False, inline=False, literals=False):
     """Serialize validated IR; canonical formatting preserves all semantic fields."""
     validate_document(document)
     if inline:
         compressed = True
-    header = INLINE_HEADER if inline else (DATA_HEADER if compressed else HEADER)
+    header = INLINE_HEADER if inline or literals else (DATA_HEADER if compressed else HEADER)
     lines = [header]
     for key, value in document.items():
         if key == 'nodes':
-            lines.extend(_emit_node(node) for node in value)
+            lines.extend(_emit_node(node, literals=literals) for node in value)
         elif key == 'functions':
             for function in value:
                 lines.append('fn ' + function['id'])
                 lines.extend(key + ' ' + _json(function[key]) for key in FUNCTION_FIELDS)
-                lines.extend(_emit_function_nodes(function, inline=inline))
+                lines.extend(_emit_function_nodes(function, inline=inline, literals=literals))
                 lines.extend(['return ' + function['entry'], 'end'])
         else:
             plain = key + ' ' + _json(value)

@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+const [binary, manifest, nText, warmupText] = process.argv.slice(2);
+const [n, warmup] = [nText, warmupText].map(Number);
+const layout = JSON.parse(fs.readFileSync(manifest, 'utf8')).layout.counter;
+const {instance} = await WebAssembly.instantiate(fs.readFileSync(binary), {});
+const memory = new DataView(instance.exports.memory.buffer);
+for (let i = 0; i < warmup; i++) instance.exports.advance(i % 2, 1);
+memory.setInt32(layout.offset, 2147483646, true);
+memory.setInt32(layout.offset + 4, -2147483647, true);
+const start = process.hrtime.bigint();
+for (let i = 0; i < n; i++) instance.exports.advance(i % 2, 1);
+const elapsed = process.hrtime.bigint() - start;
+const state = [memory.getInt32(layout.offset, true), memory.getInt32(layout.offset + 4, true)];
+const checksum = (3 * (state[0] >>> 0) + (state[1] >>> 0)) >>> 0;
+console.log(JSON.stringify({elapsed_ns: Number(elapsed), state, checksum, pid: process.pid}));

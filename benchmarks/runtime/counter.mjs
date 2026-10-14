@@ -1,0 +1,10 @@
+import {counter, advance} from '../traditional/counter.mjs';
+const [n, warmup] = process.argv.slice(2).map(Number);
+for (let i = 0; i < warmup; i++) advance(i % 2, 1);
+counter[0] = 2147483646;
+counter[1] = -2147483647;
+const start = process.hrtime.bigint();
+for (let i = 0; i < n; i++) advance(i % 2, 1);
+const elapsed = process.hrtime.bigint() - start;
+const checksum = (3 * (counter[0] >>> 0) + (counter[1] >>> 0)) >>> 0;
+console.log(JSON.stringify({elapsed_ns: Number(elapsed), state: counter, checksum, pid: process.pid}));

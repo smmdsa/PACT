@@ -1,0 +1,452 @@
+{
+  "compiler_sources": [
+    {
+      "bytes": 67,
+      "path": "pact/__init__.py",
+      "sha256": "5ca1bd9588781f209b577263f9a3f202da361f6cd267d53930e4e1150e8f6126"
+    },
+    {
+      "bytes": 9108,
+      "path": "pact/__main__.py",
+      "sha256": "959f8febc66b22b460c8f969e44792900cb6b3a18b26d089055071f18765437f"
+    },
+    {
+      "bytes": 5047,
+      "path": "pact/atlas_codec.py",
+      "sha256": "a8d583218350214fe2e222dc44cab155894f4afb375e23fcf77772fcfe0de945"
+    },
+    {
+      "bytes": 723,
+      "path": "pact/browser.py",
+      "sha256": "a5ec5483d23290436da9bd8aee74c24541ec740e6329a5c7ff73d8d5b249188c"
+    },
+    {
+      "bytes": 14387,
+      "path": "pact/compact.py",
+      "sha256": "5595f2e244aab79e974bbfcbc1638b310dd8dee5edb466a6ed1a4efe0650f582"
+    },
+    {
+      "bytes": 3440,
+      "path": "pact/data_codec.py",
+      "sha256": "34f5ea4fbfc04f9e467625a77b299d6ed61d307cabe7734e91f3e6da5871c4a0"
+    },
+    {
+      "bytes": 407,
+      "path": "pact/diagnostics.py",
+      "sha256": "41028758ebf4bc97280e50c19fb1ec3b0ca957ed13d95894fdc89ed95484653c"
+    },
+    {
+      "bytes": 4756,
+      "path": "pact/graph.py",
+      "sha256": "22e5112065e6c95f167dae682608a4aa6992e4006421a3ee31f94f1a6cf8071f"
+    },
+    {
+      "bytes": 5093,
+      "path": "pact/inspection.py",
+      "sha256": "7ba86391aa9ac5c8d03bc6e57c590a9efbc709d9c043da42635e7641fe4eb91d"
+    },
+    {
+      "bytes": 18127,
+      "path": "pact/module.py",
+      "sha256": "daee60a269a7581207e63bf8c27740248938a2b73393dbcd6ab7e952592a3155"
+    },
+    {
+      "bytes": 1710,
+      "path": "pact/module_build.py",
+      "sha256": "1dc9569fd5358f5cf7738a2400eecb2b1bdc21aac18d5f754ff4b9cad529798e"
+    },
+    {
+      "bytes": 4698,
+      "path": "pact/module_wasm.py",
+      "sha256": "76283c8856cac0cb020197896238eee7175c09d31c296a55c3d81f521d946336"
+    },
+    {
+      "bytes": 4044,
+      "path": "pact/presentation.py",
+      "sha256": "dee890755a978590255adffbe7944fbda877b4f9767525b267a27b656bba7297"
+    },
+    {
+      "bytes": 3285,
+      "path": "pact/reference.py",
+      "sha256": "f98187dd9a617d8514cdbabe249b8e0a99131e4d1dae78db8a12d43e6b00f261"
+    },
+    {
+      "bytes": 562,
+      "path": "pact/revision.py",
+      "sha256": "9f29c72d0cd0dc397f86f298e6f540050108686234b8efa58398a3440e0616ab"
+    },
+    {
+      "bytes": 4169,
+      "path": "pact/schema.py",
+      "sha256": "9490091a17faeea0214f6ef629e977b533acd1a53997414aae6a12ef114e0622"
+    },
+    {
+      "bytes": 885,
+      "path": "pact/transaction_io.py",
+      "sha256": "2720b347169825777bcb35086e42373e7f4751272058e15fcb7044a7fd88e7c4"
+    },
+    {
+      "bytes": 3928,
+      "path": "pact/transactions.py",
+      "sha256": "4bf016135b188c8aebd053cbf34b3e73e56e494fb04e8effd4664e7c97b70b7c"
+    },
+    {
+      "bytes": 3159,
+      "path": "pact/wasm.py",
+      "sha256": "c13c61b82dd76f1660c9a665c266998492f8af4dfda5600d20d7867383881e59"
+    }
+  ],
+  "environment": {
+    "architecture": "x86_64",
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "os": "Linux",
+    "os_release": "6.18.44"
+  },
+  "excluded": [
+    "compilation",
+    "process startup",
+    "module loading / Wasm instantiation",
+    "warmup",
+    "counter reset",
+    "final-state reading, checksum and output"
+  ],
+  "format": "pact.runtime-performance/0.1",
+  "harness": {
+    "bytes": 10307,
+    "path": "benchmarks/runtime_performance.py",
+    "sha256": "d685fcf40b4b738306e72bf9a8dbf47786c1e52d95238d21be9cf1a7d2a07d85"
+  },
+  "harness_wall_elapsed_ns": 1038641426,
+  "iterations": 100000,
+  "limitations": [
+    "One chosen tiny counter kernel on one local machine does not establish universal language ranks or production performance.",
+    "Five default samples are too few for a stable tail estimate; nearest-rank p95 equals the maximum for up to 19 samples.",
+    "Loop overhead and host-call costs are included; PACT Wasm uses a JavaScript host bridge per call.",
+    "Warmup length does not guarantee a particular JIT optimization tier; fresh processes may optimize during measurement.",
+    "No CPU affinity, frequency control or isolation from other local workloads is applied.",
+    "C uses GCC -O2 without LTO and separate kernel/harness translation units; compiler optimization differs across runtimes.",
+    "Valid indices and amount 1 only; equal outputs do not establish equal safety contracts or invalid-input costs.",
+    "Compilation and startup are excluded from kernel timings and included only in harness wall elapsed metadata."
+  ],
+  "metric": "kernel_elapsed_ns",
+  "oracle": {
+    "checksum": 599995,
+    "method": "closed-form 3*ceil(N/2) and 3*floor(N/2) updates modulo 2^32",
+    "state": [
+      -2147333650,
+      -2147333647
+    ]
+  },
+  "results": [
+    {
+      "binary": {
+        "bytes": 165,
+        "sha256": "692c90521668af17088e446eb05d44215b492a8b4381473ed34bbc2476c30070"
+      },
+      "harness": {
+        "bytes": 948,
+        "path": "benchmarks/runtime/counter-pact.mjs",
+        "sha256": "225cb2ee6882dbcc271f2fe3964136bd785d1af44386a5859cd1ae54c908ba9f"
+      },
+      "language": "pact",
+      "manifest_sha256": "6d2961927b2f9b0222dedc9ecd95c7c39807d9a430bb020ea74e2f1fe7bdc9ea",
+      "runs": [
+        {
+          "checksum": 599995,
+          "elapsed_ns": 2862172,
+          "pid": 19,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 3082585,
+          "pid": 27,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 2726458,
+          "pid": 35,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 2819488,
+          "pid": 43,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 2791456,
+          "pid": 51,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        }
+      ],
+      "source": {
+        "bytes": 596,
+        "path": "benchmarks/traditional/counter.pact",
+        "sha256": "8752da831ade4baa876f6856404606725436fbc2a1d3c57ada2c0bcb3e4d0490"
+      },
+      "status": "verified",
+      "timing": {
+        "median_ns": 2819488,
+        "median_ns_per_call": 28.19488,
+        "min_ns": 2726458,
+        "p95_method": "nearest rank: sorted[ceil(0.95*samples)-1]",
+        "p95_ns": 3082585
+      }
+    },
+    {
+      "binary": null,
+      "binary_note": "interpreted source; runtime binary is not included",
+      "harness": {
+        "bytes": 864,
+        "path": "benchmarks/runtime/counter.py",
+        "sha256": "4a3bb732c6515ef6112ab34998789b1f72e42f9b7bc63750e973a6e84d40bb90"
+      },
+      "language": "python",
+      "runs": [
+        {
+          "checksum": 599995,
+          "elapsed_ns": 40727639,
+          "pid": 59,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 42319884,
+          "pid": 60,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 43150028,
+          "pid": 61,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 43299724,
+          "pid": 62,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 40492144,
+          "pid": 63,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        }
+      ],
+      "source": {
+        "bytes": 236,
+        "path": "benchmarks/traditional/counter.py",
+        "sha256": "e5538586886c62eeb8d237e8f743956157c3f0436716cc212aeeb65ce073e819"
+      },
+      "status": "verified",
+      "timing": {
+        "median_ns": 42319884,
+        "median_ns_per_call": 423.19884,
+        "min_ns": 40492144,
+        "p95_method": "nearest rank: sorted[ceil(0.95*samples)-1]",
+        "p95_ns": 43299724
+      }
+    },
+    {
+      "binary": null,
+      "binary_note": "interpreted source; runtime binary is not included",
+      "harness": {
+        "bytes": 528,
+        "path": "benchmarks/runtime/counter.mjs",
+        "sha256": "694a951e5c23e3213ac8028327d2e733e60094768aa03cc32f574777f84f91fa"
+      },
+      "language": "javascript",
+      "runs": [
+        {
+          "checksum": 599995,
+          "elapsed_ns": 1686928,
+          "pid": 64,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 2475478,
+          "pid": 72,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 1627918,
+          "pid": 80,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 1588879,
+          "pid": 88,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 1980000,
+          "pid": 96,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        }
+      ],
+      "source": {
+        "bytes": 252,
+        "path": "benchmarks/traditional/counter.mjs",
+        "sha256": "e24527b2f7f7b299fc4e954a37dea3b06db95c74a75b2c68052aa9480716cb6f"
+      },
+      "status": "verified",
+      "timing": {
+        "median_ns": 1686928,
+        "median_ns_per_call": 16.86928,
+        "min_ns": 1588879,
+        "p95_method": "nearest rank: sorted[ceil(0.95*samples)-1]",
+        "p95_ns": 2475478
+      }
+    },
+    {
+      "binary": {
+        "bytes": 16256,
+        "sha256": "ba3d66280996f1e32644bff68c585f047a2340409980a76b2180d790d3d90c34"
+      },
+      "compiler_flags": [
+        "-std=c11",
+        "-O2",
+        "-fno-lto",
+        "-Wall",
+        "-Wextra",
+        "-Werror"
+      ],
+      "harness": {
+        "bytes": 1141,
+        "path": "benchmarks/runtime/counter.c",
+        "sha256": "4ce7b4c30bf5ee8fe301a3838bc9a3142045ff5fee38b5798aafa91d560384fb"
+      },
+      "language": "c",
+      "runs": [
+        {
+          "checksum": 599995,
+          "elapsed_ns": 287044,
+          "pid": 111,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 136617,
+          "pid": 112,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 135415,
+          "pid": 113,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 135394,
+          "pid": 114,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        },
+        {
+          "checksum": 599995,
+          "elapsed_ns": 135404,
+          "pid": 115,
+          "state": [
+            -2147333650,
+            -2147333647
+          ]
+        }
+      ],
+      "source": {
+        "bytes": 381,
+        "path": "benchmarks/traditional/counter.c",
+        "sha256": "905e7f8378c205b3bb65cd9cb90567b9e0b1ba8d316903139300cf565a846a7e"
+      },
+      "status": "verified",
+      "timing": {
+        "median_ns": 135415,
+        "median_ns_per_call": 1.35415,
+        "min_ns": 135394,
+        "p95_method": "nearest rank: sorted[ceil(0.95*samples)-1]",
+        "p95_ns": 287044
+      }
+    }
+  ],
+  "runtime_versions": {
+    "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+    "node": "v24.19.0",
+    "python": "3.12.14"
+  },
+  "sample_policy": "every sample is a fresh process; warmup then reset initial counter outside timer",
+  "samples": 5,
+  "started_at_utc": "2026-10-14T06:12:18.048542+00:00",
+  "timed_scope": "internal loop and calls only; PACT includes the JavaScript-to-Wasm export bridge",
+  "timers": {
+    "c": "clock_gettime(CLOCK_MONOTONIC)",
+    "javascript": "process.hrtime.bigint",
+    "pact": "process.hrtime.bigint",
+    "python": "time.perf_counter_ns"
+  },
+  "warmup_iterations": 10000,
+  "workload": "advance(i % 2, 1); signed-i32 initial state [2147483646,-2147483647]; three wrapping additions per call"
+}

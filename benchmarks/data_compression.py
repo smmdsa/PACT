@@ -1,4 +1,4 @@
-"""Measure three equivalent representations without changing execution semantics."""
+"""Measure equivalent source representations without changing execution semantics."""
 import argparse
 import hashlib
 import json
@@ -14,11 +14,16 @@ from pact.revision import revision
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def report(encoding):
+def report(encoding, literals=False, inline=False):
     document = _load_snapshot(_read_source(ROOT/'examples/alien-harvest.pact.json'), 'game.json')
     snapshots = {'minified_json':json.dumps(document,ensure_ascii=False,separators=(',',':')).encode(),
                  'compact_0_2':_read_source(ROOT/'examples/alien-harvest.pact'),
                  'compact_0_3':_read_source(ROOT/'examples/alien-harvest.data.pact')}
+    if literals:
+        snapshots['compact_0_4'] = _read_source(ROOT/'examples/alien-harvest.agent.pact')
+    if inline:
+        snapshots['compact_0_4_inline'] = _read_source(ROOT/'examples/alien-harvest.inline.pact')
+        snapshots['compact_0_4_combined'] = _read_source(ROOT/'examples/alien-harvest.dense.pact')
     binary = compile_module(analyze_module(document))
     rows = []
     for name, source in snapshots.items():
@@ -39,9 +44,11 @@ def report(encoding):
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--encoding',choices=['o200k_base','cl100k_base'],default='o200k_base')
+    parser.add_argument('--include-literals',action='store_true')
+    parser.add_argument('--include-inline',action='store_true')
     args=parser.parse_args(argv)
     try:
-        print(json.dumps(report(load_tokenizer(args.encoding)),ensure_ascii=False,sort_keys=True,indent=2))
+        print(json.dumps(report(load_tokenizer(args.encoding), literals=args.include_literals, inline=args.include_inline),ensure_ascii=False,sort_keys=True,indent=2))
         return 0
     except (BenchmarkError,PactError,OSError,UnicodeError) as error:
         diagnostic=error.diagnostic if isinstance(error,PactError) else {

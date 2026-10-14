@@ -1,4 +1,4 @@
-"""Compile checked examples and create a dependency-free GitHub Pages site."""
+"""Compile checked examples and build static Markdown documentation."""
 import html
 import json
 import shutil
@@ -8,60 +8,58 @@ from pact.browser import game_html
 from pact.graph import load_document
 from pact.module_build import build_module
 from pact.__main__ import main as pact_cli
+from tools.markdown_docs import render_markdown
 
-ROOT = Path(__file__).resolve().parents[1]
-STYLE = '''
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#10121c;color:#e9edf5;font:17px/1.65 system-ui,sans-serif}main{max-width:1050px;margin:auto;padding:48px 24px}a{color:#a8c7ff}nav{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:54px}nav a{text-decoration:none}h1{font-size:clamp(44px,8vw,78px);line-height:1.05;letter-spacing:-3px;margin:18px 0}h2{line-height:1.2}p{max-width:760px}.tag{color:#bda8ff;letter-spacing:2px;font-size:13px;text-transform:uppercase}.lead{font-size:22px;color:#b6bfd4}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin:34px 0}table{border-collapse:collapse;width:100%;max-width:760px;margin:24px 0}td,th{text-align:left;padding:10px;border-bottom:1px solid #30394e}.card{background:#1a1e2e;border:1px solid #30394e;border-radius:12px;padding:24px}.card strong{font-size:27px;display:block}.button{display:inline-block;background:#adbcff;color:#13162a;border-radius:8px;padding:12px 22px;text-decoration:none;font-weight:700;margin:8px 12px 8px 0}pre{font:14px/1.7 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#181c2a;border:1px solid #30394e;border-radius:12px;padding:24px}footer{border-top:1px solid #30394e;margin-top:50px;padding-top:20px;color:#aab4ca}small{color:#aab4ca}
+ROOT=Path(__file__).resolve().parents[1]
+DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.md'),
+ ('syntax','Syntax','docs/syntax.md'),('literals','Literal definitions','docs/literals.md'),
+ ('inline-literals-and-resets','Inline literals and resets','docs/inline-literals-and-resets.md'),
+ ('inspection','Selective inspection','docs/inspection.md'),('transactions','Transactions','docs/transactions.md'),
+ ('compression','Data compression','docs/data-compression.md'),('security','Security','docs/security.md'),
+ ('comparison','Language comparison','docs/traditional-comparison.md'),('benchmarks','Token benchmarks','benchmarks/README.md'),
+ ('runtime','Runtime benchmarks','docs/runtime-performance.md'),('evaluation','Agent evaluation','docs/agent-evaluation.md'),
+ ('agents','Contributing','docs/agent-contributions.md'),('resources','Resource bounds','docs/resource-bounds.md')]
+STYLE='''
+:root{color-scheme:dark;--bg:#0d111a;--panel:#151c29;--line:#2a3447;--text:#e5ebf5;--muted:#9eabc0;--accent:#a4b6ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.75 system-ui,sans-serif}a{color:var(--accent);text-underline-offset:4px}a:focus-visible,button:focus-visible{outline:3px solid #c4a6ff;outline-offset:4px;border-radius:3px}.skip{position:absolute;left:-9999px}.skip:focus{left:20px;top:20px;z-index:5;background:var(--panel);padding:10px}.topbar{height:72px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:#111723}.brand{font-weight:800;letter-spacing:2px;color:var(--text);text-decoration:none;font-size:22px}.brand small{font-size:11px;font-weight:400;color:var(--muted);letter-spacing:1px;margin-left:14px}.toplinks{display:flex;gap:24px;align-items:center;font-size:14px}.layout{display:grid;grid-template-columns:220px minmax(0,1fr) 200px;gap:32px;max-width:1500px;margin:auto;padding:32px}.sidebar{position:sticky;top:24px;align-self:start}.sidebar .label,.eyebrow{font-size:11px;color:var(--muted);letter-spacing:1.8px;text-transform:uppercase}.sidebar nav{display:flex;flex-direction:column;gap:3px;margin-top:14px}.sidebar nav a{padding:7px 12px;border-radius:6px;color:var(--muted);text-decoration:none;font-size:14px}.sidebar nav a:hover,.sidebar nav a[aria-current=page]{background:#202a3e;color:var(--text)}main{min-width:0;max-width:900px;width:100%;margin:auto}.toc{position:sticky;top:24px;align-self:start;border-left:1px solid var(--line);padding-left:16px;font-size:12px}.toc ul{list-style:none;padding:0;margin:10px 0}.toc li{margin:8px 0}.toc a{color:var(--muted);text-decoration:none}.toc .level3{padding-left:10px}.docmeta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-bottom:24px;color:var(--muted);font-size:12px}.markdown h1{font-size:38px;line-height:1.2;letter-spacing:-1px;margin:0 0 26px}.markdown h2{margin:44px 0 16px;font-size:26px;border-top:1px solid var(--line);padding-top:28px;line-height:1.3}.markdown h3{margin-top:30px;font-size:20px}.markdown h1,.markdown h2,.markdown h3{scroll-margin-top:24px}.markdown p,.markdown li{color:#c6d1e1}.markdown ul,.markdown ol{padding-left:24px}.markdown li{margin:7px 0}.markdown blockquote{border-left:3px solid var(--accent);background:var(--panel);padding:8px 20px;margin:24px 0}.markdown img{max-width:100%;height:auto}.markdown code{font:13px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;color:#c8d2ff;background:#20283a;border:1px solid #303a51;border-radius:4px;padding:2px 5px;overflow-wrap:anywhere}.markdown pre,pre{overflow-x:auto;white-space:pre;background:#101724;border:1px solid var(--line);border-radius:9px;padding:20px;font:13px/1.7 ui-monospace,monospace;margin:24px 0}.markdown pre code{background:none;border:none;padding:0;color:#d7e2f4;overflow-wrap:normal}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin:24px 0}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}th{background:#1a2334;color:#d3dded}tr:last-child td{border-bottom:0}td{color:#bbc9db}.hero{padding:32px 0 20px}.hero h1{font-size:clamp(38px,5vw,65px);line-height:1.1;letter-spacing:-2px;margin:20px 0}.hero p{max-width:720px;font-size:18px;color:var(--muted)}.badge{display:inline-flex;padding:4px 10px;border:1px solid #46635b;border-radius:99px;color:#9cd7b7;font-size:11px;letter-spacing:.8px}.actions{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin:24px 0}.button{padding:10px 18px;border-radius:7px;background:var(--accent);color:#101729;text-decoration:none;font-weight:700;font-size:14px}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:28px 0}.card{background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:9px}.card strong{display:block;font-size:26px;line-height:1.3}.card span{display:block;color:var(--muted);font-size:12px;margin-top:7px}.section-title{font-size:25px;line-height:1.3;margin-top:44px}.notice{background:#182236;border:1px solid #38486c;border-radius:9px;padding:18px 20px;color:#c2cfe3;font-size:14px}footer{border-top:1px solid var(--line);padding:22px 0;margin-top:48px;font-size:12px;color:var(--muted)}@media(max-width:1200px){.layout{grid-template-columns:200px minmax(0,1fr)}.toc{display:none}}@media(max-width:760px){.layout{display:block;padding:22px 18px}.sidebar{position:static;margin-bottom:28px}.sidebar nav{flex-direction:row;overflow-x:auto;white-space:nowrap;padding-bottom:8px}.sidebar .label{display:none}.topbar{padding:0 18px}.brand small{display:none}.toplinks{gap:14px}.cards{grid-template-columns:1fr}.markdown h1{font-size:31px}.hero{padding-top:8px}}
 '''
 
 
-def page(title, body):
-    return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
-            '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<meta name="description" content="PACT: explicit graphs, checked effects and compact agent-first source.">'
-            f'<title>{html.escape(title)} · PACT</title><style>{STYLE}</style></head><body><main>'
-            '<nav><a href="index.html">PACT</a><a href="syntax.html">Syntax</a>'
-            '<a href="security.html">Security</a><a href="roadmap.html">Roadmap</a><a href="inspection.html">Agent tools</a>'
-            '<a href="https://github.com/smmdsa/PACT">GitHub ↗</a></nav>' + body +
-            '<footer>Experimental language · Compact frontend0.2 / data0.3 / inline0.4 · Graph 0.0.1 / module 0.2.0</footer>'
-            '</main></body></html>')
+def page(title,body,current='index',toc=None):
+    navigation='<a href="index.html"'+(' aria-current="page"' if current=='index' else '')+'>Overview</a>'
+    for slug,label,_ in DOCUMENTS:
+        navigation+=f'<a href="{slug}.html"'+(' aria-current="page"' if current==slug else '')+f'>{html.escape(label)}</a>'
+    contents=''.join(f'<li class="level{item["level"]}"><a href="#{html.escape(item["id"],quote=True)}">{html.escape(item["title"])}</a></li>' for item in toc or [] if item['level'] in (2,3))
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="PACT: explicit graphs, checked effects and measured agent-first programming."><title>{html.escape(title)} · PACT</title><style>{STYLE}</style></head><body><a class="skip" href="#main-content">Skip to content</a><header class="topbar"><a class="brand" href="index.html">PACT <small>AGENT-FIRST LANGUAGE LAB</small></a><div class="toplinks"><a href="progress.html">Progress</a><a href="game.html">Play demo</a><a href="https://github.com/smmdsa/PACT">GitHub ↗</a></div></header><div class="layout"><aside class="sidebar"><span class="label">Documentation</span><nav aria-label="Documentation">{navigation}</nav></aside><main id="main-content">{body}<footer>Research prototype · Source 0.2 / data 0.3 / literals 0.4 · Graph 0.0.1 / module 0.1.0 and 0.2.0</footer></main><aside class="toc" aria-label="On this page"><span class="eyebrow">On this page</span><ul>{contents}</ul></aside></div></body></html>'''
+
 
 
 def main():
-    output = ROOT/'site-output'
-    output.mkdir(exist_ok=True)
-    game = load_document(ROOT/'examples/alien-harvest.data.pact')
-    binary, manifest = build_module(game)
+    output=ROOT/'site-output';output.mkdir(exist_ok=True)
+    game=load_document(ROOT/'examples/alien-harvest.inline.pact')
+    binary,manifest=build_module(game)
     (output/'game.wasm').write_bytes(binary)
     (output/'game.manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     (output/'game.html').write_bytes(game_html(game,binary,manifest))
-    if pact_cli(['build', str(ROOT/'examples/hello.pact'), '-o', str(output/'hello.wasm')]) != 0:
-        raise RuntimeError('Greeting build failed.')
-    for name in ('hello.pact','hello.pact.json','alien-harvest.pact','alien-harvest.pact.json','alien-harvest.data.pact'):
-        shutil.copyfile(ROOT/'examples'/name,output/name)
-    documents = [('syntax','docs/syntax.md'),('security','docs/security.md'),('roadmap','ROADMAP.md'),('inspection','docs/inspection.md'),('agents','docs/agent-contributions.md'),('benchmarks','benchmarks/README.md'),('transactions','docs/transactions.md'),('comparison','docs/traditional-comparison.md'),('resources','docs/resource-bounds.md'),('compression','docs/data-compression.md')]
-    for slug, path in documents:
-        text = (ROOT/path).read_text(encoding='utf-8')
-        body = f'<h1>{slug.title()}</h1><p><a href="https://github.com/smmdsa/PACT/blob/main/{path}">View formatted document on GitHub ↗</a></p><pre>{html.escape(text)}</pre>'
-        (output/f'{slug}.html').write_text(page(slug.title(),body),encoding='utf-8')
-    hello = html.escape((ROOT/'examples/hello.pact').read_text(encoding='utf-8'))
-    body = '''<span class="tag">Agent-first programming · research prototype</span>
-<h1>Explicit intent.<br>Checked execution.</h1>
-<p class="lead">PACT pairs compact source with a validated graph and deterministic WebAssembly. Explore the language through a real platformer.</p>
-<a class="button" href="game.html">Play Alien Harvest</a><a href="syntax.html">Read the specification →</a>
-<div class="grid"><div class="card"><strong>42% fewer bytes</strong>Compact game source versus minified JSON. Measured tokens: 24,851 versus 35,903 with o200k_base; full task cost remains unmeasured.</div><div class="card"><strong>Explicit effects</strong>Declared writes, bounded execution and checked array access.</div><div class="card"><strong>Same execution</strong>Compact and JSON sources reconstruct identical IR and Wasm.</div></div>
-<h2>Hello from an alien language</h2>'''+f'<pre>{hello}</pre>'+'''
-<p><a href="hello.pact" download>Download greeting source</a> · <a href="alien-harvest.pact" download>Download platformer source</a> · <a href="game.html" download>Download standalone game</a></p>
-<h2>Run it locally</h2><pre>python3 -m pact build examples/hello.pact -o build/hello.wasm
-node host/run.mjs build/hello.wasm --allow stdout</pre>
-<p>Python 3.10+ and Node 20+. No third-party packages needed. The generated game HTML runs independently in a WebAssembly-capable browser.</p>
-<h2>Inspect only what you need</h2><pre>python3 -m pact symbols examples/alien-harvest.pact
-python3 -m pact inspect examples/alien-harvest.pact --function player.move</pre><p>Get stable function IDs, call dependencies, effects and relevant test summaries without the complete map and atlas. <a href="inspection.html">Inspection specification</a> · <a href="benchmarks.html">Benchmark protocol</a> · <a href="agents.html">Contribute with an agent</a></p><h2>Same game, less source context</h2><p>Bounded RLE and shared symbol maps reduce the game to 18,328 o200k_base tokens from 24,851. The IR, revision, atlas and Wasm are identical. <a href="compression.html">Data compression specification</a> · <a href="alien-harvest.data.pact" download>Compressed game source</a></p><h2>Checked changes, without overwriting source</h2><pre>python3 -m pact patch examples/alien-harvest.pact --patch examples/patches/jump.patch.json --dry-run</pre><p>Revision guards, full candidate validation and actual Wasm tests. <a href="transactions.html">Transaction specification →</a></p><h2>Traditional languages: measured honestly</h2><table><thead><tr><th>Source tokens · o200k_base</th><th>PACT</th><th>Python</th><th>JavaScript</th><th>C</th></tr></thead><tbody><tr><td>Greeting</td><td>78</td><td>10</td><td>11</td><td>27</td></tr><tr><td>Wrapping counter</td><td>163</td><td>74</td><td>76</td><td>138</td></tr></tbody></table><p>PACT costs more source tokens in these two kernels. Drivers are measured separately; the language policies differ. This is not an agent-productivity comparison. <a href="comparison.html">Methodology and full results →</a></p><h2>A concrete test of the language</h2><p>Alien Harvest includes jumping, climbing, throwable vegetables, enemies, a checkpoint and a boss. Its gameplay and internal pixel atlas are declared in PACT. The host supplies rendering, input and sound.</p>
-<p><small>Prototype limitations: no proof of agent productivity, no general semantic responsibility checker, no full standard library or package manager. Real-browser compatibility and visual QA remain open. No open-source license has been selected yet.</small></p>'''
+    if pact_cli(['build',str(ROOT/'examples/hello.agent.pact'),'-o',str(output/'hello.wasm')])!=0:raise RuntimeError('Greeting build failed')
+    mapping={path:slug+'.html' for slug,_,path in DOCUMENTS};mapping['README.md']='index.html'
+    for path in (ROOT/'examples').glob('*.pact*'):
+        shutil.copyfile(path,output/path.name);mapping[str(path.relative_to(ROOT))]=path.name
+    reports=output/'reports';reports.mkdir(exist_ok=True)
+    for path in (ROOT/'benchmarks/results').glob('*.json'):
+        shutil.copyfile(path,reports/path.name);mapping[str(path.relative_to(ROOT))]='reports/'+path.name
+    for slug,title,path in DOCUMENTS:
+        rendered,toc=render_markdown((ROOT/path).read_text(encoding='utf-8'),path,mapping)
+        rendered=rendered.replace('<table>','<div class="table-wrap"><table>').replace('</table>','</table></div>')
+        body=f'<div class="docmeta"><span>PACT / {html.escape(title)}</span><a href="https://github.com/smmdsa/PACT/blob/main/{path}">View source ↗</a></div><article class="markdown">{rendered}</article>'
+        (output/(slug+'.html')).write_text(page(title,body,slug,toc),encoding='utf-8')
+    report=json.loads((ROOT/'benchmarks/results/inline-o200k_base.json').read_text())
+    metrics={row['representation']:row for row in report['results']};latest=metrics['compact_0_4_inline'];baseline=metrics['minified_json']
+    reduction=100*(1-latest['tokens']/baseline['tokens'])
+    code=html.escape((ROOT/'examples/hello.agent.pact').read_text())
+    body=f'''<section class="hero"><span class="badge">IMPLEMENTED · INLINE SOURCE 0.4</span><h1>Explicit intent.<br>Checked execution.</h1><p>A language experiment for agents that inspect, edit and validate structured programs. Follow the evidence as PACT evolves.</p><div class="actions"><a class="button" href="game.html">Play Alien Harvest</a><a href="progress.html">Latest progress →</a><a href="syntax.html">Read the syntax</a></div></section><div class="cards"><div class="card"><strong>{latest['tokens']:,}</strong><span>Game source tokens · o200k_base</span></div><div class="card"><strong>{reduction:.1f}% less</strong><span>Compared with minified JSON of identical IR</span></div><div class="card"><strong>Same Wasm</strong><span>Stable IDs, revision and execution</span></div></div><div class="notice">Source compression is measured. Overall agent productivity is not established. PACT costs more source tokens than Python, JavaScript and C in our two small kernels.</div><h2 class="section-title">What shipped</h2><article class="markdown"><ul><li>Stable-ID literal definitions and inline integer arguments, compressed initial data and shared sprite symbols.</li><li>Checked runtime bulk resets in numeric module 0.2.0, with explicit migration from 0.1.0.</li><li>Selective function context and revision-checked patches with executable tests.</li><li>Reproducible token comparisons, runtime measurement and a protocol for external LLM trials.</li></ul></article><p><a href="literals.html">Literal definitions</a> · <a href="inline-literals-and-resets.html">Inline literals and resets</a> · <a href="compression.html">Data compression</a> · <a href="runtime.html">Runtime benchmark</a> · <a href="evaluation.html">Agent evaluation</a></p><h2 class="section-title">Hello from an alien language</h2><article class="markdown"><pre><code class="language-text">{code}</code></pre></article><p><a href="hello.agent.pact" download>Greeting source</a> · <a href="alien-harvest.inline.pact" download>Game source0.4</a> · <a href="game.html" download>Standalone game</a></p><h2 class="section-title">Traditional languages: measured honestly</h2><div class="table-wrap"><table><thead><tr><th>Tokens · o200k_base</th><th>PACT0.2</th><th>Python</th><th>JavaScript</th><th>C</th></tr></thead><tbody><tr><td>Greeting</td><td>78</td><td>10</td><td>11</td><td>27</td></tr><tr><td>Wrapping counter</td><td>163</td><td>74</td><td>76</td><td>138</td></tr></tbody></table></div><p>Frozen small programs; driver costs and policy asymmetries are reported separately. <a href="comparison.html">Full methodology →</a></p><h2 class="section-title">Next: measure useful agent work</h2><p>Correct edits, diagnosis, retrieved context, repair cycles and stale-change rejection matter alongside runtime and source size. External model trials remain unexecuted; no success leaderboard is claimed. <a href="evaluation.html">Trial protocol →</a></p>'''
     (output/'index.html').write_text(page('Agent-first programming',body),encoding='utf-8')
     (output/'.nojekyll').write_text('',encoding='utf-8')
     print(json.dumps({'status':'built','site':str(output),'wasm_bytes':len(binary),'evidence':manifest['evidence']}))
 
 
-if __name__ == '__main__':
-    main()
+if __name__=='__main__':main()

@@ -11,12 +11,16 @@ Goal: lower total agent cost per correct change, with explicit semantics. Alien-
 | Representation-token baseline | Done | Versioned tokenizer results, exact input hashes and explicit measurement scope |
 | Traditional-language source baseline | Done | Frozen greeting/counter traces, four executed languages, both encodings and explicit asymmetry |
 | Resource bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads |
-| Model-task baseline | Planned | Real trials, correct edits, retries, failures and tool overhead |
+| Model trial material and recorder | Done | Same task prompt, frozen contexts/oracle, external provenance and failed-trial accounting |
+| Model-task trials and sandbox verifier | Planned | Real trials, independent execution, correct edits, retries, failures and tool overhead |
+| Runtime microbenchmark | Done | Warmup/fresh samples, independent state oracle, source hashes and local measurements |
+| Readable docs and progress | Done | Safe static Markdown, navigation, TOC and committed change log |
 | Selective inspection | Done | Function discovery, call relationships, effects and test summaries without whole-file agent reads |
 | Transactional edits | Done | Stable node/data/test replacements, revision guards, executable CLI tests and no-clobber new candidates |
-| Initial data compression | Done | Bounded RLE and shared symbol dictionaries, exact IR/revision/Wasm equivalence and structural benchmark logging |
-| Inline literals and bulk resets | Done | Explicit-ID inline literals (`pact 0.4`), checked `state.reset` (`reset`) and Reference/Wasm equivalence checks |
-| Contracts and units | Next | Preconditions, postconditions, nominal units, public-function evidence policy |
+| Initial data compression | Done | Bounded RLE and shared symbol dictionaries, exact IR/revision/Wasm equivalence and real token reports |
+| Stable-ID literal definitions | Done | Optional source 0.4 integer/string definitions preserve IR/revision/Wasm |
+| Inline argument literals and bulk resets | Done | Explicit-ID inline literals (`pact 0.4`), versioned checked `state.reset` (`pact.module/0.2.0`) and reference/Wasm equivalence checks |
+| Contracts and units | Planned | Preconditions, postconditions, nominal units, public-function evidence policy |
 | Diagnostics and replay | In progress | Structured diagnostic fixes (`WRITE_MISMATCH`, `NODE_UNREACHABLE`); source locations and debugger planned |
 | Portability | Planned | Windows/macOS/Linux CI and real browser tests |
 | Standard library | Planned | Actual versioned math/color/input modules with explicit effects |

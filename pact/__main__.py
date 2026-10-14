@@ -36,7 +36,7 @@ def parser():
     patch.add_argument('source', type=Path)
     patch.add_argument('--patch', type=Path, required=True)
     patch.add_argument('-o', '--output', type=Path)
-    patch.add_argument('--to', choices=['compact', 'compact-data', 'compact-inline', 'json'], default='compact')
+    patch.add_argument('--to', choices=['compact', 'compact-data', 'compact-inline', 'compact-agent', 'json'], default='compact')
     patch.add_argument('--dry-run', action='store_true')
     for name in ('inspect', 'symbols'):
         command = commands.add_parser(name)
@@ -46,7 +46,7 @@ def parser():
     convert = commands.add_parser('convert')
     convert.add_argument('source', type=Path)
     convert.add_argument('-o', '--output', type=Path, required=True)
-    convert.add_argument('--to', choices=['compact', 'compact-data', 'compact-inline', 'json'], required=True)
+    convert.add_argument('--to', choices=['compact', 'compact-data', 'compact-inline', 'compact-agent', 'json'], required=True)
     migrate = commands.add_parser('migrate')
     migrate.add_argument('source', type=Path)
     migrate.add_argument('-o', '--output', type=Path, required=True)
@@ -79,8 +79,8 @@ def main(argv=None):
             patch = load_document(args.patch)
             candidate = apply_patch(document, patch)
             _, manifest = build_module(candidate)
-            source = (dumps(candidate, compressed=args.to in ('compact-data', 'compact-inline'),
-                            inline=args.to == 'compact-inline')
+            source = (dumps(candidate, compressed=args.to in ('compact-data', 'compact-inline', 'compact-agent'),
+                            inline=args.to == 'compact-inline', literals=args.to == 'compact-agent')
                       if args.to != 'json' else json.dumps(candidate, ensure_ascii=False, indent=2) + '\n')
             data = source.encode('utf-8')
             require(len(data) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Candidate source exceeds 1 MiB.')
@@ -104,8 +104,8 @@ def main(argv=None):
         if args.command == 'convert':
             from .compact import dumps, validate_document
             validate_document(document)
-            source = (dumps(document, compressed=args.to in ('compact-data', 'compact-inline'),
-                            inline=args.to == 'compact-inline')
+            source = (dumps(document, compressed=args.to in ('compact-data', 'compact-inline', 'compact-agent'),
+                            inline=args.to == 'compact-inline', literals=args.to == 'compact-agent')
                       if args.to != 'json' else json.dumps(document, ensure_ascii=False, indent=2) + '\n')
             atomic_write(args.output, source.encode('utf-8'))
             print(json.dumps({'status': 'converted', 'to': args.to, 'output': str(args.output)}))

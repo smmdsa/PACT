@@ -2,7 +2,7 @@
 
 Experimental agent-first programming: explicit dataflow, checked effects, stable node IDs and deterministic WebAssembly compilation.
 
-Compact frontend **0.2**, with optional data compression **0.3** and inline syntax extension **0.4**, translates to text graph **0.0.1** or numeric module **0.2.0** (0.1.0 migrates). JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
+Compact frontend **0.2**, with optional data compression **0.3** and stable-ID literal definitions and inline arguments **0.4**, translates to text graph **0.0.1** or numeric module **0.1.0** / **0.2.0**. Loading preserves the declared module version; checked runtime `state.reset` requires explicit migration to 0.2.0. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
 
 [Documentation and game](https://smmdsa.github.io/PACT/) · [Syntax](docs/syntax.md) · [Security](docs/security.md) · [Roadmap](ROADMAP.md)
 
@@ -80,7 +80,35 @@ Two frozen executable kernels were verified in PACT, Python, JavaScript and C. W
 
 PACT uses more source tokens in all these small comparisons. It includes policy declarations and tests that the other versions do not implement; behavioral equality on the frozen traces is not security equivalence. Drivers are counted separately in the reports. This does not measure agent task efficiency or the complete game. See [methodology and all results](docs/traditional-comparison.md).
 
+## Literal source and readable documentation
+
+```sh
+python3 -m pact convert examples/alien-harvest.pact --to compact-agent -o build/game.agent.pact
+```
+
+Source 0.4 offers two forms that preserve explicit IDs and lower to existing literal nodes: standalone definitions such as `zero = 0` and `greeting = "hola mundo"` (`--to compact-agent`), and numeric argument literals such as `n0002 = set input.left n0000=0 n0001=0` (`--to compact-inline`). Both preserve the source module version, revision and compiled bytes. The game with standalone literal definitions and data compression uses 16,747 o200k_base tokens and 38,273 bytes. Gemini inline arguments reduce the same game to 14,112 tokens and 34,057 bytes (43.2% fewer tokens than frozen source 0.2), with byte-identical Wasm. See [literal definitions](docs/literals.md), [inline arguments and checked resets](docs/inline-literals-and-resets.md) and [raw token report](benchmarks/results/inline-o200k_base.json).
+
+The public site renders Markdown as navigable documentation and maintains a [progress log](CHANGELOG.md). Its HTML runs without a parser/CDN dependency; building docs uses pinned optional packages in docs/site-requirements.txt. Compiler check/build/patch remain standard-library-only.
+
+## Runtime and agent evaluation
+
+```sh
+python3 -m benchmarks.runtime_performance --require-c
+python3 -m benchmarks.agent_trials prepare --language pact --plan-seed 17
+```
+
+Runtime benchmark validates consumed state and measures local kernel latency across PACT Wasm, Python, JavaScript and C. [Methodology and measured local run](docs/runtime-performance.md). It does not rank languages universally.
+
+LLM trial material freezes identical instructions, language-specific contexts and an independent arithmetic oracle. The recorder accepts external provenance/usage records; it does not call models, run untrusted candidates or authenticate reported outcomes. Actual model trials and sandbox integration remain pending. [Protocol and additional benchmarks](docs/agent-evaluation.md).
+
 ## Verification and site
+
+Install optional documentation dependencies before the full suite, which includes site tests:
+
+```sh
+python3 -m pip install -r docs/site-requirements.txt
+```
+
 
 ```sh
 python3 -m unittest discover -v
