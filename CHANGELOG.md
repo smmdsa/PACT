@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — JSON semantic diagnostics
+## Latest — explicit migration diagnostic locations
+
+- JSON migration semantic errors now use definition spans from the original single bounded read, including escaped IDs and CRLF.
+- Existing format/migration rejection codes, default target, structured fixes and ambiguous candidates are preserved.
+- Failed migrations leave existing output files intact; successful compact/JSON migrations retain identical Wasm.
+- Replay and patch-candidate locations remain planned.
+
+## JSON semantic diagnostics
 
 - JSON semantic rejections now carry original definition spans in locate and CLI source validation, excluding migration.
 - Escaped IDs, CRLF, ambiguous candidates and structured fixes are preserved; malformed containers and contract collisions do not fabricate locations.

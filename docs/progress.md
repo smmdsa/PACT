@@ -1,3 +1,7 @@
+## Explicit migration locations — 2026-10-14
+
+JSON migration now retains original physical definition positions on semantic rejection. Source and target validation use the existing migrator; no format defaults or codes change. Single-snapshot reads, ambiguity, escaped IDs/CRLF, preserved output on rejection and Wasm-equivalent successful migrations are covered by tests. Replay and patch-candidate spans remain pending.
+
 ## JSON semantic diagnostic attachment — 2026-10-14
 
 Implemented source validation in locate and CLI check/build/interpret/inspection/conversion/patch input. Positions derive from the original bounded snapshot. Repeated IDs remain candidates; contract collisions and malformed containers omit spans. Migration attachment, patch-candidate locations and replay remain pending.

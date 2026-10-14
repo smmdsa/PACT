@@ -77,7 +77,8 @@ def main(argv=None):
             from .source_locations import locate_file
             print(json.dumps(locate_file(args.source, args.function, args.node), ensure_ascii=False, sort_keys=True))
             return 0
-        document = load_document(args.source, validate_source=args.command != 'migrate')
+        document = load_document(args.source, validate_source=args.command != 'migrate',
+                                 migrate_to=args.to if args.command == 'migrate' else None)
         if args.command == 'patch':
             from .compact import dumps
             from .module_build import build_module
@@ -125,8 +126,7 @@ def main(argv=None):
             return 0
         if args.command == 'migrate':
             from .compact import dumps
-            from .module import migrate_module
-            migrated = migrate_module(document, target_format=args.to)
+            migrated = document
             source = dumps(migrated) if args.output.suffix == '.pact' else json.dumps(migrated, ensure_ascii=False, indent=2) + '\n'
             atomic_write(args.output, source.encode('utf-8'))
             print(json.dumps({'status': 'migrated', 'to': migrated['format'], 'output': str(args.output)}))
