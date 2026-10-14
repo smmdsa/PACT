@@ -1,0 +1,70 @@
+# PACT
+
+Experimental agent-first programming: explicit dataflow, checked effects, stable node IDs and deterministic WebAssembly compilation.
+
+Compact frontend **0.2** translates to text graph **0.0.1** or numeric module **0.1.0**. JSON remains an interchange format. Agent productivity and token efficiency have not yet been established experimentally.
+
+[Documentation and game](https://smmdsa.github.io/PACT/) · [Syntax](docs/syntax.md) · [Security](docs/security.md) · [Roadmap](ROADMAP.md)
+
+## Hello from an alien language
+
+See [the complete compact source](examples/hello.pact).
+
+```sh
+python3 -m pact check examples/hello.pact
+python3 -m pact build examples/hello.pact -o build/hello.wasm
+node host/run.mjs build/hello.wasm --allow stdout
+```
+
+Output: `hola mundo, from an alien language` followed by a newline.
+
+Requires Python 3.10+ and Node 20+, without third-party packages. On Windows use `python` if appropriate. Compilation is verified on Linux; native Windows/macOS CI is planned. Generated HTML uses browser WebAssembly without a server or runtime installation.
+
+## Alien Harvest
+
+An original retro platformer: jumping, ladders, enemies, throwable vegetables, checkpoint, lives, crystals and a boss. Gameplay uses 14 PACT functions and 1,218 nodes. Sixteen 8×8 tiles and a named palette compile into an internal RGBA atlas.
+
+```sh
+python3 -m pact build examples/alien-harvest.pact -o build/alien-harvest.wasm --html build/Alien-Harvest-PACT.html
+```
+
+Open the resulting HTML. Arrows/WASD move or climb; Space jumps; X/J picks up or throws; Enter starts; P pauses. Touch buttons are included. Collect three crystals, defeat the guardian and reach the door.
+
+JavaScript handles input/rendering/audio/tick scheduling; gameplay is in PACT. `tools/make_game.py` is an optional authoring tool, not executed by the compiler or game. Regenerating overwrites JSON edits; convert again explicitly.
+
+## Reversible conversion
+
+```sh
+python3 -m pact convert examples/alien-harvest.pact.json -o examples/alien-harvest.pact --to compact
+python3 -m pact convert examples/alien-harvest.pact -o build/alien-harvest.json --to json
+```
+
+Both formats pass the same validator. Tests check exact IR reconstruction and byte-identical Wasm. Game: **51,244 bytes** of compact source versus **88,379 bytes** of minified JSON, **42.0% fewer bytes**. These are not token counts; see [benchmarks](benchmarks/README.md).
+
+## Verification and site
+
+```sh
+python3 -m unittest discover -v
+python3 -m tools.build_site
+node tools/playthrough.mjs site-output/game.wasm site-output/game.manifest.json build/playthrough.json
+```
+
+The automated player wins using inputs without modifying gameplay state. Tests compare the reference VM with actual Wasm. Browser layout, mobile behavior and audible audio need real-browser QA; native Canvas checks do not replace it.
+
+The Pages workflow tests, compiles and runs the playthrough before publishing. Enable **Settings → Pages → Source → GitHub Actions**. The linked URL is the intended address, not evidence of completed deployment.
+
+| Path | Purpose |
+| --- | --- |
+| `pact/` | Compiler, validators, frontend, reference VM |
+| `examples/` | Compact sources and equivalent JSON |
+| `host/`, `web/` | Capability host and browser presentation |
+| `tests/` | Safety, execution, conversion, gameplay regressions |
+| `docs/` | Specification, security and verification history |
+| `benchmarks/` | Byte measurements and future token protocol |
+| `tools/` | Authoring, input-only player and site builder |
+
+No full SDK, package manager, transaction API, debugger or nominal units yet. A `stdlib/` will be added when actual standard modules exist.
+
+## License
+
+The owner has not selected an open-source license. Public availability alone does not grant unrestricted redistribution rights. Choosing a license is an owner decision.
