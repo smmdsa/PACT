@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — Demos & Examples catalog
+## Latest — Órbita, an authored PACT interface experiment
+
+- Added an editorial spatial interface: six speculative futures, three visual lenses, an attention budget and reversible decisions, plus a list alternative.
+- The authored PACT 0.4 source compiles to real WebAssembly: selection, lens, allocation bounds, six-seed budget, rolling 32-state history, undo/redo, branch truncation and reset live in the kernel. HTML/CSS/SVG/JavaScript handle presentation and events.
+- Six export cases execute on Wasm at build time. Behavioral tests cover bounds, rejection before writes, history and reference/Wasm agreement over a deterministic mixed action sequence. Chromium checks exercise the interface on desktop and mobile-shaped viewports.
+- Added Órbita to the shared demo library with source and runtime-boundary documentation. It is an authored application, separate from generated model benchmark candidates; no historical-uniqueness, productivity or prediction claim is made.
+
+## Demos & Examples catalog
 
 - Added a shared-navigation and homepage entry collecting the three playable games and every published PACT source, replay and patch fixture.
 - Added search, type filters, source downloads, evidence links and a sandboxed inline player, with direct links retained when JavaScript is unavailable.

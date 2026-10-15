@@ -9,7 +9,8 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | 0.0 Text kernel | Done | Greeting, exact output, capability host |
 | 0.1 Stateful kernel | Done | Checked effects, atlas and playable platformer |
 | 0.2 Compact frontend | Done | Reversible IR, identical Wasm, malformed input rejection |
-| Public project | Live | Public docs, examples, CI and GitHub Pages |
+| Public project | Live | Public docs, searchable demo library, examples, CI and GitHub Pages |
+| PACT interface experiment | Done | Órbita: authored PACT interaction kernel, spatial browser presentation, bounded reversible decisions and finite reference/Wasm/browser checks; no general UI framework or productivity claim |
 | Representation-token baseline | Done | Versioned tokenizer results, exact input hashes and explicit measurement scope |
 | Traditional-language source baseline | Done | Frozen greeting/counter traces, four executed languages, both encodings and explicit asymmetry |
 | Parser and benchmark-read bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads; general containment/peak-memory claims excluded |

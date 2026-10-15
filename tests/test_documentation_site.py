@@ -55,7 +55,7 @@ class DocumentationSiteTests(unittest.TestCase):
         catalog=ROOT/'site-output/demos.html'
         self.assertTrue(catalog.exists())
         source=catalog.read_text();links=Structure(source).links
-        for target in ('game.html','metroidvania/metro_a.html','metroidvania/metro_b.html'):
+        for target in ('orbita.html','game.html','metroidvania/metro_a.html','metroidvania/metro_b.html'):
             self.assertIn(target,links)
         for path in (ROOT/'examples').rglob('*'):
             if path.is_file() and path.suffix in ('.pact','.json'):
@@ -68,3 +68,15 @@ class DocumentationSiteTests(unittest.TestCase):
     def test_catalog_is_available_from_shared_navigation_and_homepage(self):
         for name in ('index.html','syntax.html','metroidvania-pilot.html'):
             self.assertIn('demos.html',Structure((ROOT/'site-output'/name).read_text()).links)
+
+    def test_orbita_publishes_the_compiled_kernel_and_presentation(self):
+        import json
+        import base64
+        import re
+        source=(ROOT/'site-output/orbita.html').read_text()
+        artifact=json.loads(re.search(r'<script id="orbita-artifact" type="application/json">(.*?)</script>',source,re.S).group(1))
+        self.assertEqual(base64.b64decode(artifact['wasm']),(ROOT/'site-output/orbita.wasm').read_bytes())
+        self.assertEqual(len(artifact['manifest']['evidence']),6)
+        for name in ('orbita.css','orbita.js'):
+            self.assertEqual((ROOT/'web'/name).read_bytes(),(ROOT/'site-output'/name).read_bytes())
+        self.assertIn('orbita.html',Structure((ROOT/'site-output/orbita-design.html').read_text()).links)
