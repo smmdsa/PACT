@@ -9,6 +9,18 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class AgentCandidatePolicyTests(unittest.TestCase):
+    def test_c_policy_accepts_only_exact_loop_edit_with_crlf(self):
+        source=(ROOT/'benchmarks/agent_trials/counter.c').read_bytes()
+        correct=source.replace(b'i < 3',b'i < 4')
+        for candidate in (correct,correct.replace(b'\n',b'\r\n')):
+            report=self.module().audit_candidate(candidate,language='c')
+            self.assertTrue(report['policy_pass'])
+            self.assertFalse(report['runtime_executed'])
+            self.assertEqual(report['scope'],'counter-four exact C source edit/0.1')
+        for candidate in (source,correct+b'// comment\n',correct.replace(b'return 0',b'return 1'),
+                          b'broken',b'\xff',b' '*1_048_577,None):
+            self.assertFalse(self.module().audit_candidate(candidate,language='c')['policy_pass'])
+
     def test_javascript_policy_accepts_exact_edit_and_crlf(self):
         source=(ROOT/'benchmarks/agent_trials/counter.mjs').read_bytes()
         correct=source.replace(b'i < 3',b'i < 4')

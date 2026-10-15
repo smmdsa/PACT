@@ -42,7 +42,7 @@ The external verifier should pin its revision and toolchains; compile/parse unde
 
 ## Initial isolated executor
 
-The [Docker PACT/Python/JavaScript counter adapters](agent-sandbox.md) run the PACT reference interpreter, Python or JavaScript candidate in a disposable container and feed observations to the trace grader. They require a trusted immutable local image ID and have no host-execution fallback. These are not full source-policy verifiers or real model trial runners; the original recorder format/flags remain unchanged.
+The [Docker PACT/Python/JavaScript/C counter adapters](agent-sandbox.md) run the PACT reference interpreter, Python, JavaScript or C candidate in a disposable container and feed observations to the trace grader. They require a trusted immutable local image ID and have no host-execution fallback. These are not full source-policy verifiers or real model trial runners; the original recorder format/flags remain unchanged.
 
 ## Optional external trace grading
 

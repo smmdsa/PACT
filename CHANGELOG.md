@@ -2,7 +2,16 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — isolated JavaScript counter adapter
+## Latest — isolated C counter adapter
+
+- `--language c` compiles C11 and executes native code only inside Docker, using the same frozen calls and independent trace grader as PACT/Python/JavaScript.
+- A bounded Linux memfd loads the compiled binary while `/tmp` remains noexec; reset forks and re-executes the binary so C static state starts fresh.
+- Compiler diagnostics use the existing bounded capture. Receipt 0.5 includes unauthenticated GCC metadata; compile failures, crashes and source-policy failures remain explicit.
+- The C policy allows only the exact frozen loop-bound edit, with CRLF normalization. Source-policy asymmetries remain documented.
+- CI exercises authored baseline/edited/invalid/comment/1-MiB/reset/noise/output/timeout/crash fixtures. They are not real model trials.
+- All four task adapters exist. Broader source policies, embedded declaration execution, hostile containment probes and actual provider/model trials remain unfinished.
+
+## Isolated JavaScript counter adapter
 
 - `--language javascript` runs the frozen counter task as a Node 24 ES module only inside Docker, with the existing calls, independent oracle, output cap and timeout.
 - A distinct module URL re-evaluates top-level state for reset; CI includes a global-state leakage fixture.
