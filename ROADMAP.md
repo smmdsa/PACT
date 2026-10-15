@@ -2,7 +2,7 @@
 
 Goal: lower total agent cost per correct change, with explicit semantics. Alien-looking syntax is not a success criterion.
 
-Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation audit and concrete backlog](docs/roadmap-audit.md) for code/test evidence and unimplemented acceptance criteria. “Done” applies only to the scope written below, not the entire long-term area.
+Last code audit: 2026-10-15, with baseline main `882a630` and subsequent implementation increments recorded in the audit. See the [implementation audit and concrete backlog](docs/roadmap-audit.md) for code/test evidence and unimplemented acceptance criteria. “Done” applies only to the scope written below, not the entire long-term area.
 
 | Stage | Status | Acceptance criterion |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | Initial data compression | Done | Bounded RLE and shared symbol dictionaries, exact IR/revision/Wasm equivalence and real token reports |
 | Stable-ID literal definitions | Done | Optional source 0.4 integer/string definitions preserve IR/revision/Wasm |
 | Inline argument literals and bulk resets | Done | Explicit-ID inline literals (`pact 0.4`), versioned checked `state.reset` (`pact.module/0.2.0`) and reference/Wasm equivalence checks |
-| Contracts and units | In progress | Module 0.3 export cases, 0.4 explicit guard/assert conditions and 0.5 exact expected-trap cases; nominal units and stronger contract tooling planned |
+| Contracts and units | Done for declared static contracts | Module 0.3 export cases, 0.4 guard/assert conditions, 0.5 exact expected-trap cases and 0.6 static nominal unit/signature enforcement; dependent/refinement types and proof excluded |
 | Diagnostics and replay | In progress | Compact/JSON definition spans, semantic/migration diagnostics, reference/Wasm comparison and exact trap maps implemented; full instruction maps, interactive stepping and physical source edits pending |
 | Portability | In progress | Linux/Windows/macOS correctness matrix and real Chromium smoke passed; other engines and real devices planned |
 | Standard library | Planned | Actual versioned math/color/input modules with explicit effects |
@@ -36,8 +36,8 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | --- | --- | --- |
 | 1 | E3 | Done for the finite Linux/Docker profile: all ten probes passed in CI run 38700604568; original failed attempt and containment exclusions retained |
 | 2 | E4, E5 | Blocked on configured provider credentials/backend and immutable model/usage evidence; formal trials and broader experiments remain pending |
-| 3 | L1, L2 | L1 implemented: versioned expected-trap cases with exact reference/Wasm acceptance; next available is L2 nominal units and stronger contracts |
-| 4 | D1, D2, P1 | Full instruction maps/debugger, byte-aware editing/CAS and more browser/device evidence |
+| 3 | L1, L2 | Implemented: exact expected-trap cases and versioned nominal unit/signature contracts; finite acceptance criteria and exclusions documented |
+| 4 | D1, D2, P1 | Next: full instruction maps/debugger, byte-aware editing/CAS and more browser/device evidence |
 | 5 | S1, R1, X1 | Versioned reusable library, broader runtime/build/memory measurements and owner-approved licensed reproducible releases |
 
 The audit records the evidence and completion criteria for each ID. Task-specific policy results, finite trace matches and CI integration fixtures must not be presented as general candidate correctness or measured model productivity.

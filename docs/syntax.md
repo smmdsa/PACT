@@ -16,7 +16,7 @@ return ENTRY_NODE_ID
 end
 ```
 
-Top-level nodes belong to a text graph; functions belong to a numeric module. Explicit `format` selects `pact.graph/0.0.1`, `pact.module/0.1.0` or `pact.module/0.2.0` / `pact.module/0.3.0` / `pact.module/0.4.0` / `pact.module/0.5.0` (loading preserves the declared module version; `state.reset` requires a supported numeric format from 0.2.0 onward). All original closed-schema sections remain. Every section occupies one physical line. JSON strings encode newlines as escapes. Blank lines and indentation are insignificant.
+Top-level nodes belong to a text graph; functions belong to a numeric module. Explicit `format` selects `pact.graph/0.0.1`, `pact.module/0.1.0` or `pact.module/0.2.0` / `pact.module/0.3.0` / `pact.module/0.4.0` / `pact.module/0.5.0` / `pact.module/0.6.0` (loading preserves the declared module version; `state.reset` requires a supported numeric format from 0.2.0 onward). All original closed-schema sections remain. Every section occupies one physical line. JSON strings encode newlines as escapes. Blank lines and indentation are insignificant.
 
 Whole-line `#` comments are optional and discarded by conversion. Inline comments are unsupported; `#` in quoted text is ordinary text. Rationale belongs in documentation until versioned metadata is designed.
 
@@ -84,3 +84,7 @@ Module 0.4 adds `assert predicate` (unit) and `guard predicate body` (body type)
 ## Expected-trap declarations
 
 Module 0.5 inherits 0.4 operations and adds optional closed `trap` metadata to test cases: code/function/node, with no result field and optional post-trap state assertions. Builds require matching reference and exact Wasm failures. Source headers do not select this behavior. See [expected traps](expected-traps.md).
+
+## Nominal unit contracts
+
+Module 0.6 inherits 0.5 cases and accepts optional closed top-level `units` metadata with declared names and cell/constant/function bindings. Static inference checks nominal units while runtime values remain i32. The section is preserved under all supported source headers; older numeric schemas reject it. See [nominal units](nominal-units.md).

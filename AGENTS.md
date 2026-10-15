@@ -1,6 +1,6 @@
 # Agent guidance
 
-Read README.md, docs/syntax.md and docs/security.md before changing semantics. ROADMAP.md describes planned work. Compact 0.2, compressed data 0.3 and literal/inline source 0.4 wrap graph 0.0.1 or numeric modules 0.1.0/0.2.0/0.3.0/0.4.0/0.5.0; preserve these distinctions. Reading/converting preserves revisions. Only explicit migration changes numeric format; state.reset requires module 0.2.0, 0.3.0, 0.4.0 or 0.5.0.
+Read README.md, docs/syntax.md and docs/security.md before changing semantics. ROADMAP.md describes planned work. Compact 0.2, compressed data 0.3 and literal/inline source 0.4 wrap graph 0.0.1 or numeric modules 0.1.0/0.2.0/0.3.0/0.4.0/0.5.0/0.6.0; preserve these distinctions. Reading/converting preserves revisions. Only explicit migration changes numeric format; state.reset requires module 0.2.0, 0.3.0, 0.4.0, 0.5.0 or 0.6.0.
 
 Prefer focused function/dependency reads. Keep IDs stable. Do not replace semantic names with undocumented opcodes. Effects, array indices, overflow and grants remain explicit.
 
@@ -35,3 +35,5 @@ Receipt 0.6 executes PACT candidate declarations on compiled Wasm only inside Do
 Receipt 0.7 selects a source-policy profile explicitly. canonical/0.1 stays the default for historical trials. The opt-in counter-four-forms/0.2 policy pins its contract and recognizes only registered canonical/unrolled fingerprints; it is not a general equivalence or intent checker. Keep IR/AST/exact-source and test-interface asymmetries visible.
 
 Receipt 0.8 verifies absence after forced cleanup. Authored E3 resource probes execute only in Docker; retain failed probe logs/state and distinguish synthetic grading tests from executed isolation evidence. Finite no-route/OOM/PID/file/CPU observations do not establish universal containment or daemon-loss recovery.
+
+Module 0.6 inherits 0.5 tests and adds optional strict nominal units. Inspect unit_contracts along with signatures; predicates, indices and repeat counters remain dimensionless. Literal annotations apply only to i32.const nodes, never arbitrary-expression casts. Distinct unit names are incompatible, and unsupported derived products reject. Keep untagged host i32 ABI assumptions explicit; static unit checking is not runtime authentication or a physical-equation proof. Migration/representation conversion preserves runtime bytes but unit metadata affects semantic revisions.

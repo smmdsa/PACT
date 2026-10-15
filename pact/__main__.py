@@ -58,7 +58,7 @@ def parser():
     migrate = commands.add_parser('migrate')
     migrate.add_argument('source', type=Path)
     migrate.add_argument('-o', '--output', type=Path, required=True)
-    migrate.add_argument('--to', choices=['pact.module/0.2.0', 'pact.module/0.3.0', 'pact.module/0.4.0', 'pact.module/0.5.0'], default='pact.module/0.2.0')
+    migrate.add_argument('--to', choices=['pact.module/0.2.0', 'pact.module/0.3.0', 'pact.module/0.4.0', 'pact.module/0.5.0', 'pact.module/0.6.0'], default='pact.module/0.2.0')
     for command in ("check", "interpret", "build"):
         child = commands.add_parser(command)
         child.add_argument("source", type=Path)
@@ -149,6 +149,8 @@ def main(argv=None):
                 response = {'status':'accepted','format':plan['format'],'layout':plan['layout'],'function_types':plan['function_types'],'work':plan['work']}
                 if 'declared_export_tests' in plan:
                     response['declared_export_tests'] = plan['declared_export_tests']
+                if 'unit_contracts' in plan:
+                    response['unit_contracts'] = plan['unit_contracts']
                 print(json.dumps(response, sort_keys=True))
                 return 0
             require(args.command == 'build', 'CLI_INVALID', 'Use module build/tests for numeric execution.')

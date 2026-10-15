@@ -9,7 +9,8 @@ FORMAT = 'pact.module/0.2.0'
 TESTED_FORMAT = 'pact.module/0.3.0'
 CHECKED_FORMAT = 'pact.module/0.4.0'
 TRAP_TESTED_FORMAT = 'pact.module/0.5.0'
-FORMATS = ('pact.module/0.1.0', FORMAT, TESTED_FORMAT, CHECKED_FORMAT, TRAP_TESTED_FORMAT)
+UNIT_FORMAT = 'pact.module/0.6.0'
+FORMATS = ('pact.module/0.1.0', FORMAT, TESTED_FORMAT, CHECKED_FORMAT, TRAP_TESTED_FORMAT, UNIT_FORMAT)
 TRAP_OPERATIONS = {
     'ASSERTION_FAILED': {'flow.assert', 'flow.guard'},
     'STATE_BOUNDS': {'state.load', 'state.store'},
@@ -79,7 +80,10 @@ def analyze_module(document):
     except (TypeError, ValueError, RecursionError):
         from .diagnostics import PactError
         raise PactError('SCHEMA_INVALID', 'Module must contain finite JSON data.') from None
-    closed_record(document, {'format', 'constants', 'cells', 'functions', 'exports', 'assets', 'presentation', 'tests'})
+    fields = {'format', 'constants', 'cells', 'functions', 'exports', 'assets', 'presentation', 'tests'}
+    if isinstance(document, dict) and document.get('format') == UNIT_FORMAT and 'units' in document:
+        fields.add('units')
+    closed_record(document, fields)
     require(document['format'] in FORMATS, 'FORMAT_UNSUPPORTED', 'Unsupported module format.')
     operations = (OPERATIONS_0_1_0 if document['format'] == FORMATS[0] else
                   OPERATIONS if document['format'] in FORMATS[3:] else OPERATIONS_0_2_0)
@@ -263,7 +267,7 @@ def analyze_module(document):
     for test in document['tests']:
         require(isinstance(test, dict), 'TEST_INVALID', 'Expected test record.')
         fields = {'id', 'function', 'set', 'expect'} | (set(test) & {'args', 'result'})
-        if document['format'] == TRAP_TESTED_FORMAT and 'trap' in test:
+        if document['format'] in FORMATS[4:] and 'trap' in test:
             fields.add('trap')
         closed_record(test, fields)
         identifier(test['id'])
@@ -313,6 +317,9 @@ def analyze_module(document):
             'initial_data': bytes(initial) + atlas, 'work': costs}
     if export_evidence is not None:
         plan['declared_export_tests'] = export_evidence
+    if document['format'] == UNIT_FORMAT:
+        from .units import check_units
+        plan['unit_contracts'] = check_units(document)
     return plan
 
 

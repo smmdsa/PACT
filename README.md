@@ -2,7 +2,7 @@
 
 Experimental agent-first programming: explicit dataflow, checked effects, stable node IDs and deterministic WebAssembly compilation.
 
-Compact frontend **0.2**, with optional data compression **0.3** and stable-ID literal definitions and inline arguments **0.4**, translates to text graph **0.0.1** or numeric module **0.1.0** / **0.2.0** / **0.3.0** / **0.4.0** / **0.5.0**. Loading preserves the declared module version; checked runtime `state.reset` requires a supported numeric format from 0.2.0 onward. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
+Compact frontend **0.2**, with optional data compression **0.3** and stable-ID literal definitions and inline arguments **0.4**, translates to text graph **0.0.1** or numeric module **0.1.0** / **0.2.0** / **0.3.0** / **0.4.0** / **0.5.0** / **0.6.0**. Loading preserves the declared module version; checked runtime `state.reset` requires a supported numeric format from 0.2.0 onward. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
 
 [Documentation and game](https://smmdsa.github.io/PACT/) · [Syntax](docs/syntax.md) · [Security](docs/security.md) · [Roadmap](ROADMAP.md)
 
@@ -134,7 +134,7 @@ The Pages workflow tests, compiles and runs the playthrough before publishing. E
 | `benchmarks/` | Byte measurements and future token protocol |
 | `tools/` | Authoring, input-only player and site builder |
 
-No full SDK, package manager, debugger or nominal units yet. A `stdlib/` will be added when actual standard modules exist.
+No full SDK, package manager, interactive debugger or derived-unit algebra yet. A `stdlib/` will be added when actual standard modules exist.
 
 ## License
 
@@ -163,3 +163,7 @@ External counter-four traces can be checked against the frozen oracle and archiv
 ## Expected failures as executable cases
 
 Opt-in module 0.5 adds expected assertion, bounds and arithmetic traps with qualified function/node IDs and post-trap state expectations. Builds validate every 0.5 case on the reference machine and actual Wasm, requiring exact binary-bound trap coordinates. Earlier writes persist; normal return or another failure rejects the case. [Example](examples/counter.traps.pact) · [Schema, migration and evidence](docs/expected-traps.md).
+
+## Static nominal units
+
+Opt-in module 0.6 adds nominal units for cells, constants, local slots and function arguments/results. Static inference rejects incompatible arithmetic, stores, calls, branches and unitful indices/predicates/counters. Runtime values remain i32 and annotations preserve compiled bytes. [Authored example](examples/counter.units.pact) · [Contracts, operations and limits](docs/nominal-units.md).

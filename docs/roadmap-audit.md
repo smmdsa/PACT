@@ -7,14 +7,14 @@ This audit checks repository implementation and tests, not just changelog claims
 | Area | Implementation and checks | Verified limit |
 | --- | --- | --- |
 | Text kernel and capability host | `pact/graph.py`, `pact/wasm.py`, `host/profile.mjs`; `tests/test_graph.py`, `tests/test_execution.py` | Small static text/effect profile; numeric modules have a different host profile |
-| Numeric state and game | `pact/module.py`, `pact/module_wasm.py`, `pact/reference.py`, `tools/playthrough.mjs`; module/game tests | i32/unit and fixed arrays; no nominal units, general imports or recursion |
+| Numeric state and game | `pact/module.py`, `pact/module_wasm.py`, `pact/reference.py`, `tools/playthrough.mjs`; module/game tests | i32/unit runtime and fixed arrays; module 0.6 static unit labels; no general imports or recursion |
 | Source representations | `pact/compact.py`, `pact/data_codec.py`, `pact/atlas_codec.py`; compact/compression/literal tests | Representation versions remain distinct from numeric semantic versions |
 | Token and traditional baselines | `benchmarks/token_counts.py`, `benchmarks/traditional.py`, frozen JSON reports and tests | Two chosen kernels and source encodings; no demonstrated model productivity advantage |
 | Parser/read bounds | Cursor parsing, bounded snapshots and `tests/test_resource_bounds.py` | These bounds do not prove arbitrary host-code containment or all peak-memory limits |
 | Runtime benchmark | `benchmarks/runtime_performance.py`, frozen runtime report and tests | Chosen local counter workload with warmup, fresh samples and oracle; not a universal speed ranking |
 | Selective inspection | `pact/inspection.py`, inspection CLI/tests | Numeric modules only; helper bodies/state/test bodies can be omitted explicitly |
 | Revision-checked edits | `pact/transactions.py`, `pact/transaction_io.py`, patch/transaction tests | New candidate publication; no in-place filesystem compare-and-swap |
-| Contracts | Module 0.3 export-case declarations, 0.4 guard/assert checking and 0.5 expected-trap cases; export-evidence/assertion/trap tests | Case presence and executed examples are not coverage proofs or nominal units |
+| Contracts | Module 0.3 export-case declarations, 0.4 guard/assert checking, 0.5 expected-trap cases and 0.6 nominal units; export-evidence/assertion/trap/unit tests | Static nominal/signature contracts are implemented; cases and units do not prove coverage or physical intent |
 | Locations and replay | `pact/source_locations.py`, `pact/replay.py`, compiler trap maps; location/replay tests | Definition spans and selected trap opcodes; no full instruction/source map or interactive debugger |
 | Portability | OS matrix, Chromium smoke, Node input-only game playthrough | No Firefox/WebKit, physical-device run or full browser victory evidence |
 | Trial material and recorder | `benchmarks/agent_trials.py`, frozen prompt/contexts/oracle; recorder tests | Records external claims; no provider requests or real trial-result dataset |
@@ -32,7 +32,7 @@ This audit checks repository implementation and tests, not just changelog claims
 | E4 | Blocked: provider configuration | No configured API key/backend or immutable model/usage evidence in this environment | Pinned provider/model/settings, fresh paired trials, actual usage, failed attempts/retries/tool overhead and archived raw candidates/responses; credentials/backend must be configured |
 | E5 | After initial trials | More tasks and retrieval/repair experiments | Pre-register multiple tasks and oracles, full-source vs selected context and repair budgets; do not generalize from counter-four alone |
 | L1 | Implemented | Module 0.5 strict expected-trap declarations, dual-engine execution and retained-state assertions | Versioned test schema, reference/Wasm acceptance for expected traps, state-after-trap semantics and migration compatibility |
-| L2 | Planned | Nominal units and stronger contracts | Versioned type/contract specification and enforcement; reject incompatible units with independent tests |
+| L2 | Implemented for static contracts | Versioned nominal cell/constant/slot/signature contracts and inference; derived/refinement types excluded | Versioned type/contract specification and enforcement; reject incompatible units with independent tests |
 | D1 | Planned | Full instruction maps and interactive debugger | Define mapping/stepping semantics, bounded trace or breakpoint state and actual engine tests; retain generic fallback when unsupported |
 | D2 | Planned | Physical source editing and in-place CAS | Specify exact-byte identity, stale-file races and failure atomicity; current semantic patch/new-file flow remains valid |
 | P1 | Planned | Other browser engines and real devices | Executed Firefox/WebKit/device runs, browser victory and audio/mobile checks with artifacts |
@@ -79,10 +79,14 @@ An opt-in `counter-four-forms/0.2` contract now binds canonical and unrolled imp
 
 The Docker workflow now runs authored resource/filesystem/network attempts with positive controls, records OOM state and bounded logs, and verifies container absence after removal. A temporarily inaccessible client endpoint exercises cleanup rejection while a bounded container runs; access is restored for real removal. Cleanup/inspection failure preservation also has synthetic tests. The initial unsuccessful absent-container oracle is retained separately. All ten observations passed in actual Docker CI run 38700604568, with the image, probe/harness hashes, per-probe observations and artifact digest frozen in `benchmarks/results/isolation-38700604568.json`. The probe documentation explicitly excludes universal containment, every exfiltration path and daemon-loss recovery for a live container.
 
-## Active loop — E3 complete, L1 implemented
+## Active loop — E3, L1 and static L2 implemented
 
-E3 completed its written finite acceptance criterion on 2026-10-15. E4 cannot run formal trials in this environment: provider credentials/backend and immutable provider usage/model attestations are unavailable. E5 remains dependent on formal trials; the exploratory demos do not satisfy it. L1 now implements strict expected traps on reference/Wasm; continue with L2 while retaining those blockers. X1 still requires the owner’s license choice; reproducible packaging can proceed independently.
+E3 completed its written finite acceptance criterion on 2026-10-15. E4 cannot run formal trials in this environment: provider credentials/backend and immutable provider usage/model attestations are unavailable. E5 remains dependent on formal trials; the exploratory demos do not satisfy it. L1 now implements strict expected traps on reference/Wasm; L2 implements static nominal units/signature contracts; continue with D1 while retaining those blockers. X1 still requires the owner’s license choice; reproducible packaging can proceed independently.
 
 ## L1 expected-trap cases — 2026-10-15
 
 Module 0.5 inherits 0.4 operations and accepts strict code/function/node trap declarations. Build validates every 0.5 case on fresh reference/Wasm state, including post-trap writes; Wasm requires an exact binary-bound compiler trap site. Normal return, wrong failure/state, missing coordinates and exhausted reference budget reject. Legacy defaults/evidence and frozen sources stay intact. Migration changes only the version/revision and preserves compiled bytes. Tests exercise guard/assert/helper/bounds/arithmetic failures, retained writes, numeric results, map tampering, shared budget, representations and CLI atomic rejection. This completes L1’s written finite criterion, not L2 contracts/units or coverage proof.
+
+## L2 nominal unit contracts — 2026-10-15
+
+Opt-in module 0.6 inherits 0.5 cases and adds strict unit names/bindings for cells, constants, local slots, literals and signatures. A separate bounded inference pass checks all supported operations after scalar/effect validation; incompatible calls, branches, stores, indices/predicates/counters and unsupported derived arithmetic reject. Plans/check/manifests expose expanded contracts; selective inspection retains relevant signatures and omits helper literal annotations. Authored reference/Wasm tests, source/migration binary identity and CLI atomic-rejection cases validate the static contract. Runtime values remain untagged i32, so host-unit authentication, automatic scaling, derived/refinement types and physical-intent proof remain excluded. This completes L2’s versioned nominal type/contract criterion.

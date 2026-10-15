@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 from .diagnostics import PactError
-from .module import TRAP_TESTED_FORMAT, analyze_module
+from .module import FORMATS, analyze_module
 from .module_wasm import compile_module, compile_module_with_traps
 from .module_tests import check_reference_tests
 from .schema import require
@@ -13,7 +13,7 @@ from .schema import require
 
 def build_module(document):
     plan=analyze_module(document)
-    trap_tests = document['format'] == TRAP_TESTED_FORMAT
+    trap_tests = document['format'] in FORMATS[4:]
     request = {'tests':document['tests'],'layout':plan['layout']}
     if trap_tests:
         check_reference_tests(document)
@@ -40,4 +40,6 @@ def build_module(document):
         'evidence':evidence,'work':plan['work']}
     if 'declared_export_tests' in plan:
         manifest['declared_export_tests']=plan['declared_export_tests']
+    if 'unit_contracts' in plan:
+        manifest['unit_contracts']=plan['unit_contracts']
     return binary,manifest
