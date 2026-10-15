@@ -9,5 +9,6 @@ COPY tools/check_module.mjs /opt/runtime/tools/check_module.mjs
 COPY benchmarks/sandbox/javascript_worker.mjs /opt/javascript_worker.mjs
 COPY benchmarks/sandbox/c_worker.py /opt/runtime/c_worker.py
 COPY benchmarks/sandbox/c_driver.c /opt/c_driver.c
+COPY benchmarks/sandbox/isolation_probes.py /opt/isolation_probes.py
 USER 65534:65534
 ENTRYPOINT ["python3", "-I", "-B", "/opt/worker.py"]

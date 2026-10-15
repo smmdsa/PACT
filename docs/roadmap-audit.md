@@ -19,7 +19,7 @@ This audit checks repository implementation and tests, not just changelog claims
 | Portability | OS matrix, Chromium smoke, Node input-only game playthrough | No Firefox/WebKit, physical-device run or full browser victory evidence |
 | Trial material and recorder | `benchmarks/agent_trials.py`, frozen prompt/contexts/oracle; recorder tests | Records external claims; no provider requests or real trial-result dataset |
 | Trace grading | `benchmarks/agent_trace_grader.py`, trace-grader tests | Finite external observations; `candidate_pass` stays null and execution is unauthenticated |
-| Isolated counter execution | `benchmarks/agent_sandbox.py`, `benchmarks/sandbox/worker.py`, dedicated Docker CI | Linux/Docker, PACT reference interpreter, Python, JavaScript and C, one task; wider adversarial containment probes remain absent |
+| Isolated counter execution | `benchmarks/agent_sandbox.py`, `benchmarks/sandbox/worker.py`, dedicated Docker CI | Linux/Docker, PACT reference interpreter, Python, JavaScript and C, one task; finite authored probes passed, with universal containment excluded |
 | Restricted source policies | `benchmarks/agent_candidate_policy.py`, policy tests and container fixtures | Canonical counter-four IR/AST edits and exact JavaScript/C source edits only; not a general minimal-diff or intent verifier |
 | Public documentation | `tools/markdown_docs.py`, `tools/build_site.py`, documentation tests and Pages workflow | Generated Markdown pages; deployment must be checked separately from local build |
 
@@ -28,8 +28,8 @@ This audit checks repository implementation and tests, not just changelog claims
 | ID | Priority | Missing implementation / evidence | Completion criterion |
 | --- | --- | --- | --- |
 | E2 | Done for frozen counter task | Default strict policy plus opt-in registered loop/unrolled forms in four languages; PACT embedded tests execute on Wasm in Docker | Pre-registered allowed changes, preserved interfaces/policies, actual embedded tests and negative fixtures; report policy asymmetries across languages |
-| E3 | Next | Adversarial execution-limit probes | Demonstrate timeout/CPU, memory, output, process, filesystem and network denials on the deployed backend, retaining failed observations and cleanup evidence |
-| E4 | After E1–E3 | Provider integration and real trials | Pinned provider/model/settings, fresh paired trials, actual usage, failed attempts/retries/tool overhead and archived raw candidates/responses; credentials/backend must be configured |
+| E3 | Done for finite profile | Ten actual Linux/Docker probes passed in CI 38700604568; failed attempt retained | Demonstrate timeout/CPU, memory, output, process, filesystem and network denials on the deployed backend, retaining failed observations and cleanup evidence |
+| E4 | Blocked: provider configuration | No configured API key/backend or immutable model/usage evidence in this environment | Pinned provider/model/settings, fresh paired trials, actual usage, failed attempts/retries/tool overhead and archived raw candidates/responses; credentials/backend must be configured |
 | E5 | After initial trials | More tasks and retrieval/repair experiments | Pre-register multiple tasks and oracles, full-source vs selected context and repair budgets; do not generalize from counter-four alone |
 | L1 | Planned | Negative-trap case declarations | Versioned test schema, reference/Wasm acceptance for expected traps, state-after-trap semantics and migration compatibility |
 | L2 | Planned | Nominal units and stronger contracts | Versioned type/contract specification and enforcement; reject incompatible units with independent tests |
@@ -40,7 +40,7 @@ This audit checks repository implementation and tests, not just changelog claims
 | R1 | Planned | Wider runtime/build measurements | More workloads, compile cost/peak memory and hardware/toolchain-controlled comparisons |
 | X1 | Owner decision + implementation | License and reproducible releases | Owner chooses licensing; add reproducible packaging, pinned toolchains/dependencies and release verification. No license file or release workflow currently supplies this |
 
-No provider SDK/client or formal provider-trial records exist in the current benchmark path. An eight-response exploratory GPT subagent pilot is now archived separately; it has no provider usage, immutable model version or statistical ranking. The Dockerfile uses a mutable base tag for building; a runtime image ID pins execution but does not make rebuilding reproducible. The sandbox inspects selected Docker settings and tests authored fixtures plus Python/JavaScript/C output/timeout, JavaScript reset-leak and C fresh-process reset/crash probes; broader hostile containment testing remains E3.
+No provider SDK/client or formal provider-trial records exist in the current benchmark path. An eight-response exploratory GPT subagent pilot is now archived separately; it has no provider usage, immutable model version or statistical ranking. The Dockerfile uses a mutable base tag for building; a runtime image ID pins execution but does not make rebuilding reproducible. The sandbox inspects selected Docker settings and tests authored fixtures plus Python/JavaScript/C output/timeout, JavaScript reset-leak and C fresh-process reset/crash probes; finite authored E3 probes are now recorded separately; broader hostile containment remains excluded.
 
 ## Corrections made to the roadmap and guidance
 
@@ -72,4 +72,13 @@ The PACT counter worker now executes the candidate's declared cases through actu
 
 ## E2 registered-form completion — 2026-10-15
 
-An opt-in `counter-four-forms/0.2` contract now binds canonical and unrolled implementations for each frozen language. PACT compares full validated semantic revisions, Python full AST fingerprints, and JavaScript/C exact normalized-source fingerprints. Unrelated changes remain rejected, including behaviorally matching additions. The default canonical profile and archived responses/results are preserved. Docker checks execute both approved forms and a negative per language; receipts expose profile, contract identity and selected form separately from actual behavior/declarations. The bounded E2 acceptance criterion is complete for this task, with source-policy and declaration-interface asymmetries explicit. It is not a general rewrite/equivalence checker or a completed model benchmark. E3 is the next unfinished gate.
+An opt-in `counter-four-forms/0.2` contract now binds canonical and unrolled implementations for each frozen language. PACT compares full validated semantic revisions, Python full AST fingerprints, and JavaScript/C exact normalized-source fingerprints. Unrelated changes remain rejected, including behaviorally matching additions. The default canonical profile and archived responses/results are preserved. Docker checks execute both approved forms and a negative per language; receipts expose profile, contract identity and selected form separately from actual behavior/declarations. The bounded E2 acceptance criterion is complete for this task, with source-policy and declaration-interface asymmetries explicit. It is not a general rewrite/equivalence checker or a completed model benchmark. E3 was the next unfinished gate and is completed below for its finite profile.
+
+
+## E3 finite-probe implementation — 2026-10-15
+
+The Docker workflow now runs authored resource/filesystem/network attempts with positive controls, records OOM state and bounded logs, and verifies container absence after removal. A temporarily inaccessible client endpoint exercises cleanup rejection while a bounded container runs; access is restored for real removal. Cleanup/inspection failure preservation also has synthetic tests. The initial unsuccessful absent-container oracle is retained separately. All ten observations passed in actual Docker CI run 38700604568, with the image, probe/harness hashes, per-probe observations and artifact digest frozen in `benchmarks/results/isolation-38700604568.json`. The probe documentation explicitly excludes universal containment, every exfiltration path and daemon-loss recovery for a live container.
+
+## Active loop — E3 complete, L1 next
+
+E3 completed its written finite acceptance criterion on 2026-10-15. E4 cannot run formal trials in this environment: provider credentials/backend and immutable provider usage/model attestations are unavailable. E5 remains dependent on formal trials; the exploratory demos do not satisfy it. Continue with L1 while retaining those blockers. X1 still requires the owner’s license choice; reproducible packaging can proceed independently.

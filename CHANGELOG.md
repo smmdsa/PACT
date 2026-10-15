@@ -2,7 +2,16 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — Registered alternative policies (bounded E2 completion)
+## Latest — Finite Docker isolation probes (E3)
+
+- Added authored CPU, memory, output, wall-time, process, root/host-path/noexec, file-size, tmpfs-capacity and network probes using the counter runtime's actual Docker profile. Positive filesystem/socket controls distinguish denied operations from broken execution.
+- Receipt 0.8 verifies container absence after forced removal. Configuration checks now also require CPU/file/descriptor ulimits, bounded noexec tmpfs and no added capabilities.
+- Probe observations retain bounded logs, available Docker state and container identity on cleanup/inspection errors; synthetic grading/cleanup tests remain separate from real Docker execution.
+- Retained the first unsuccessful suite: nine probes passed but the absent-container cleanup oracle was invalid because forced removal is idempotent. The revised probe interrupts client endpoint access while a bounded sleeper runs, verifies rejection, restores access and performs real cleanup. Persistent daemon loss and universal escape resistance remain excluded.
+
+- All ten probes passed in actual Docker CI run 38700604568. Frozen observations bind the executed source/image and artifact digest; the first failed attempt remains visible. E3 is complete for this finite profile. E4/provider trials remain blocked by provider configuration; L1 is next.
+
+## Registered alternative policies (bounded E2 completion)
 
 - Added opt-in `counter-four-forms/0.2`: accepts canonical loops or explicitly unrolled four-update implementations in PACT/Python/JavaScript/C. The original strict `canonical/0.1` remains the default; historical model trials/results keep their original policy.
 - A pinned contract binds baseline identities and allowed IR/AST/normalized-source fingerprints. Receipt 0.7 records the selected profile; policy observations identify the contract and matched form. Static checks execute no candidate code.

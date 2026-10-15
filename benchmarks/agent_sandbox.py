@@ -34,11 +34,27 @@ def control(command):
     return result.stdout
 
 
+def cleanup_container(container):
+    if re.fullmatch(r'pact-(trial|probe)-[0-9a-f]{32}',container) is None:
+        raise ValueError('Unexpected verifier container name')
+    control(['docker','rm','--force',container])
+    remaining=control(['docker','ps','--all','--quiet','--filter','name=^/'+container+'$'])
+    if remaining.strip():raise ValueError('Verifier container remains after removal')
+
+
 def verify_configuration(info,image):
     config=info['HostConfig']
     required={'NetworkMode':'none','ReadonlyRootfs':True,'Privileged':False,'Memory':134217728,
               'MemorySwap':134217728,'NanoCpus':1000000000,'PidsLimit':32}
     if any(config.get(key)!=value for key,value in required.items()):raise ValueError('Container isolation configuration differs')
+    limits={row['Name']:(row['Soft'],row['Hard']) for row in config.get('Ulimits') or []}
+    if any(limits.get(name)!=(value,value) for name,value in [('cpu',10),('fsize',1048576),('nofile',64)]):
+        raise ValueError('Container ulimits differ')
+    tmpfs=config.get('Tmpfs',{})
+    options=set(tmpfs.get('/tmp','').split(','))
+    if set(tmpfs)!={'/tmp'} or options not in ({'size=16m','nosuid','nodev','noexec'},{'size=16777216','nosuid','nodev','noexec'}):
+        raise ValueError('Container temporary filesystem differs')
+    if config.get('CapAdd'):raise ValueError('Additional capabilities are forbidden')
     if config.get('Binds') or config.get('VolumesFrom'):raise ValueError('Host mounts are forbidden')
     if any(m.get('Type')!='tmpfs' or m.get('Destination')!='/tmp' for m in info.get('Mounts',[])):
         raise ValueError('Only the bounded temporary filesystem is allowed')
@@ -137,7 +153,7 @@ def run_candidate(candidate_path,image,language='pact',policy_profile=CANONICAL_
         runtime_failed=result['returncode']!=0;timed_out=result['timed_out'];output_limited=result['output_limited']
     finally:
         # Removal also stops a timed-out container; failure prevents a success receipt.
-        control(['docker','rm','--force',container])
+        cleanup_container(container)
     failed={'execution_status':'timeout' if timed_out else 'error','initial_counter':None,'cases':[],'reset_case':None}
     termination_reason='output_limit' if output_limited else 'timeout' if timed_out else 'runtime_error' if runtime_failed else None
     runtime=None;embedded=unexecuted_tests(language)
@@ -157,12 +173,12 @@ def run_candidate(candidate_path,image,language='pact',policy_profile=CANONICAL_
     try:grade=grade_trace(trace,candidate)
     except (ValueError,TypeError,KeyError,RecursionError):
         trace.update(failed);embedded=unexecuted_tests(language);termination_reason='invalid_worker_output';grade=grade_trace(trace,candidate)
-    return {'format':'pact.agent-sandbox-receipt/0.7','image_id':image,'backend':'docker','runtime':runtime,
+    return {'format':'pact.agent-sandbox-receipt/0.8','image_id':image,'backend':'docker','runtime':runtime,
             'trace':trace,'grade':grade,'policy':audit_candidate(candidate,language=language,profile=policy_profile),'log':log,
             'embedded_tests':embedded,'policy_profile':policy_profile,
             'termination_reason':termination_reason,'output_limit_bytes':1048576,
             'timed_out':timed_out,'output_limited':output_limited,
-            'isolation_configuration_checked':True,'candidate_pass':None,'model_trial':False}
+            'isolation_configuration_checked':True,'cleanup_verified':True,'candidate_pass':None,'model_trial':False}
 
 
 def checks_passed(report):

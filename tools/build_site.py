@@ -34,6 +34,7 @@ DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.
  ('roadmap-audit','Implementation audit','docs/roadmap-audit.md'),
  ('trace-grading','Trace grading','docs/agent-trace-grading.md'),
  ('agent-sandbox','Isolated counter','docs/agent-sandbox.md'),
+ ('isolation-probes','Isolation probes','docs/isolation-probes.md'),
  ('checked-assertions','Checked conditions','docs/checked-assertions.md'),
  ('export-evidence','Export evidence','docs/export-evidence.md'),
  ('browser-validation','Browser validation','docs/browser-validation.md'),

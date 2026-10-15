@@ -33,3 +33,5 @@ The initial benchmarks.agent_sandbox adapter is Linux/Docker with PACT/Python/Ja
 Receipt 0.6 executes PACT candidate declarations on compiled Wasm only inside Docker, separately from the reference trace and static source policy. Empty declarations fail; other task languages have no embedded declaration interface. Preserve null candidate_pass and historical receipts; declaration execution is finite evidence, not coverage/authentication proof.
 
 Receipt 0.7 selects a source-policy profile explicitly. canonical/0.1 stays the default for historical trials. The opt-in counter-four-forms/0.2 policy pins its contract and recognizes only registered canonical/unrolled fingerprints; it is not a general equivalence or intent checker. Keep IR/AST/exact-source and test-interface asymmetries visible.
+
+Receipt 0.8 verifies absence after forced cleanup. Authored E3 resource probes execute only in Docker; retain failed probe logs/state and distinguish synthetic grading tests from executed isolation evidence. Finite no-route/OOM/PID/file/CPU observations do not establish universal containment or daemon-loss recovery.

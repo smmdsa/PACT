@@ -1,0 +1,480 @@
+{
+  "format": "pact.isolation-probe-suite/0.1",
+  "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+  "model_trial": false,
+  "harness_source_sha256": "34b15413cf7efb0371926ec05677289706260ee1f2215b7fa5d98eb08c5c020c",
+  "probe_source_sha256": "d8c31a2c37950062eae64660730a201cf8d20ce00e99da4329efcdcabff0e9f9",
+  "pass": true,
+  "results": [
+    {
+      "probe": "filesystem",
+      "pass": true
+    },
+    {
+      "probe": "network",
+      "pass": true
+    },
+    {
+      "probe": "file_size",
+      "pass": true
+    },
+    {
+      "probe": "temporary_space",
+      "pass": true
+    },
+    {
+      "probe": "processes",
+      "pass": true
+    },
+    {
+      "probe": "cpu",
+      "pass": true
+    },
+    {
+      "probe": "memory",
+      "pass": true
+    },
+    {
+      "probe": "output",
+      "pass": true
+    },
+    {
+      "probe": "wall_time",
+      "pass": true
+    },
+    {
+      "probe": "cleanup_failure",
+      "pass": true
+    }
+  ],
+  "workflow_run_id": 38700604568,
+  "head_sha": "9065945d9bdbef9a45c8e9b419a9ab72faefeb32",
+  "artifact_id": 11956716920,
+  "artifact_sha256": "11b54aa62ef75e05f8af8f0fd43404531da6cce2c626c358866ff2719a483e32",
+  "observations": {
+    "cleanup_failure": {
+      "probe": "cleanup_failure",
+      "container": "pact-probe-2317ea94806a47a5aaa7e242286a1810",
+      "pass": true,
+      "cleanup_verified": true,
+      "before": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 8400,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-15T07:44:46.62570152Z",
+        "FinishedAt": "0001-01-01T00:00:00Z"
+      },
+      "failed_removal_error": "Docker control failed: Cannot connect to the Docker daemon at unix:///tmp/pact-unavailable-daemon-a9dcvosb/absent.sock. Is the docker daemon running?\n",
+      "after_failure": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 8400,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-15T07:44:46.62570152Z",
+        "FinishedAt": "0001-01-01T00:00:00Z"
+      }
+    },
+    "cpu": {
+      "captured_bytes": 153,
+      "cleanup_verified": true,
+      "container": "pact-probe-267474d548d14362a0598a2e61d9ca0b",
+      "elapsed_seconds": 10.37338074600001,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {
+        "cpu_seconds": 9.99835,
+        "denied": true,
+        "limits": [
+          10,
+          10
+        ],
+        "probe": "cpu",
+        "stage": "finished",
+        "wait_status": 9
+      },
+      "output_limited": false,
+      "pass": true,
+      "probe": "cpu",
+      "returncode": 0,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2026-10-15T07:44:30.557767249Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2026-10-15T07:44:20.338755585Z",
+        "Status": "exited"
+      },
+      "timed_out": false,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 153,
+          "sha256": "23dbcb99f0a1930b0506c4042e34753712fa65ce851091158e16e8033f231b05"
+        }
+      }
+    },
+    "file_size": {
+      "captured_bytes": 154,
+      "cleanup_verified": true,
+      "container": "pact-probe-c11f79de00234649abe181a786a3c6b9",
+      "elapsed_seconds": 0.35977799500000174,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {
+        "bytes": 1048576,
+        "denied": true,
+        "errno": 27,
+        "probe": "file_size",
+        "stage": "finished",
+        "written": 1048576
+      },
+      "output_limited": false,
+      "pass": true,
+      "probe": "file_size",
+      "returncode": 0,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2026-10-15T07:44:19.424529887Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2026-10-15T07:44:19.205374685Z",
+        "Status": "exited"
+      },
+      "timed_out": false,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 154,
+          "sha256": "bb7b0f0f945b9917839bafd4be8f83d811c01b7dd7a90d35ed363a31b6d897b1"
+        }
+      }
+    },
+    "filesystem": {
+      "captured_bytes": 182,
+      "cleanup_verified": true,
+      "container": "pact-probe-bb288ced967741c297e9643b19cd233a",
+      "elapsed_seconds": 0.3993080129999953,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {
+        "denied": true,
+        "errno": {
+          "host": 2,
+          "noexec": 13,
+          "root": 30
+        },
+        "interpreted_control": true,
+        "probe": "filesystem",
+        "stage": "finished"
+      },
+      "output_limited": false,
+      "pass": true,
+      "probe": "filesystem",
+      "returncode": 0,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2026-10-15T07:44:18.617547804Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2026-10-15T07:44:18.39963023Z",
+        "Status": "exited"
+      },
+      "timed_out": false,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 182,
+          "sha256": "8de66058ae05f9d2ea5ce78195ddf5b22bd6821aa21cbde08aeff4222f3325aa"
+        }
+      }
+    },
+    "memory": {
+      "captured_bytes": 40,
+      "cleanup_verified": true,
+      "container": "pact-probe-8b7afe4f22ef4aaba3c6933267ac8f78",
+      "elapsed_seconds": 0.394301224000003,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {},
+      "output_limited": false,
+      "pass": true,
+      "probe": "memory",
+      "returncode": 137,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 137,
+        "FinishedAt": "2026-10-15T07:44:30.955882951Z",
+        "OOMKilled": true,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2026-10-15T07:44:30.712760286Z",
+        "Status": "exited"
+      },
+      "timed_out": false,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 40,
+          "sha256": "0d2b55ac9b76c13d16c3c3f1b8bb4b131d9a4a90ae92599b2ade0064ef7b38f9"
+        }
+      }
+    },
+    "network": {
+      "captured_bytes": 161,
+      "cleanup_verified": true,
+      "container": "pact-probe-bdd5af578d744d9f88ff0ca5a906eae3",
+      "elapsed_seconds": 0.39482322300000305,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {
+        "denied": true,
+        "errno": 101,
+        "interfaces": [
+          "lo"
+        ],
+        "loopback_control": true,
+        "probe": "network",
+        "stage": "finished"
+      },
+      "output_limited": false,
+      "pass": true,
+      "probe": "network",
+      "returncode": 0,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2026-10-15T07:44:19.016032195Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2026-10-15T07:44:18.795665399Z",
+        "Status": "exited"
+      },
+      "timed_out": false,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 161,
+          "sha256": "e2cbf450ddf0bbf037f5cf100e0daaf97f922b2da65978914843be2860af41ca"
+        }
+      }
+    },
+    "output": {
+      "captured_bytes": 1048576,
+      "cleanup_verified": true,
+      "container": "pact-probe-8254e20fccc94ceaa8473c5bd99dedab",
+      "elapsed_seconds": 0.3949071050000157,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {},
+      "output_limited": true,
+      "pass": true,
+      "probe": "output",
+      "returncode": -9,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 8155,
+        "Restarting": false,
+        "Running": true,
+        "StartedAt": "2026-10-15T07:44:31.106076144Z",
+        "Status": "running"
+      },
+      "timed_out": false,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 1048576,
+          "sha256": "d3573cc2e49617a11418f66d0e66a0913ed86f5cb55ac30a50c208bf679670a4"
+        }
+      }
+    },
+    "processes": {
+      "captured_bytes": 132,
+      "cleanup_verified": true,
+      "container": "pact-probe-b725a9900f1d4b3ea18045abb0648bb6",
+      "elapsed_seconds": 0.39268746599999815,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {
+        "children": 31,
+        "denied": true,
+        "errno": 11,
+        "probe": "processes",
+        "stage": "finished"
+      },
+      "output_limited": false,
+      "pass": true,
+      "probe": "processes",
+      "returncode": 0,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2026-10-15T07:44:20.180723386Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2026-10-15T07:44:19.946848642Z",
+        "Status": "exited"
+      },
+      "timed_out": false,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 132,
+          "sha256": "fbfc40b0dec621e8e44887017f3f4cea109599a736f906648ea9f1fbaf017b8c"
+        }
+      }
+    },
+    "temporary_space": {
+      "captured_bytes": 149,
+      "cleanup_verified": true,
+      "container": "pact-probe-fc2ff431582a42d79c2d1083b3451323",
+      "elapsed_seconds": 0.3956289099999992,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {
+        "denied": true,
+        "errno": 28,
+        "probe": "temporary_space",
+        "stage": "finished",
+        "written": 16777216
+      },
+      "output_limited": false,
+      "pass": true,
+      "probe": "temporary_space",
+      "returncode": 0,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2026-10-15T07:44:19.777811066Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2026-10-15T07:44:19.551167764Z",
+        "Status": "exited"
+      },
+      "timed_out": false,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 149,
+          "sha256": "a1dd480580b461719fa4487d46074325fe6be3eb363ea203bba6ff31e4da0683"
+        }
+      }
+    },
+    "wall_time": {
+      "captured_bytes": 43,
+      "cleanup_verified": true,
+      "container": "pact-probe-58e93a6acc584f59961c635ba41e08aa",
+      "elapsed_seconds": 15.119945244000007,
+      "format": "pact.isolation-probe/0.1",
+      "image_id": "sha256:32ed5427058aba2a752d0bfa86ec0f32ac9769ab988f0acfe1bb9acb03f2294f",
+      "observation": {},
+      "output_limited": false,
+      "pass": true,
+      "probe": "wall_time",
+      "returncode": -9,
+      "started": true,
+      "state": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "0001-01-01T00:00:00Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 8280,
+        "Restarting": false,
+        "Running": true,
+        "StartedAt": "2026-10-15T07:44:31.507849249Z",
+        "Status": "running"
+      },
+      "timed_out": true,
+      "log_digest": {
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 43,
+          "sha256": "e61cd05b5ef2c02f1b9040de65f4a699382f18c926d147702f8e57af2bf981b6"
+        }
+      }
+    }
+  },
+  "raw_log_location": "Original bounded raw logs are retained in the digest-bound workflow artifact; this report retains their lengths and hashes."
+}

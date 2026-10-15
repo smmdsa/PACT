@@ -1,0 +1,52 @@
+{
+  "format": "pact.isolation-probe-suite/0.1",
+  "image_id": "sha256:05ca6df49d6c9097d8a7eb9379cfa2109115abd793c80ee664d152a644c5ed35",
+  "model_trial": false,
+  "probe_source_sha256": "d8c31a2c37950062eae64660730a201cf8d20ce00e99da4329efcdcabff0e9f9",
+  "pass": false,
+  "results": [
+    {
+      "probe": "filesystem",
+      "pass": true
+    },
+    {
+      "probe": "network",
+      "pass": true
+    },
+    {
+      "probe": "file_size",
+      "pass": true
+    },
+    {
+      "probe": "temporary_space",
+      "pass": true
+    },
+    {
+      "probe": "processes",
+      "pass": true
+    },
+    {
+      "probe": "cpu",
+      "pass": true
+    },
+    {
+      "probe": "memory",
+      "pass": true
+    },
+    {
+      "probe": "output",
+      "pass": true
+    },
+    {
+      "probe": "wall_time",
+      "pass": true
+    },
+    {
+      "probe": "cleanup_failure",
+      "pass": false
+    }
+  ],
+  "workflow_run_id": 38699918135,
+  "head_sha": "14f44ce6771a7dcf1e915985429565fd46b9f501",
+  "artifact_id": 11956076230
+}
