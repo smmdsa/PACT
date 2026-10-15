@@ -37,7 +37,7 @@ Last code audit: 2026-10-15, with baseline main `882a630` and subsequent impleme
 | 1 | E3 | Done for the finite Linux/Docker profile: all ten probes passed in CI run 38700604568; original failed attempt and containment exclusions retained |
 | 2 | E4, E5 | Blocked on configured provider credentials/backend and immutable model/usage evidence; formal trials and broader experiments remain pending |
 | 3 | L1, L2 | Implemented: exact expected-trap cases and versioned nominal unit/signature contracts; finite acceptance criteria and exclusions documented |
-| 4 | D1, D2, P1 | Next: full instruction maps/debugger, complete byte-aware editing/CAS and more browser/device evidence; D2 exact-source SHA-256 guard merged in PR #29; bounded snapshot read hardening under review (not full CAS) |
+| 4 | D1, D2, P1 | Next: full instruction maps/debugger, complete byte-aware editing/CAS and more browser/device evidence; D2 exact-source SHA-256 guard merged in PR #29; bounded snapshot read hardening merged in PR #30; mandatory prepublication consistency proposed (not full CAS) |
 | 5 | S1, R1, X1 | Versioned reusable library, broader runtime/build/memory measurements and owner-approved licensed reproducible releases |
 
 The audit records the evidence and completion criteria for each ID. Task-specific policy results, finite trace matches and CI integration fixtures must not be presented as general candidate correctness or measured model productivity.
