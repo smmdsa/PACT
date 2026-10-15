@@ -43,3 +43,9 @@ class DocumentationSiteTests(unittest.TestCase):
                 target=href.split('#',1)[0].split('?',1)[0]
                 if target.endswith('.html') and '://' not in target:
                     self.assertTrue((page.parent/target).exists(),(page.name,href))
+
+    def test_model_game_examples_preserve_original_candidate_bytes(self):
+        for name in ('metro_a.html','metro_b.html'):
+            self.assertEqual((ROOT/'site-output/metroidvania'/name).read_bytes(),
+                             (ROOT/'benchmarks/metroidvania_pilot/candidates'/name).read_bytes())
+        self.assertIn('sandbox="allow-scripts"',(ROOT/'site-output/metroidvania/index.html').read_text())
