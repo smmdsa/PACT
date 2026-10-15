@@ -32,7 +32,7 @@ class ExportEvidenceTests(unittest.TestCase):
         from pact.module import TESTED_FORMAT
         self.assertEqual(FORMAT, 'pact.module/0.2.0')
         self.assertEqual(TESTED_FORMAT, TESTED)
-        self.assertEqual(FORMATS, ('pact.module/0.1.0', FORMAT, TESTED, 'pact.module/0.4.0', 'pact.module/0.5.0'))
+        self.assertEqual(FORMATS, ('pact.module/0.1.0', FORMAT, TESTED, 'pact.module/0.4.0', 'pact.module/0.5.0', 'pact.module/0.6.0'))
         self.assertEqual(analyze_module(tested())['format'], 'pact.module-plan/0.3.0')
 
     def test_missing_exports_have_sorted_structured_fix(self):

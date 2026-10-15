@@ -60,6 +60,19 @@ def _signature(fn):
     return copy.deepcopy({field: fn[field] for field in ('id', 'params', 'locals', 'result', 'writes')})
 
 
+def _unit_context(plan, functions, constants, cells, selected=None):
+    contracts = plan['unit_contracts']
+    signatures = {}
+    for key in sorted(functions):
+        signatures[key] = copy.deepcopy(contracts['functions'][key])
+        if key != selected:
+            signatures[key].pop('literals')
+    return {'format': contracts['format'], 'names': list(contracts['names']),
+            'cells': {key: contracts['cells'][key] for key in sorted(cells)},
+            'constants': {key: contracts['constants'][key] for key in sorted(constants)},
+            'functions': signatures}
+
+
 def inspect_function(document, function_id):
     """Return bounded function context; validate the entire module first.
 
@@ -75,7 +88,9 @@ def inspect_function(document, function_id):
 
     def cell_metadata(keys):
         return [{'id': key, 'type': 'i32', 'count': plan['layout'][key]['count'],
-                 'mutable': plan['layout'][key]['mutable']} for key in sorted(keys)]
+                 'mutable': plan['layout'][key]['mutable'],
+                 **({'unit': plan['unit_contracts']['cells'][key]} if 'unit_contracts' in plan else {})}
+                for key in sorted(keys)]
 
     result = _provenance(document, 'pact.inspection/0.1.0')
     result.update({
@@ -94,6 +109,10 @@ def inspect_function(document, function_id):
     })
     if 'declared_export_tests' in plan:
         result['declared_export_tests'] = plan['declared_export_tests']
+    if 'unit_contracts' in plan:
+        result['unit_contracts'] = _unit_context(plan, dependencies | {function_id}, constants,
+                                                 reads | writes, function_id)
+        result['omitted'].append('dependency_literal_unit_bindings')
     return result
 
 
@@ -119,4 +138,8 @@ def symbols(document):
                                'assets', 'test_case_bodies']})
     if 'declared_export_tests' in plan:
         result['declared_export_tests'] = plan['declared_export_tests']
+    if 'unit_contracts' in plan:
+        contracts = plan['unit_contracts']
+        result['unit_contracts'] = _unit_context(plan, functions, contracts['constants'], contracts['cells'])
+        result['omitted'].append('literal_unit_bindings')
     return result

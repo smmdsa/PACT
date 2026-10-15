@@ -35,6 +35,8 @@ DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.
  ('trace-grading','Trace grading','docs/agent-trace-grading.md'),
  ('agent-sandbox','Isolated counter','docs/agent-sandbox.md'),
  ('isolation-probes','Isolation probes','docs/isolation-probes.md'),
+ ('nominal-units','Nominal unit contracts','docs/nominal-units.md'),
+ ('nominal-units-spec','Module 0.6 specification','docs/superpowers/specs/2026-10-15-nominal-units.md'),
  ('expected-traps','Expected trap cases','docs/expected-traps.md'),
  ('expected-traps-spec','Module 0.5 specification','docs/superpowers/specs/2026-10-15-expected-traps.md'),
  ('checked-assertions','Checked conditions','docs/checked-assertions.md'),
@@ -61,7 +63,7 @@ def page(title,body,current='index',toc=None):
     for slug,label,_ in DOCUMENTS:
         navigation+=f'<a href="{slug}.html"'+(' aria-current="page"' if current==slug else '')+f'>{html.escape(label)}</a>'
     contents=''.join(f'<li class="level{item["level"]}"><a href="#{html.escape(item["id"],quote=True)}">{html.escape(item["title"])}</a></li>' for item in toc or [] if item['level'] in (2,3))
-    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="PACT: explicit graphs, checked effects and measured agent-first programming."><title>{html.escape(title)} · PACT</title><style>{STYLE}</style></head><body><a class="skip" href="#main-content">Skip to content</a><header class="topbar"><a class="brand" href="index.html">PACT <small>AGENT-FIRST LANGUAGE LAB</small></a><div class="toplinks"><a href="progress.html">Progress</a><a href="demos.html">Demos &amp; Examples</a><a href="https://github.com/smmdsa/PACT">GitHub ↗</a></div></header><div class="layout"><aside class="sidebar"><span class="label">Documentation</span><nav aria-label="Documentation">{navigation}</nav></aside><main id="main-content">{body}<footer>Research prototype · Source 0.2 / data 0.3 / literals 0.4 · Graph 0.0.1 / module 0.1.0 / 0.2.0 / 0.3.0 / 0.4.0 / 0.5.0</footer></main><aside class="toc" aria-label="On this page"><span class="eyebrow">On this page</span><ul>{contents}</ul></aside></div></body></html>'''
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="PACT: explicit graphs, checked effects and measured agent-first programming."><title>{html.escape(title)} · PACT</title><style>{STYLE}</style></head><body><a class="skip" href="#main-content">Skip to content</a><header class="topbar"><a class="brand" href="index.html">PACT <small>AGENT-FIRST LANGUAGE LAB</small></a><div class="toplinks"><a href="progress.html">Progress</a><a href="demos.html">Demos &amp; Examples</a><a href="https://github.com/smmdsa/PACT">GitHub ↗</a></div></header><div class="layout"><aside class="sidebar"><span class="label">Documentation</span><nav aria-label="Documentation">{navigation}</nav></aside><main id="main-content">{body}<footer>Research prototype · Source 0.2 / data 0.3 / literals 0.4 · Graph 0.0.1 / module 0.1.0 / 0.2.0 / 0.3.0 / 0.4.0 / 0.5.0 / 0.6.0</footer></main><aside class="toc" aria-label="On this page"><span class="eyebrow">On this page</span><ul>{contents}</ul></aside></div></body></html>'''
 
 
 

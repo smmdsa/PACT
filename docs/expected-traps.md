@@ -39,3 +39,5 @@ The reference suite has a shared budget of 1,000,000 node evaluations. Exhaustio
 Explicit forward migration to module 0.5 changes only the format and semantic revision. Existing declarations remain, compiled bytes stay identical, and no negative cases are fabricated. Default migration remains 0.2. Formats 0.1–0.4 continue to reject `trap` metadata and retain their existing execution policy. Converting compact/JSON representations preserves the numeric version and qualified IDs.
 
 These checks establish finite case outcomes using the toolchain's own interpreter/compiler and Node engine. They do not establish coverage, independent compiler correctness, authenticated provenance, nominal units or universal safety. Expected-trap builds require supported exact engine coordinates; replay retains its separate generic fallback for unsupported positions. See the [versioned specification](superpowers/specs/2026-10-15-expected-traps.md).
+
+Module 0.6 inherits these declaration and execution rules and adds [nominal unit contracts](nominal-units.md). Unit mismatches reject before execution; host/test numeric values use their declared units.

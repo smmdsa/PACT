@@ -25,8 +25,12 @@ Stdout requires an explicit source effect and a host `--allow stdout` grant. A n
 
 ## Trust
 
-Hashes identify content, not authors. Tests cover cases, not all possible inputs. Altered bytecode, compiler and host are outside the guarantees. Future filesystem/network/process capabilities must have scoped declarations and explicit host grants, with denial tests. Signed packages, nominal units and in-place filesystem compare-and-swap are planned, not implemented. Revision-checked candidate construction and no-clobber CLI publication are implemented; see transactions.md.
+Hashes identify content, not authors. Tests cover cases, not all possible inputs. Altered bytecode, compiler and host are outside the guarantees. Future filesystem/network/process capabilities must have scoped declarations and explicit host grants, with denial tests. Signed packages and in-place filesystem compare-and-swap are planned, not implemented. Revision-checked candidate construction and no-clobber CLI publication are implemented; see transactions.md.
 
 ## Negative-case acceptance
 
 Module 0.5 expected-trap cases require the reference diagnostic and exact hash-bound Wasm site to match the declared code/function/node. Both engines check post-trap state; earlier writes persist. A missing engine position or a different failure rejects. The reference suite shares a 1,000,000-node budget and Node retains its 15-second deadline. These are finite compiler-produced observations, not authenticated or independent proof. [Schema and evidence](expected-traps.md).
+
+## Static nominal contracts
+
+Module 0.6 checks nominal units on arithmetic, state/local stores, calls/results and flow boundaries before execution. Indices, predicates and repeat counters are dimensionless. Unit metadata and source revisions bind the declarations; compiled Wasm still uses untagged i32 values. Host calls and test inputs acquire the declared signature’s units, so an embedding host can violate physical meaning without runtime detection. This is static type acceptance, not unit authentication, derived-unit algebra, coverage or proof. [Rules and limits](nominal-units.md).

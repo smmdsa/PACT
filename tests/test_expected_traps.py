@@ -34,7 +34,7 @@ class TrapSchemaTests(unittest.TestCase):
         self.assertEqual(raised.exception.diagnostic['code'], code)
 
     def test_version_inherits_checks_and_export_cases(self):
-        self.assertEqual(FORMATS[-1], TRAPS)
+        self.assertEqual(FORMATS[4], TRAPS)
         self.assertEqual(FORMAT, 'pact.module/0.2.0')
         self.assertEqual(analyze_module(negative())['declared_export_tests'],
                          {'step': ['reject-zero', 'success']})

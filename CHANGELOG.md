@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — Expected-trap cases (L1)
+## Latest — Nominal unit contracts (L2)
+
+- Opt-in module 0.6 adds explicit nominal units on state, constants, literal nodes, slots and function arguments/results. Static inference rejects incompatible arithmetic, stores, calls, branches, indices, predicates and repeat counters.
+- Dimensionless scaling and same-unit ratios are defined; unsupported unitful products/derived dimensions reject. Runtime remains i32 with unchanged bytes, effects, traps and wrapping.
+- Plans, check, manifests and selective context expose versioned contracts. Legacy output/default migration remain unchanged; all source representations preserve annotations.
+- Authored unit counter executes success/expected-trap cases on reference and Wasm. Contracts do not authenticate the host’s quantities or prove physical meaning. Full instruction maps/debugging remain next.
+
+## Expected-trap cases (L1)
 
 - Opt-in module 0.5 adds strict expected assertion/bounds/arithmetic traps with qualified function/node IDs and post-trap state assertions. Legacy schemas, default migration and evidence stay unchanged.
 - Builds validate all 0.5 cases on the reference machine and actual compiled Wasm. Expected Wasm traps require exact binary-bound coordinates; missing positions, wrong failures, normal return and wrong retained state reject.
