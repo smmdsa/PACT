@@ -29,6 +29,14 @@ def atomic_write(path, data):
             os.unlink(temporary)
 
 
+def bounded_source_sha256(path):
+    # Hash only a bounded file snapshot; oversized inputs retain SOURCE_LIMIT.
+    with path.open('rb') as stream:
+        data = stream.read(MAX_SOURCE_BYTES + 1)
+    require(len(data) <= MAX_SOURCE_BYTES, 'SOURCE_LIMIT', 'Source exceeds 1 MiB.')
+    return hashlib.sha256(data).hexdigest()
+
+
 def parser():
     root = Parser(description="PACT toolchain with compact frontend 0.2/0.3/0.4")
     commands = root.add_subparsers(dest="command", required=True)
@@ -87,6 +95,7 @@ def main(argv=None):
             from .source_locations import locate_file
             print(json.dumps(locate_file(args.source, args.function, args.node), ensure_ascii=False, sort_keys=True))
             return 0
+        source_hash_before = bounded_source_sha256(args.source) if args.command == 'patch' else None
         document = load_document(args.source, validate_source=args.command != 'migrate',
                                  migrate_to=args.to if args.command == 'migrate' else None)
         if args.command == 'patch':
@@ -100,7 +109,9 @@ def main(argv=None):
                     'PATCH_OUTPUT_FORMAT', 'JSON candidates cannot use the .pact suffix; use .json.')
             if not args.dry_run:
                 require(args.output.resolve() != args.source.resolve(), 'PATCH_IN_PLACE', 'In-place publication is unsupported; specify a new candidate path.')
-            source_hash = hashlib.sha256(args.source.read_bytes()).hexdigest()
+            source_hash = bounded_source_sha256(args.source)
+            require(source_hash_before == source_hash, 'PATCH_SOURCE_STALE',
+                    'Source bytes changed while reading the source.')
             if args.expected_source_sha256 is not None:
                 require(len(args.expected_source_sha256) == 64 and
                         all(char in '0123456789abcdef' for char in args.expected_source_sha256),
@@ -127,7 +138,7 @@ def main(argv=None):
                        'output': None if args.dry_run else str(args.output)}
             if not args.dry_run:
                 if args.expected_source_sha256 is not None:
-                    require(hashlib.sha256(args.source.read_bytes()).hexdigest() == args.expected_source_sha256,
+                    require(bounded_source_sha256(args.source) == args.expected_source_sha256,
                             'PATCH_SOURCE_STALE', 'Source bytes changed before candidate publication.')
                 publish_new(args.output, data)
             print(json.dumps(receipt, ensure_ascii=False, sort_keys=True, separators=(',', ':')))
