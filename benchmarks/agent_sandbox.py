@@ -10,7 +10,7 @@ import sys
 import uuid
 
 from .agent_trace_grader import frozen_oracle, grade_trace, ORACLE_SHA256, pairs, snapshot
-from .agent_candidate_policy import audit_candidate
+from .agent_candidate_policy import audit_candidate, CANONICAL_PROFILE, POLICY_PROFILES
 from .bounded_process import run_bounded
 
 
@@ -113,7 +113,8 @@ def parse_observations(stdout,language):
     return observations,runtime,embedded
 
 
-def run_candidate(candidate_path,image,language='pact'):
+def run_candidate(candidate_path,image,language='pact',policy_profile=CANONICAL_PROFILE):
+    if policy_profile not in POLICY_PROFILES:raise ValueError('Unsupported source-policy profile')
     if language not in ('pact','python','javascript','c'):raise ValueError('Unsupported isolated candidate language')
     create_command('validation',image)
     if sys.platform!='linux':raise ValueError('The Docker counter adapter currently requires Linux')
@@ -156,9 +157,9 @@ def run_candidate(candidate_path,image,language='pact'):
     try:grade=grade_trace(trace,candidate)
     except (ValueError,TypeError,KeyError,RecursionError):
         trace.update(failed);embedded=unexecuted_tests(language);termination_reason='invalid_worker_output';grade=grade_trace(trace,candidate)
-    return {'format':'pact.agent-sandbox-receipt/0.6','image_id':image,'backend':'docker','runtime':runtime,
-            'trace':trace,'grade':grade,'policy':audit_candidate(candidate,language=language),'log':log,
-            'embedded_tests':embedded,
+    return {'format':'pact.agent-sandbox-receipt/0.7','image_id':image,'backend':'docker','runtime':runtime,
+            'trace':trace,'grade':grade,'policy':audit_candidate(candidate,language=language,profile=policy_profile),'log':log,
+            'embedded_tests':embedded,'policy_profile':policy_profile,
             'termination_reason':termination_reason,'output_limit_bytes':1048576,
             'timed_out':timed_out,'output_limited':output_limited,
             'isolation_configuration_checked':True,'candidate_pass':None,'model_trial':False}
@@ -173,9 +174,10 @@ def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('candidate');parser.add_argument('--image',required=True)
     parser.add_argument('--language',choices=['pact','python','javascript','c'],default='pact')
+    parser.add_argument('--policy-profile',choices=POLICY_PROFILES,default=CANONICAL_PROFILE)
     args=parser.parse_args(argv)
     try:
-        report=run_candidate(args.candidate,args.image,language=args.language)
+        report=run_candidate(args.candidate,args.image,language=args.language,policy_profile=args.policy_profile)
         print(json.dumps(report,sort_keys=True,indent=2))
         return 0 if checks_passed(report) else 2
     except (ValueError,TypeError,KeyError,OSError,RecursionError) as error:

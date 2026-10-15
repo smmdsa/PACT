@@ -1,0 +1,39 @@
+{
+  "format": "pact.agent-policy-contract/0.1",
+  "languages": {
+    "c": {
+      "baseline_sha256": "905e7f8378c205b3bb65cd9cb90567b9e0b1ba8d316903139300cf565a846a7e",
+      "fingerprint_kind": "normalized-source-sha256",
+      "forms": {
+        "canonical": "7ac14374a7e6ebb235bd5047de704c668a5f977c55d01b6f19e3289ff4caf409",
+        "unrolled": "f1e54851eb500691616d14d1d034dca7f27b54db3c51f78dbde3891365109b13"
+      }
+    },
+    "javascript": {
+      "baseline_sha256": "e24527b2f7f7b299fc4e954a37dea3b06db95c74a75b2c68052aa9480716cb6f",
+      "fingerprint_kind": "normalized-source-sha256",
+      "forms": {
+        "canonical": "185905da614b201f03a6d9ae6ed1ec4cfe50b86a79c2a47f36f30f66aaa44cd7",
+        "unrolled": "2f128aa9df4ea32c83b9c33bd3b2b892d5ab2fc17bae8301e3262f5cd52af0fb"
+      }
+    },
+    "pact": {
+      "baseline_sha256": "8752da831ade4baa876f6856404606725436fbc2a1d3c57ada2c0bcb3e4d0490",
+      "fingerprint_kind": "pact-semantic-revision",
+      "forms": {
+        "canonical": "c85a0faef61296e15109f18d6ee2fe48a04eb9c978367cb0176de7d1e38af383",
+        "unrolled": "1204d1c007ce3af7a3e29f3dc0511c62602693e0d07d397b18d5ed6e0616e9bc"
+      }
+    },
+    "python": {
+      "baseline_sha256": "e5538586886c62eeb8d237e8f743956157c3f0436716cc212aeeb65ce073e819",
+      "fingerprint_kind": "python-ast-sha256",
+      "forms": {
+        "canonical": "19e9ac15564abd7c92662a234f1e331003799868e769b48c9d901c375f3054ff",
+        "unrolled": "72c99d94ea5edc27dea8046985532e7483d6aade4c02937509c2e48352c75646"
+      }
+    }
+  },
+  "profile": "counter-four-forms/0.2",
+  "task": "counter-four"
+}
