@@ -1,3 +1,7 @@
+## D2: mandatory prepublication consistency
+
+- Patch candidate publication now rejects observed source-byte changes even without opt-in `--expected-source-sha256`; the optional user-supplied hash remains available to detect an already-stale starting snapshot. This is a narrower safety improvement, not an atomic CAS guarantee.
+
 ## D2: bounded source guard hardening
 
 - Added bounded source hashing to patch source-byte checks, plus pre/post-load byte comparison to reject observed source mutations during parsing. Added oversized-source regression. This does not provide atomic source CAS or eliminate all time-of-check/time-of-use races.
