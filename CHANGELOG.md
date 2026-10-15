@@ -1,3 +1,7 @@
+## D2: bounded source guard hardening
+
+- Added bounded source hashing to patch source-byte checks, plus pre/post-load byte comparison to reject observed source mutations during parsing. Added oversized-source regression. This does not provide atomic source CAS or eliminate all time-of-check/time-of-use races.
+
 ## Source-byte patch guard (D2 initial slice)
 
 - Added optional exact source SHA-256 precondition to `pact patch`, with mismatch rejection, observed-byte receipt fields and format-only regression coverage. This guards agent physical-source snapshots but is not in-place CAS or source-range editing. Full D2 remains pending.
