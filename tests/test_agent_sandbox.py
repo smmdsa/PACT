@@ -7,6 +7,23 @@ import tempfile
 
 
 class AgentSandboxTests(unittest.TestCase):
+    def test_c_runtime_metadata_is_required_and_bounded(self):
+        observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
+        runtime={'engine':'gcc','gcc':'12.2.0'}
+        parsed,versions=self.module().parse_observations(json.dumps({**observed,'runtime':runtime}).encode(),'c')
+        self.assertEqual(parsed,observed);self.assertEqual(versions,runtime)
+        for value in (None,{},dict(runtime,gcc='x'*101),dict(runtime,engine='other')):
+            with self.assertRaises(ValueError):
+                self.module().parse_observations(json.dumps({**observed,'runtime':value}).encode(),'c')
+
+    def test_c_backend_missing_never_compiles_or_executes_on_host(self):
+        module=self.module()
+        with tempfile.TemporaryDirectory() as tmp:
+            candidate=Path(tmp)/'candidate.c';candidate.write_bytes(b'#error must not compile on host')
+            with patch.object(module.sys,'platform','linux'),patch.object(module.subprocess,'run',side_effect=FileNotFoundError):
+                with self.assertRaisesRegex(ValueError,'no local execution fallback'):
+                    module.run_candidate(candidate,'sha256:'+'a'*64,language='c')
+
     def test_javascript_observations_require_bounded_runtime_metadata(self):
         observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
         runtime={'engine':'node','node':'v24.0.0','v8':'13.6.0'}

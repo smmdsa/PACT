@@ -52,6 +52,35 @@ with tempfile.TemporaryDirectory() as tmp:
         print(json.dumps({'fixture':label,'behavior_pass':behavior,'policy_pass':policy,'termination_reason':reason,
                           'runtime':result['runtime'],'image_id':image,'model_trial':False}))
         (receipts/(label+'.receipt.json')).write_text(json.dumps(result,sort_keys=True,indent=2))
+    baseline_c=Path('benchmarks/agent_trials/counter.c').read_text()
+    correct_c=baseline_c.replace('i < 3','i < 4')
+    for label,source,behavior,policy,reason in [
+            ('c-baseline',baseline_c,False,False,None),
+            ('c-edited',correct_c,True,True,None),
+            ('c-invalid','#error invalid candidate\n',False,False,None),
+            ('c-unapproved',correct_c+'\n// extra comment\n',True,False,None),
+            ('c-size-limit',correct_c+'/*'+'x'*(1048576-len(correct_c.encode())-4)+'*/',True,False,None),
+            ('c-fresh-reset',correct_c.replace('    if (index < 0',
+                '    static int call_count; if (++call_count > 10) return 0;\n    if (index < 0'),True,False,None),
+            ('c-noisy','#include <stdio.h>\n'+correct_c+
+                '\n__attribute__((constructor)) static void noise(void) { puts("noise"); }\n',False,False,'invalid_worker_output'),
+            ('c-output-limit','#include <unistd.h>\n'+correct_c+
+                '\n__attribute__((constructor)) static void flood(void) { for (;;) { ssize_t n = write(1,"xxxxxxxx",8); (void)n; } }\n',
+                False,False,'output_limit'),
+            ('c-timeout','#include <unistd.h>\n'+correct_c+
+                '\n__attribute__((constructor)) static void pause_candidate(void) { sleep(60); }\n',False,False,'timeout'),
+            ('c-crash','#include <signal.h>\n'+correct_c+
+                '\n__attribute__((constructor)) static void crash(void) { raise(SIGSEGV); }\n',False,False,'runtime_error')]:
+        path=root/(label+'.c');path.write_text(source)
+        result=run_candidate(path,image,language='c')
+        assert result['grade']['behavior_pass']==behavior,(label,result)
+        assert result['policy']['policy_pass']==policy,(label,result)
+        assert result['termination_reason']==reason,(label,result)
+        assert result['candidate_pass'] is None
+        if reason is None:assert result['runtime']['engine']=='gcc',(label,result)
+        print(json.dumps({'fixture':label,'behavior_pass':behavior,'policy_pass':policy,'termination_reason':reason,
+                          'runtime':result['runtime'],'image_id':image,'model_trial':False}))
+        (receipts/(label+'.receipt.json')).write_text(json.dumps(result,sort_keys=True,indent=2))
     baseline_py=Path('benchmarks/agent_trials/counter.py').read_text()
     correct_py=baseline_py.replace('range(3)','range(4)')
     for label,source,expected,reason in [('python-baseline',baseline_py,False,None),

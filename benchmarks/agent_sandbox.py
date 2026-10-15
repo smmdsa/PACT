@@ -1,4 +1,4 @@
-"""Run a PACT/Python/JavaScript counter candidate in a configured Docker image."""
+"""Run a PACT/Python/JavaScript/C counter candidate in a configured Docker image."""
 import argparse
 import base64
 import hashlib
@@ -51,10 +51,11 @@ def parse_observations(stdout,language):
     observations=json.loads(stdout.decode('utf-8'),object_pairs_hook=pairs)
     if not isinstance(observations,dict):raise ValueError('Unexpected worker output')
     runtime=observations.pop('runtime',None)
-    if language=='javascript':
-        if (not isinstance(runtime,dict) or set(runtime)!={'engine','node','v8'} or runtime['engine']!='node'
+    if language in ('javascript','c'):
+        keys,engine=({'engine','node','v8'},'node') if language=='javascript' else ({'engine','gcc'},'gcc')
+        if (not isinstance(runtime,dict) or set(runtime)!=keys or runtime['engine']!=engine
                 or any(not isinstance(value,str) or not 1<=len(value)<=100 for value in runtime.values())):
-            raise ValueError('Expected bounded Node runtime metadata')
+            raise ValueError('Expected bounded toolchain metadata')
     elif runtime is not None:raise ValueError('Unexpected runtime metadata')
     if set(observations)!={'execution_status','initial_counter','cases','reset_case'}:
         raise ValueError('Unexpected worker output')
@@ -62,7 +63,7 @@ def parse_observations(stdout,language):
 
 
 def run_candidate(candidate_path,image,language='pact'):
-    if language not in ('pact','python','javascript'):raise ValueError('Unsupported isolated candidate language')
+    if language not in ('pact','python','javascript','c'):raise ValueError('Unsupported isolated candidate language')
     create_command('validation',image)
     if sys.platform!='linux':raise ValueError('The Docker counter adapter currently requires Linux')
     candidate=snapshot(candidate_path);oracle=frozen_oracle()
@@ -101,7 +102,7 @@ def run_candidate(candidate_path,image,language='pact'):
     try:grade=grade_trace(trace,candidate)
     except (ValueError,TypeError,KeyError,RecursionError):
         trace.update(failed);termination_reason='invalid_worker_output';grade=grade_trace(trace,candidate)
-    return {'format':'pact.agent-sandbox-receipt/0.4','image_id':image,'backend':'docker','runtime':runtime,
+    return {'format':'pact.agent-sandbox-receipt/0.5','image_id':image,'backend':'docker','runtime':runtime,
             'trace':trace,'grade':grade,'policy':audit_candidate(candidate,language=language),'log':log,
             'termination_reason':termination_reason,'output_limit_bytes':1048576,
             'timed_out':timed_out,'output_limited':output_limited,
@@ -111,7 +112,7 @@ def run_candidate(candidate_path,image,language='pact'):
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('candidate');parser.add_argument('--image',required=True)
-    parser.add_argument('--language',choices=['pact','python','javascript'],default='pact')
+    parser.add_argument('--language',choices=['pact','python','javascript','c'],default='pact')
     args=parser.parse_args(argv)
     try:
         report=run_candidate(args.candidate,args.image,language=args.language)

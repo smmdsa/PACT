@@ -12,16 +12,21 @@ from .agent_trials import MATERIAL
 BASELINE_SHA256='8752da831ade4baa876f6856404606725436fbc2a1d3c57ada2c0bcb3e4d0490'
 PYTHON_BASELINE_SHA256='e5538586886c62eeb8d237e8f743956157c3f0436716cc212aeeb65ce073e819'
 JAVASCRIPT_BASELINE_SHA256='e24527b2f7f7b299fc4e954a37dea3b06db95c74a75b2c68052aa9480716cb6f'
+C_BASELINE_SHA256='905e7f8378c205b3bb65cd9cb90567b9e0b1ba8d316903139300cf565a846a7e'
 
 
 def audit_javascript(candidate):
-    source=snapshot(MATERIAL/'counter.mjs')
-    if hashlib.sha256(source).hexdigest()!=JAVASCRIPT_BASELINE_SHA256:
-        raise ValueError('Frozen JavaScript baseline identity differs')
+    return audit_exact(candidate,'javascript','JavaScript','counter.mjs',JAVASCRIPT_BASELINE_SHA256)
+
+
+def audit_exact(candidate,language,label,filename,baseline_hash):
+    source=snapshot(MATERIAL/filename)
+    if hashlib.sha256(source).hexdigest()!=baseline_hash:
+        raise ValueError('Frozen '+label+' baseline identity differs')
     expected=source.replace(b'i < 3',b'i < 4')
-    report={'format':'pact.agent-source-policy/0.1','task':'counter-four','language':'javascript',
-            'scope':'counter-four exact JavaScript source edit/0.1','policy_pass':False,'candidate_pass':None,
-            'baseline_sha256':JAVASCRIPT_BASELINE_SHA256,'runtime_executed':False}
+    report={'format':'pact.agent-source-policy/0.1','task':'counter-four','language':language,
+            'scope':'counter-four exact '+label+' source edit/0.1','policy_pass':False,'candidate_pass':None,
+            'baseline_sha256':baseline_hash,'runtime_executed':False}
     if not isinstance(candidate,bytes) or len(candidate)>LIMIT:
         report['reason']='CANDIDATE_SOURCE_INVALID';return report
     report['candidate_sha256']=hashlib.sha256(candidate).hexdigest()
@@ -61,6 +66,7 @@ def expected_document():
 
 
 def audit_candidate(candidate,language='pact'):
+    if language=='c':return audit_exact(candidate,'c','C','counter.c',C_BASELINE_SHA256)
     if language=='javascript':return audit_javascript(candidate)
     if language=='python':return audit_python(candidate)
     if language!='pact':raise ValueError('Unsupported candidate policy language')

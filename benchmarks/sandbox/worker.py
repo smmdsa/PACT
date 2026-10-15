@@ -1,4 +1,4 @@
-"""Container worker: Python candidate execution is allowed only inside Docker."""
+"""Container worker: candidate host-language execution is allowed only inside Docker."""
 import json
 import base64
 import os
@@ -42,6 +42,10 @@ try:
     request=json.loads(data)
     candidate=base64.b64decode(request['candidate_base64'],validate=True)
     if len(candidate)>1024*1024:raise ValueError('Candidate exceeds 1 MiB')
+    if request.get('language')=='c':
+        from c_worker import execute_c
+        execute_c(candidate,request,result)
+        print(json.dumps(result,sort_keys=True));sys.exit(0)
     if request.get('language')=='javascript':
         Path('/tmp/candidate.mjs').write_bytes(candidate)
         Path('/tmp/request.json').write_text(json.dumps({'cases':request['cases'],'reset_args':request['reset_args']}))
