@@ -137,9 +137,8 @@ def main(argv=None):
                                    for operation in patch['operations']],
                        'output': None if args.dry_run else str(args.output)}
             if not args.dry_run:
-                if args.expected_source_sha256 is not None:
-                    require(bounded_source_sha256(args.source) == args.expected_source_sha256,
-                            'PATCH_SOURCE_STALE', 'Source bytes changed before candidate publication.')
+                require(bounded_source_sha256(args.source) == source_hash,
+                        'PATCH_SOURCE_STALE', 'Source bytes changed before candidate publication.')
                 publish_new(args.output, data)
             print(json.dumps(receipt, ensure_ascii=False, sort_keys=True, separators=(',', ':')))
             return 0
