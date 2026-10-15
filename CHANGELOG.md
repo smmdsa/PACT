@@ -1,3 +1,7 @@
+## D2 regression: physical newlines
+
+- Correct the mutation fixture to append actual LF bytes instead of the literal backslash-n characters. Add a CRLF-only mutation regression for unpinned candidate publication. This validates formatting-only stale-source rejection; it does not change the filesystem concurrency guarantee.
+
 ## D2: mandatory prepublication consistency
 
 - Patch candidate publication now rejects observed source-byte changes even without opt-in `--expected-source-sha256`; the optional user-supplied hash remains available to detect an already-stale starting snapshot. This is a narrower safety improvement, not an atomic CAS guarantee.

@@ -41,12 +41,28 @@ class PatchCliTests(unittest.TestCase):
             original = source.read_bytes()
             real_build = __import__('pact.module_build', fromlist=['build_module']).build_module
             def mutate_after_validation(candidate):
-                source.write_bytes(original + b'\\n')
+                source.write_bytes(original + b'\n')
                 return real_build(candidate)
             with unittest.mock.patch('pact.module_build.build_module', side_effect=mutate_after_validation):
                 self.assertEqual(cli.main(['patch', str(source), '--patch', str(patch), '-o', str(output)]), 1)
             self.assertFalse(output.exists())
-            self.assertEqual(source.read_bytes(), original + b'\\n')
+            self.assertEqual(source.read_bytes(), original + b'\n')
+
+    def test_unpinned_publication_rejects_format_only_crlf_change(self):
+        from pact import __main__ as cli
+        from unittest.mock import patch as mock_patch
+        with tempfile.TemporaryDirectory() as tmp:
+            source, patch_file, output, _, _ = self.setup_files(tmp)
+            original = source.read_bytes()
+            real_build = __import__('pact.module_build', fromlist=['build_module']).build_module
+            def reformat_during_build(candidate):
+                source.write_bytes(original + b'\r\n')
+                return real_build(candidate)
+            with mock_patch('pact.module_build.build_module', side_effect=reformat_during_build):
+                self.assertEqual(cli.main(['patch', str(source), '--patch', str(patch_file),
+                                           '-o', str(output)]), 1)
+            self.assertFalse(output.exists())
+            self.assertEqual(source.read_bytes(), original + b'\r\n')
 
     def test_patch_rejects_oversized_source_during_hashing(self):
         with tempfile.TemporaryDirectory() as tmp:
