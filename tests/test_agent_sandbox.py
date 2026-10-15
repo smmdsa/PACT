@@ -113,3 +113,20 @@ class AgentSandboxTests(unittest.TestCase):
         report['policy']['policy_pass']=False;self.assertFalse(module.checks_passed(report))
         report['policy']['policy_pass']=True;report['trace']['language']='python'
         report['embedded_tests']['pass']=None;self.assertTrue(module.checks_passed(report))
+
+    def test_reference_checkpoint_survives_a_partial_final_report(self):
+        observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
+        checkpoint=json.dumps({'format':'pact.reference-checkpoint/0.1','observations':observed}).encode()+b'\n'
+        self.assertEqual(self.module().parse_checkpoint(checkpoint+b'{"embedded'),observed)
+        for data in (b'',checkpoint.rstrip(),b'noise\n'+checkpoint,checkpoint.replace(b'completed',b'error')):
+            with self.assertRaises(ValueError):self.module().parse_checkpoint(data)
+
+    def test_final_report_must_match_its_reference_checkpoint(self):
+        observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
+        checkpoint=json.dumps({'format':'pact.reference-checkpoint/0.1','observations':observed}).encode()+b'\n'
+        evidence={'engine':'wasm','status':'passed','declared':1,'executed':1,'pass':True,'reason':None}
+        final=json.dumps({**observed,'embedded_tests':evidence}).encode()
+        parsed,_,_=self.module().parse_observations(checkpoint+final,'pact')
+        self.assertEqual(parsed,observed)
+        changed=json.dumps({**observed,'initial_counter':[9,9],'embedded_tests':evidence}).encode()
+        with self.assertRaises(ValueError):self.module().parse_observations(checkpoint+changed,'pact')

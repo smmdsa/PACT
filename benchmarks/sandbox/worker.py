@@ -75,6 +75,8 @@ try:
     reset=Machine(document,evaluation_limit=100000,runtime_diagnostics=True)
     result['reset_case']=observe(reset,request['reset_args'])
     result['execution_status']='completed'
+    print(json.dumps({'format':'pact.reference-checkpoint/0.1','observations':{
+        key:value for key,value in result.items() if key!='embedded_tests'}},sort_keys=True),flush=True)
     from pact_tests import execute_declared_tests
     result['embedded_tests']=execute_declared_tests(document)
 except Exception as error:

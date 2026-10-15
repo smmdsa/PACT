@@ -6,6 +6,7 @@ Every entry distinguishes implemented behavior from measured evidence and planne
 
 - The Docker PACT worker now compiles and executes candidate test declarations on real Wasm after collecting the independent external trace. No generated candidate executes on the outer host.
 - Receipt 0.6 separates declaration results from behavior and source policy. CLI success for PACT requires all three; empty legacy test lists fail, unavailable observations remain null, and Python/JavaScript/C explicitly report no declaration interface.
+- Flushes and validates a reference checkpoint before declaration execution; a dedicated authored timeout image verifies that declaration-phase termination retains the completed trace without approving incomplete tests.
 - Added authored negative Docker fixtures whose external behavior still matches but whose tests have wrong expectations, are missing, or trap. Original model candidates and frozen historical results remain unchanged.
 - Broader pre-registered source policies and adversarial isolation probes remain E2/E3 work; successful declared examples do not establish full candidate correctness or authenticated evaluation.
 

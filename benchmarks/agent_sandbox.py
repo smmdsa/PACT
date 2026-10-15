@@ -75,7 +75,25 @@ def validate_embedded_tests(value):
     return value
 
 
+def parse_checkpoint(stdout):
+    first,separator,_=stdout.partition(b'\n')
+    if not separator:raise ValueError('Incomplete reference checkpoint')
+    checkpoint=json.loads(first.decode('utf-8'),object_pairs_hook=pairs)
+    if (not isinstance(checkpoint,dict) or set(checkpoint)!={'format','observations'}
+            or checkpoint['format']!='pact.reference-checkpoint/0.1'):
+        raise ValueError('Expected reference checkpoint')
+    observations=checkpoint['observations']
+    if (not isinstance(observations,dict) or set(observations)!={'execution_status','initial_counter','cases','reset_case'}
+            or observations['execution_status']!='completed'):
+        raise ValueError('Expected completed reference observation')
+    return observations
+
+
 def parse_observations(stdout,language):
+    checkpoint=None;lines=stdout.splitlines()
+    if language=='pact' and len(lines)>1:
+        if len(lines)!=2:raise ValueError('Unexpected PACT worker records')
+        checkpoint=parse_checkpoint(stdout);stdout=lines[1]
     observations=json.loads(stdout.decode('utf-8'),object_pairs_hook=pairs)
     if not isinstance(observations,dict):raise ValueError('Unexpected worker output')
     runtime=observations.pop('runtime',None)
@@ -91,6 +109,7 @@ def parse_observations(stdout,language):
     elif runtime is not None:raise ValueError('Unexpected runtime metadata')
     if set(observations)!={'execution_status','initial_counter','cases','reset_case'}:
         raise ValueError('Unexpected worker output')
+    if checkpoint is not None and checkpoint!=observations:raise ValueError('Reference checkpoint differs')
     return observations,runtime,embedded
 
 
@@ -124,6 +143,9 @@ def run_candidate(candidate_path,image,language='pact'):
     try:
         observations=failed
         if not termination_reason:observations,runtime,embedded=parse_observations(stdout,language)
+        elif language=='pact':
+            try:observations=parse_checkpoint(stdout)
+            except (ValueError,TypeError,RecursionError):pass
     except (ValueError,TypeError,RecursionError):
         observations=failed;termination_reason='invalid_worker_output'
     log={'stdout_base64':base64.b64encode(stdout).decode(),'stderr_base64':base64.b64encode(stderr).decode()}
@@ -143,7 +165,7 @@ def run_candidate(candidate_path,image,language='pact'):
 
 
 def checks_passed(report):
-    return (report['grade']['behavior_pass'] is True and report['policy']['policy_pass'] is True
+    return (report.get('termination_reason') is None and report['grade']['behavior_pass'] is True and report['policy']['policy_pass'] is True
             and (report['trace']['language']!='pact' or report['embedded_tests']['pass'] is True))
 
 
