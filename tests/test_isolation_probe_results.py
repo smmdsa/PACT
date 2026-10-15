@@ -60,3 +60,18 @@ class ProbeResultTests(unittest.TestCase):
         self.assertEqual(base64.b64decode(result['log']['stdout_base64']),stdout)
         self.assertEqual(result['state'],{'Running':False})
         self.assertTrue(result['observation']['denied'])
+
+    def test_cleanup_failure_probe_restores_the_real_backend_and_removes_container(self):
+        import json
+        import os
+        from unittest.mock import patch
+        import tools.check_agent_isolation as probe
+        from tests.test_agent_sandbox import AgentSandboxTests
+        config=AgentSandboxTests().configuration();state=[{'State':{'Running':True}}]
+        responses=[b'created',json.dumps([config]).encode(),b'started',json.dumps(state).encode(),json.dumps(state).encode()]
+        with patch.dict(os.environ,{'DOCKER_HOST':'original-test-endpoint'}):
+            with patch.object(probe,'control',side_effect=responses),patch.object(probe,'cleanup_container',side_effect=[ValueError('Cannot connect'),None]):
+                result=probe.cleanup_failure_probe('sha256:'+'a'*64)
+            self.assertEqual(os.environ['DOCKER_HOST'],'original-test-endpoint')
+        self.assertTrue(result['pass']);self.assertTrue(result['cleanup_verified'])
+        self.assertEqual(result['failed_removal_error'],'Cannot connect')

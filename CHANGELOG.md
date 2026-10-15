@@ -7,7 +7,7 @@ Every entry distinguishes implemented behavior from measured evidence and planne
 - Added authored CPU, memory, output, wall-time, process, root/host-path/noexec, file-size, tmpfs-capacity and network probes using the counter runtime's actual Docker profile. Positive filesystem/socket controls distinguish denied operations from broken execution.
 - Receipt 0.8 verifies container absence after forced removal. Configuration checks now also require CPU/file/descriptor ulimits, bounded noexec tmpfs and no added capabilities.
 - Probe observations retain bounded logs, available Docker state and container identity on cleanup/inspection errors; synthetic grading/cleanup tests remain separate from real Docker execution.
-- Cleanup-error evidence covers a real absent-container daemon error and failure propagation; daemon loss during live-container removal and universal escape resistance remain outside the measured scope.
+- Retained the first unsuccessful suite: nine probes passed but the absent-container cleanup oracle was invalid because forced removal is idempotent. The revised probe interrupts client endpoint access while a bounded sleeper runs, verifies rejection, restores access and performs real cleanup. Persistent daemon loss and universal escape resistance remain excluded.
 
 ## Registered alternative policies (bounded E2 completion)
 

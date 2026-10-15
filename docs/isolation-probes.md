@@ -19,7 +19,7 @@ The dedicated CI builds the trusted image, executes the probes and retains every
 | Memory | Docker records `OOMKilled`, exit 137 and stopped state | Allocation attempts stop at 512 MiB; configured container memory is 128 MiB |
 | Output | Capture reaches its limit and stops execution | Combined stored stdout/stderr stays at or below 1 MiB |
 | Wall time | The bounded capture times out | A fixed 60-second sleep is interrupted by the existing 15-second host deadline |
-| Cleanup error | Removing an absent verifier container returns an actual daemon error | Separately, every created probe container must be forcibly removed and absent from a filtered Docker listing |
+| Cleanup error | A temporarily unavailable Docker client endpoint rejects removal of a running, bounded sleeper | After restoring the endpoint the container is still running; real cleanup then removes it and verifies absence |
 
 The CPU probe uses the normal 15-second outer wall deadline. CPU time and wall time differ: a heavily loaded runner can produce a genuine failed observation rather than a CPU-limit receipt. Such results remain failures requiring inspection, not silent acceptance.
 
@@ -33,4 +33,9 @@ Probe records retain bounded raw logs, available Docker state, runtime flags and
 
 These probes establish finite observations on a particular CI image/kernel/daemon. They do not demonstrate resistance to kernel exploits, every syscall, all namespaces, cross-container side channels, hostile daemon behavior or credentialed deployment environments. Network evidence covers the inspected `none` profile and one no-route attempt, not every possible exfiltration channel. Host-sentinel absence covers one deliberately unmounted path. Container image files remain readable according to normal permissions.
 
-The absent-container cleanup probe demonstrates real backend error propagation; it does not simulate losing the daemon during removal of a live hostile container. A daemon outage may require operator cleanup. Configuration inspection, successful finite probes and forced removal are not universal containment proof or authenticated evaluation. Model-trial results and original candidate bytes remain separate and unchanged.
+The cleanup probe makes the client endpoint inaccessible temporarily; it does not crash the daemon or simulate an adversarial kernel. It restores client configuration before real removal. A persistent daemon outage may require operator cleanup. Configuration inspection, successful finite probes and forced removal are not universal containment proof or authenticated evaluation. Model-trial results and original candidate bytes remain separate and unchanged.
+
+
+## Retained unsuccessful attempt
+
+[CI attempt 38699918135](../benchmarks/results/isolation-attempt-38699918135.json) passed the nine resource/access probes but failed its original cleanup-error oracle. Docker accepted forced removal of an absent container as idempotent; absence was not a removal failure. The revised probe uses a deliberately unavailable client endpoint with a running bounded container, then restores access and verifies removal. The original failed suite observation is retained, not reclassified as a pass.

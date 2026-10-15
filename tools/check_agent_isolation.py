@@ -2,11 +2,13 @@
 import base64
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
 import time
 import uuid
+from unittest.mock import patch
 
 from benchmarks.agent_sandbox import cleanup_container, control, create_command, verify_configuration
 from benchmarks.bounded_process import run_bounded
@@ -60,6 +62,29 @@ def run_probe(name,image,host_sentinel):
     return result
 
 
+def cleanup_failure_probe(image):
+    container='pact-probe-'+uuid.uuid4().hex
+    command=create_command(container,image);command[-1]='-c';command.append('import time; time.sleep(60)')
+    result={'probe':'cleanup_failure','container':container,'pass':False,'cleanup_verified':False}
+    try:
+        control(command);info=json.loads(control(['docker','inspect',container]))[0]
+        verify_configuration(info,image);control(['docker','start',container])
+        result['before']=json.loads(control(['docker','inspect',container]))[0]['State']
+        with tempfile.TemporaryDirectory(prefix='pact-unavailable-daemon-') as tmp:
+            with patch.dict(os.environ,{'DOCKER_HOST':'unix://'+str(Path(tmp)/'absent.sock'),'DOCKER_CONTEXT':''}):
+                try:cleanup_container(container)
+                except ValueError as error:result['failed_removal_error']=str(error)
+        result['after_failure']=json.loads(control(['docker','inspect',container]))[0]['State']
+    except Exception as error:result['infrastructure_error']=str(error)
+    finally:
+        try:cleanup_container(container);result['cleanup_verified']=True
+        except Exception as error:result['cleanup_error']=str(error)
+    result['pass']=bool(result.get('failed_removal_error') and result.get('before',{}).get('Running')
+                        and result.get('after_failure',{}).get('Running') and result['cleanup_verified']
+                        and not result.get('infrastructure_error'))
+    return result
+
+
 def main():
     image=sys.argv[1];create_command('validation',image)
     info=json.loads(control(['docker','image','inspect',image]))[0]
@@ -73,13 +98,11 @@ def main():
             except Exception as error:report={'probe':name,'pass':False,'infrastructure_error':str(error)}
             reports.append(report);(output/(name+'.json')).write_text(json.dumps(report,sort_keys=True,indent=2)+'\n')
             print(json.dumps({key:report.get(key) for key in ('probe','pass','started','returncode','timed_out','output_limited')}),flush=True)
-        absent='pact-probe-'+uuid.uuid4().hex
-        # A real daemon error for an absent container must propagate, never certify cleanup.
-        try:cleanup_container(absent);cleanup={'probe':'cleanup_failure','pass':False}
-        except ValueError as error:
-            cleanup={'probe':'cleanup_failure','pass':'No such container' in str(error),'error':str(error)}
+        cleanup=cleanup_failure_probe(image)
+        print(json.dumps(cleanup,sort_keys=True),flush=True)
         reports.append(cleanup);(output/'cleanup_failure.json').write_text(json.dumps(cleanup,indent=2)+'\n')
     summary={'format':'pact.isolation-probe-suite/0.1','image_id':image,'model_trial':False,
+             'harness_source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
              'probe_source_sha256':hashlib.sha256(Path('benchmarks/sandbox/isolation_probes.py').read_bytes()).hexdigest(),
              'pass':all(row['pass'] for row in reports),'results':[{'probe':row['probe'],'pass':row['pass']} for row in reports]}
     (output/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
