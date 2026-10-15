@@ -32,6 +32,10 @@ Open the resulting HTML. Arrows/WASD move or climb; Space jumps; X/J picks up or
 
 JavaScript handles input/rendering/audio/tick scheduling; gameplay is in PACT. `tools/make_game.py` is an optional authoring tool, not executed by the compiler or game. Regenerating overwrites JSON edits; convert again explicitly.
 
+## Órbita: a human interface over PACT
+
+[Explore Órbita](https://smmdsa.github.io/PACT/orbita.html): a spatial constellation of six speculative futures, three perspectives and reversible attention decisions. Its authored [PACT kernel](examples/orbita.pact) owns the selection, six-seed budget, allocation limits and rolling undo/redo history. HTML/CSS/SVG and JavaScript present the state and send actions. [Runtime boundary, design and finite verification](docs/orbita-design.md). This is an application experiment, separate from the generated-model benchmarks.
+
 ## Reversible conversion
 
 ```sh

@@ -10,6 +10,7 @@ from pact.module_build import build_module
 from pact.__main__ import main as pact_cli
 from tools.markdown_docs import render_markdown
 from tools.demo_catalog import example_files, render_catalog
+from tools.build_orbita import build_orbita
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -29,6 +30,7 @@ def metroid_results_html(pilot):
 
 DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.md'),
  ('metroidvania-pilot','GPT Metroidvania pilot','docs/metroidvania-pilot.md'),
+ ('orbita-design','Órbita: interface experiment','docs/orbita-design.md'),
  ('roadmap-audit','Implementation audit','docs/roadmap-audit.md'),
  ('trace-grading','Trace grading','docs/agent-trace-grading.md'),
  ('agent-sandbox','Isolated counter','docs/agent-sandbox.md'),
@@ -62,6 +64,7 @@ def page(title,body,current='index',toc=None):
 
 def main():
     output=ROOT/'site-output';output.mkdir(exist_ok=True)
+    build_orbita(ROOT,output)
     game=load_document(ROOT/'examples/alien-harvest.inline.pact')
     binary,manifest=build_module(game)
     (output/'game.wasm').write_bytes(binary)
@@ -69,6 +72,7 @@ def main():
     (output/'game.html').write_bytes(game_html(game,binary,manifest))
     if pact_cli(['build',str(ROOT/'examples/hello.agent.pact'),'-o',str(output/'hello.wasm')])!=0:raise RuntimeError('Greeting build failed')
     mapping={path:slug+'.html' for slug,_,path in DOCUMENTS};mapping['README.md']='index.html'
+    mapping.update({'orbita.html':'orbita.html','demos.html':'demos.html'})
     sources=example_files(ROOT)
     for path in sources:
         relative=path.relative_to(ROOT/'examples')
