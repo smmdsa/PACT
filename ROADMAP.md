@@ -14,7 +14,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | Traditional-language source baseline | Done | Frozen greeting/counter traces, four executed languages, both encodings and explicit asymmetry |
 | Parser and benchmark-read bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads; general containment/peak-memory claims excluded |
 | Model trial material and recorder | Done | Same task prompt, frozen contexts/oracle, external provenance and failed-trial accounting |
-| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted IR/AST/exact-source policies implemented; broader policy/limit probes, provider integration and real trials pending |
+| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted IR/AST/exact-source policies implemented; broader policy/limit probes, an exploratory GPT subagent pilot archived; provider integration and formal trials pending |
 | Runtime microbenchmark | Done | Warmup/fresh samples, independent state oracle, source hashes and local measurements |
 | Readable docs and progress | Done | Safe static Markdown, navigation, TOC and committed change log |
 | Numeric-module selective inspection | Done | Function discovery, call relationships, effects and test summaries; text graphs and full dependency/coverage proof excluded |
@@ -34,7 +34,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | --- | --- | --- |
 | 1 | E2 | Broaden pre-registered source policies and execute embedded test declarations; all four adapters exist, with restricted IR/AST/exact-source policies |
 | 2 | E3 | Exercise hostile resource/filesystem/network attempts and cleanup failures on the actual isolation backend; configuration flags and authored fixtures are not sufficient containment evidence |
-| 3 | E4, E5 | Configure provider/backend, run fresh paired real trials with actual usage/failures/retries, then broaden tasks and retrieval/repair experiments |
+| 3 | E4, E5 | Configure provider/backend, run fresh paired formal trials with actual usage/failures/retries, then broaden tasks and retrieval/repair experiments |
 | 4 | L1, L2 | Versioned expected-trap cases, then nominal units and stronger contracts |
 | 5 | D1, D2, P1 | Full instruction maps/debugger, byte-aware editing/CAS and more browser/device evidence |
 | 6 | S1, R1, X1 | Versioned reusable library, broader runtime/build/memory measurements and owner-approved licensed reproducible releases |

@@ -40,7 +40,7 @@ This audit checks repository implementation and tests, not just changelog claims
 | R1 | Planned | Wider runtime/build measurements | More workloads, compile cost/peak memory and hardware/toolchain-controlled comparisons |
 | X1 | Owner decision + implementation | License and reproducible releases | Owner chooses licensing; add reproducible packaging, pinned toolchains/dependencies and release verification. No license file or release workflow currently supplies this |
 
-No provider SDK/client or real trial records exist in the current benchmark path. The Dockerfile uses a mutable base tag for building; a runtime image ID pins execution but does not make rebuilding reproducible. The sandbox inspects selected Docker settings and tests authored fixtures plus Python/JavaScript/C output/timeout, JavaScript reset-leak and C fresh-process reset/crash probes; broader hostile containment testing remains E3.
+No provider SDK/client or formal provider-trial records exist in the current benchmark path. An eight-response exploratory GPT subagent pilot is now archived separately; it has no provider usage, immutable model version or statistical ranking. The Dockerfile uses a mutable base tag for building; a runtime image ID pins execution but does not make rebuilding reproducible. The sandbox inspects selected Docker settings and tests authored fixtures plus Python/JavaScript/C output/timeout, JavaScript reset-leak and C fresh-process reset/crash probes; broader hostile containment testing remains E3.
 
 ## Corrections made to the roadmap and guidance
 
@@ -59,3 +59,5 @@ This intentionally strict acceptance rule can reject another behaviorally correc
 JavaScript now has a Node 24 container worker and a separate exact-source policy: only `i < 3` → `i < 4`, with CRLF normalization, is allowed. Unlike the PACT IR and Python AST policies, it rejects comment/format changes. Receipts 0.4 record unauthenticated Node/V8 observations separately from the common trace. Broader policies and embedded declaration execution remain unfinished.
 
 E1 is now implemented for all four frozen languages: C compiles and executes only in Docker, with compiler diagnostics, GCC metadata and fresh-process reset. Receipt 0.5 adds C selection. The C exact-source policy is as strict as JavaScript's; this completes adapter coverage for one task, not E2/E3 or actual model evaluation. Native execution uses a bounded Linux memfd while `/tmp` remains noexec. E2 and E3 remain the next acceptance gates before real provider trials.
+
+The exploratory GPT pilot covers two requested model aliases and four languages, with one valid response each plus one retained coordinator-input error. It exercises the evaluation pipeline but does not complete E4: provider-controlled settings/version/usage, repeated trials and pre-registration remain missing. See the evaluation protocol for exact limitations.

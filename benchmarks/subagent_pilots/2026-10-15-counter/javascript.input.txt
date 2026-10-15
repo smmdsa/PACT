@@ -1,0 +1,11 @@
+This is an isolated source-edit trial. Do not use any tools, inspect files, delegate, or access other context. Use only the instruction and source below. Return only the complete updated source file as plain text, with no Markdown fences or explanation.
+
+Change the supplied counter implementation so each valid call to advance(index, amount) updates the selected counter exactly four times instead of three. Preserve the initial two signed 32-bit counter values, signed 32-bit wrapping addition, function interface, and rejection of every out-of-bounds index without changing either counter. Update any embedded expected tests that this behavior change invalidates. Make the smallest necessary source change. Return only the complete updated source file; do not edit the driver, weaken checks, or add dependencies.
+
+SOURCE:
+export const counter = [2147483646, -2147483647];
+
+export function advance(index, amount) {
+    if (index < 0 || index >= counter.length) throw new RangeError("bounds");
+    for (let i = 0; i < 3; i++) counter[index] = (counter[index] + amount) | 0;
+}

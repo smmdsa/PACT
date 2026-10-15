@@ -23,8 +23,14 @@ jobs:
         run: |
           image=$(docker image inspect --format '{{.Id}}' pact-counter-verifier)
           python -m tools.check_agent_sandbox "$image"
+      - name: Evaluate archived exploratory GPT responses in Docker
+        run: |
+          image=$(docker image inspect --format '{{.Id}}' pact-counter-verifier)
+          python -m tools.check_subagent_pilot "$image"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: isolated-counter-receipts
-          path: build/sandbox-checks/
+          path: |
+            build/sandbox-checks/
+            build/subagent-pilot/

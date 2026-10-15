@@ -1,6 +1,6 @@
 # Same-prompt agent evaluation protocol
 
-This repository supplies trial material and a recorder, **not model results**. No model API is called, and no candidate is compiled or executed by this tool. Source-token measurements in the traditional comparison are a different metric from successful editing, debugging, latency, or total task cost.
+The formal evaluation path supplies trial material and a recorder, **not a completed provider benchmark**. An exploratory subagent pilot is archived separately below. The recorder calls no model API and compiles or executes no candidate. Source-token measurements in the traditional comparison are a different metric from successful editing, debugging, latency, or total task cost.
 
 ```sh
 python -m benchmarks.agent_trials prepare --language pact --plan-seed 17 > pact-trial-pack.json
@@ -91,3 +91,26 @@ The official [MultiPL-E repository](https://github.com/nuprl/MultiPL-E) describe
 The official [SWE-bench repository](https://github.com/SWE-bench/SWE-bench) evaluates resolution of real repository issues. It is useful for larger editing/debugging tasks; a tiny standalone counter edit is not a SWE-bench score.
 
 The official [LiveCodeBench repository](https://github.com/LiveCodeBench/LiveCodeBench) provides code-evaluation scenarios with time-separated problem collection aimed at contamination concerns. It is useful for broader task selection and temporal splits. This repository has not integrated any of these datasets and makes no claim that their existing harnesses support PACT. Dataset licensing, task translation, independent grading, sandbox integration and provenance would need to be resolved before reporting adapted results. Official repositories were checked on 2026-10-14.
+
+## Exploratory GPT subagent pilot — 2026-10-15
+
+The repository now archives real coordinator-visible responses from sessions requested as `gpt-6.1-sol` and `gpt-6-astra`, each at medium reasoning effort. Each model received the same counter-four instruction and the matching frozen source for PACT, Python, JavaScript and C. Sessions used `fork_turns: none` and were instructed to use no tools or external context. No oracle, expected edited output or other model response was included in the submitted task message. Hidden platform/system context and provider routing are not attested by this archive.
+
+| Requested model alias | Valid responses | Static edit policy | Provider usage / immutable version |
+| --- | --- | --- | --- |
+| `gpt-6.1-sol` | One per language, 4 total | All four match | Unavailable |
+| `gpt-6-astra` | One per language, 4 total | All four match | Unavailable |
+
+For each language, both returned the same final source text. Both updated the PACT embedded expectation as well as its repeat count. This simple task did not distinguish the models. Static edit matches alone do not establish runtime correctness: the dedicated Docker workflow re-evaluates each archived trial with the independent behavioral grader and publishes individual receipts plus a summary artifact. Behavioral failures are retained as results rather than causing a trial to disappear. Infrastructure or identity failures still reject.
+
+The archive is `benchmarks/subagent_pilots/2026-10-15-counter/`: input prefix, submitted task messages, final response text, extracted candidates, hashes, requested settings and session task identifiers are retained. Identical response contents are stored once per language and referenced by both trial records. The only source extraction is appending one LF to the coordinator-visible final text. This rule was documented during archiving, not pre-registered. It is not an archive of raw provider payloads or private reasoning. No response body was repaired.
+
+There were nine launches. One Astra JavaScript attempt received a coordinator transcription error: its second initial value was `-2147473647` instead of the frozen `-2147483647`. The model preserved the value it was given. That input and response remain archived as `COORDINATOR_BASELINE_COPY_ERROR`; the attempt is excluded from the eight comparable trials and was replaced with a fresh session containing the correct baseline. It is not counted as a model failure or hidden retry.
+
+This is `pact.subagent-pilot/0.1`, not the formal trial-recorder format: model aliases are requested selections, immutable backend versions and provider usage are unavailable, generation latency is not measured, launch order was not randomized and there is only one valid attempt per model/language. Success on one trivial task supports no ranking, cost comparison or claim that PACT improves model productivity. The four source policies also remain asymmetric. Full candidate approval stays null. Provider integration, broader task sets, pre-registration, repeated paired trials and the E2/E3 verification gates remain unfinished.
+
+To repeat only execution verification, using the archived responses rather than generating new ones:
+
+```sh
+python3 -m tools.check_subagent_pilot sha256:IMMUTABLE_LOCAL_IMAGE_ID
+```
