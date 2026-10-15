@@ -32,6 +32,16 @@ class PatchCliTests(unittest.TestCase):
     def run_cli(self, *args):
         return subprocess.run([sys.executable,'-m','pact',*map(str,args)],cwd=ROOT,capture_output=True,text=True)
 
+    def test_patch_rejects_oversized_source_during_hashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source, patch, output, _, _ = self.setup_files(tmp)
+            source.write_bytes(b' ' * (1024 * 1024 + 1))
+            result = self.run_cli('patch', source, '--patch', patch, '--dry-run',
+                                  '--expected-source-sha256', '0' * 64)
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(json.loads(result.stderr)['code'], 'SOURCE_LIMIT')
+            self.assertFalse(output.exists())
+
     def test_exact_source_guard_detects_format_only_changes(self):
         with tempfile.TemporaryDirectory() as tmp:
             source, patch, output, _, _ = self.setup_files(tmp)
