@@ -16,6 +16,7 @@ class MetroidPilotTests(unittest.TestCase):
             self.assertEqual(command[command.index(flag)+1],value)
         self.assertIn('--read-only',command)
         self.assertIn('/tmp:size=64m,nosuid,nodev,noexec',command)
+        self.assertIn('fsize=33554432:33554432',command)
         self.assertNotIn('-v',command)
         with self.assertRaises(ValueError):self.module().create_command('test','image:latest')
 

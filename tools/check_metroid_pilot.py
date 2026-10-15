@@ -20,7 +20,7 @@ def create_command(name,image):
     return ['docker','create','--name',name,'--interactive','--pull','never','--network','none','--read-only',
             '--cap-drop','ALL','--security-opt','no-new-privileges','--user','65534:65534',
             '--memory','768m','--memory-swap','768m','--cpus','1','--pids-limit','128',
-            '--ulimit','cpu=45:45','--ulimit','fsize=1048576:1048576','--ulimit','nofile=1024:1024',
+            '--ulimit','cpu=45:45','--ulimit','fsize=33554432:33554432','--ulimit','nofile=1024:1024',
             '--tmpfs','/tmp:size=64m,nosuid,nodev,noexec','--log-driver','none',
             '--entrypoint','node',image,'/opt/verify/verify_browser.mjs']
 
