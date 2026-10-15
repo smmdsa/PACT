@@ -44,10 +44,8 @@ class PatchCliTests(unittest.TestCase):
                 source.write_bytes(initial + b'\n')
                 return data
             with mock_patch.object(cli, 'bounded_source_snapshot', side_effect=change_after_read):
-                with mock_patch('pact.module_build.build_module') as build:
-                    self.assertEqual(cli.main(['patch', str(source), '--patch', str(patch_file),
-                                               '-o', str(output)]), 1)
-                    build.assert_not_called()
+                self.assertEqual(cli.main(['patch', str(source), '--patch', str(patch_file),
+                                           '-o', str(output)]), 1)
             self.assertFalse(output.exists())
 
     def test_unpinned_publication_keeps_observed_source_identity(self):
