@@ -42,6 +42,7 @@ def parser():
     patch.add_argument('-o', '--output', type=Path)
     patch.add_argument('--to', choices=['compact', 'compact-data', 'compact-inline', 'compact-agent', 'json'], default='compact')
     patch.add_argument('--dry-run', action='store_true')
+    patch.add_argument('--expected-source-sha256', help='Require exact source bytes (64 lowercase hex).')
     for name in ('inspect', 'symbols'):
         command = commands.add_parser(name)
         command.add_argument('source', type=Path)
@@ -99,6 +100,13 @@ def main(argv=None):
                     'PATCH_OUTPUT_FORMAT', 'JSON candidates cannot use the .pact suffix; use .json.')
             if not args.dry_run:
                 require(args.output.resolve() != args.source.resolve(), 'PATCH_IN_PLACE', 'In-place publication is unsupported; specify a new candidate path.')
+            source_hash = hashlib.sha256(args.source.read_bytes()).hexdigest()
+            if args.expected_source_sha256 is not None:
+                require(len(args.expected_source_sha256) == 64 and
+                        all(char in '0123456789abcdef' for char in args.expected_source_sha256),
+                        'PATCH_INVALID', 'Expected a 64-character lowercase source SHA256.')
+                require(source_hash == args.expected_source_sha256, 'PATCH_SOURCE_STALE',
+                        'Source bytes differ from the expected source SHA256.')
             patch = load_document(args.patch)
             candidate = apply_patch(document, patch)
             _, manifest = build_module(candidate)
@@ -110,12 +118,17 @@ def main(argv=None):
             receipt = {'format': 'pact.patch-receipt/0.1.0',
                        'status': 'validated' if args.dry_run else 'patched',
                        'expected_revision_sha256': patch['expected_revision_sha256'],
+                       'source_sha256': source_hash,
+                       'expected_source_sha256': args.expected_source_sha256,
                        'result_revision_sha256': revision(candidate),
                        'evidence': manifest['evidence'],
                        'changes': [{key:value for key,value in operation.items() if key not in ('node','test')}
                                    for operation in patch['operations']],
                        'output': None if args.dry_run else str(args.output)}
             if not args.dry_run:
+                if args.expected_source_sha256 is not None:
+                    require(hashlib.sha256(args.source.read_bytes()).hexdigest() == args.expected_source_sha256,
+                            'PATCH_SOURCE_STALE', 'Source bytes changed before candidate publication.')
                 publish_new(args.output, data)
             print(json.dumps(receipt, ensure_ascii=False, sort_keys=True, separators=(',', ':')))
             return 0
