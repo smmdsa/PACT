@@ -16,7 +16,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | Parser and benchmark-read bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads; general containment/peak-memory claims excluded |
 | Model trial material and recorder | Done | Same task prompt, frozen contexts/oracle, external provenance and failed-trial accounting |
 | Counter policy and declared-test verification | Done for frozen task | Opt-in hash-bound canonical/unrolled forms in four languages, preserved interfaces/policies, executed PACT declarations, negative fixtures and explicit asymmetries; no general equivalence verifier |
-| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted default policies, opt-in registered alternative forms and isolated PACT declared-test execution implemented; finite isolation probes, exploratory GPT counter/Metroidvania pilots archived; provider integration and formal trials pending |
+| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted default policies, opt-in registered alternative forms and isolated PACT declared-test execution implemented; executed finite isolation probes, exploratory GPT counter/Metroidvania pilots archived; provider integration and formal trials pending |
 | Runtime microbenchmark | Done | Warmup/fresh samples, independent state oracle, source hashes and local measurements |
 | Readable docs and progress | Done | Safe static Markdown, navigation, TOC and committed change log |
 | Numeric-module selective inspection | Done | Function discovery, call relationships, effects and test summaries; text graphs and full dependency/coverage proof excluded |
@@ -34,9 +34,9 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 
 | Order | Backlog IDs | Concrete next outcome |
 | --- | --- | --- |
-| 1 | E3 | Validate finite CPU/memory/output/process/filesystem/network probes and cleanup-failure observations on actual Docker CI; preserve failures and excluded containment claims |
-| 2 | E4, E5 | Configure provider/backend, run fresh paired formal trials with actual usage/failures/retries, then broaden tasks and retrieval/repair experiments |
-| 3 | L1, L2 | Versioned expected-trap cases, then nominal units and stronger contracts |
+| 1 | E3 | Done for the finite Linux/Docker profile: all ten probes passed in CI run 38700604568; original failed attempt and containment exclusions retained |
+| 2 | E4, E5 | Blocked on configured provider credentials/backend and immutable model/usage evidence; formal trials and broader experiments remain pending |
+| 3 | L1, L2 | Next available: versioned expected-trap cases, then nominal units and stronger contracts |
 | 4 | D1, D2, P1 | Full instruction maps/debugger, byte-aware editing/CAS and more browser/device evidence |
 | 5 | S1, R1, X1 | Versioned reusable library, broader runtime/build/memory measurements and owner-approved licensed reproducible releases |
 

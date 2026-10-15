@@ -39,3 +39,7 @@ The cleanup probe makes the client endpoint inaccessible temporarily; it does no
 ## Retained unsuccessful attempt
 
 [CI attempt 38699918135](../benchmarks/results/isolation-attempt-38699918135.json) passed the nine resource/access probes but failed its original cleanup-error oracle. Docker accepted forced removal of an absent container as idempotent; absence was not a removal failure. The revised probe uses a deliberately unavailable client endpoint with a running bounded container, then restores access and verifies removal. The original failed suite observation is retained, not reclassified as a pass.
+
+## Executed successful evidence
+
+[CI run 38700604568](https://github.com/smmdsa/PACT/actions/runs/38700604568) passed all ten probes. The [frozen report](../benchmarks/results/isolation-38700604568.json) binds the executed head, immutable image, probe/harness source hashes and original artifact digest. It retains per-probe observations, Docker state, cleanup evidence and raw-log hashes/lengths. The original artifact retains bounded raw logs, including the output flood, rather than embedding that flood in public documentation. This completes E3 only for the finite profile described here.

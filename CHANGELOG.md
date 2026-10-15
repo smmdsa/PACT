@@ -9,6 +9,8 @@ Every entry distinguishes implemented behavior from measured evidence and planne
 - Probe observations retain bounded logs, available Docker state and container identity on cleanup/inspection errors; synthetic grading/cleanup tests remain separate from real Docker execution.
 - Retained the first unsuccessful suite: nine probes passed but the absent-container cleanup oracle was invalid because forced removal is idempotent. The revised probe interrupts client endpoint access while a bounded sleeper runs, verifies rejection, restores access and performs real cleanup. Persistent daemon loss and universal escape resistance remain excluded.
 
+- All ten probes passed in actual Docker CI run 38700604568. Frozen observations bind the executed source/image and artifact digest; the first failed attempt remains visible. E3 is complete for this finite profile. E4/provider trials remain blocked by provider configuration; L1 is next.
+
 ## Registered alternative policies (bounded E2 completion)
 
 - Added opt-in `counter-four-forms/0.2`: accepts canonical loops or explicitly unrolled four-update implementations in PACT/Python/JavaScript/C. The original strict `canonical/0.1` remains the default; historical model trials/results keep their original policy.
