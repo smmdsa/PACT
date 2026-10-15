@@ -23,6 +23,11 @@ jobs:
         run: |
           image=$(docker image inspect --format '{{.Id}}' pact-counter-verifier)
           python -m tools.check_agent_sandbox "$image"
+      - name: Retain completed trace when declaration execution times out
+        run: |
+          docker build -f benchmarks/sandbox/declaration-timeout.Dockerfile -t pact-counter-declaration-timeout .
+          image=$(docker image inspect --format '{{.Id}}' pact-counter-declaration-timeout)
+          python -m tools.check_agent_declaration_timeout "$image"
       - name: Evaluate archived exploratory GPT responses in Docker
         run: |
           image=$(docker image inspect --format '{{.Id}}' pact-counter-verifier)

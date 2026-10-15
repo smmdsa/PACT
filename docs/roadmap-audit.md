@@ -27,7 +27,7 @@ This audit checks repository implementation and tests, not just changelog claims
 
 | ID | Priority | Missing implementation / evidence | Completion criterion |
 | --- | --- | --- | --- |
-| E2 | Next | Broader source-policy verification and embedded-test execution | Pre-registered allowed changes, preserved interfaces/policies, actual embedded tests and negative fixtures; report policy asymmetries across languages |
+| E2 | In progress | Broader source-policy verification; PACT embedded tests now execute on Wasm in Docker | Pre-registered allowed changes, preserved interfaces/policies, actual embedded tests and negative fixtures; report policy asymmetries across languages |
 | E3 | Next | Adversarial execution-limit probes | Demonstrate timeout/CPU, memory, output, process, filesystem and network denials on the deployed backend, retaining failed observations and cleanup evidence |
 | E4 | After E1–E3 | Provider integration and real trials | Pinned provider/model/settings, fresh paired trials, actual usage, failed attempts/retries/tool overhead and archived raw candidates/responses; credentials/backend must be configured |
 | E5 | After initial trials | More tasks and retrieval/repair experiments | Pre-register multiple tasks and oracles, full-source vs selected context and repair budgets; do not generalize from counter-four alone |
@@ -56,10 +56,15 @@ The canonical counter-four policy permits exactly the frozen numeric IR with `ad
 
 This intentionally strict acceptance rule can reject another behaviorally correct rewrite. It does not measure textual diff minimality or authorize claiming a language-neutral policy comparison. Receipts expose `policy_pass` separately from `behavior_pass`; `candidate_pass` remains null. Candidate function bodies are not executed by the policy checker: it uses only bounded parsing and static semantic validation.
 
-JavaScript now has a Node 24 container worker and a separate exact-source policy: only `i < 3` → `i < 4`, with CRLF normalization, is allowed. Unlike the PACT IR and Python AST policies, it rejects comment/format changes. Receipts 0.4 record unauthenticated Node/V8 observations separately from the common trace. Broader policies and embedded declaration execution remain unfinished.
+JavaScript now has a Node 24 container worker and a separate exact-source policy: only `i < 3` → `i < 4`, with CRLF normalization, is allowed. Unlike the PACT IR and Python AST policies, it rejects comment/format changes. Receipts 0.4 record unauthenticated Node/V8 observations separately from the common trace. Broader policies remain unfinished. PACT declaration execution is implemented in receipt 0.6; other task languages have no declaration interface.
 
 E1 is now implemented for all four frozen languages: C compiles and executes only in Docker, with compiler diagnostics, GCC metadata and fresh-process reset. Receipt 0.5 adds C selection. The C exact-source policy is as strict as JavaScript's; this completes adapter coverage for one task, not E2/E3 or actual model evaluation. Native execution uses a bounded Linux memfd while `/tmp` remains noexec. E2 and E3 remain the next acceptance gates before real provider trials.
 
 The exploratory GPT pilot covers two requested model aliases and four languages, with one valid response each plus one retained coordinator-input error. It exercises the evaluation pipeline but does not complete E4: provider-controlled settings/version/usage, repeated trials and pre-registration remain missing. See the evaluation protocol for exact limitations.
 
 A second exploratory task now requests a five-room Metroidvania in HTML/JavaScript from both GPT aliases. Original playable artifacts, a fixed contract and independent browser observations broaden the pilot task scope without completing E4/E5 or comparing PACT to JavaScript.
+
+
+## E2 increment — 2026-10-15
+
+The PACT counter worker now executes the candidate's declared cases through actual compiled Wasm inside Docker, separately from reference-interpreter observations and source-policy checks. Receipt 0.6 reports passed/failed/missing/not-run states; Python/JavaScript/C explicitly report not-applicable. CLI success for PACT requires all three checks. Negative fixtures preserve a matching external trace while rejecting wrong expected values, missing declarations and declared traps. This closes declaration execution for the current PACT task, not broader source policies, equivalent test interfaces across languages, authenticated evaluation or E2 as a whole.

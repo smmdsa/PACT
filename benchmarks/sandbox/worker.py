@@ -40,6 +40,9 @@ try:
     data=sys.stdin.buffer.read(2*1024*1024+1)
     if len(data)>2*1024*1024:raise ValueError('Worker input exceeds 2 MiB')
     request=json.loads(data)
+    if request.get('language','pact')=='pact':
+        result['embedded_tests']={'engine':'wasm','status':'not_run','declared':None,'executed':0,
+                                  'pass':None,'reason':'EXECUTION_NOT_COMPLETED'}
     candidate=base64.b64decode(request['candidate_base64'],validate=True)
     if len(candidate)>1024*1024:raise ValueError('Candidate exceeds 1 MiB')
     if request.get('language')=='c':
@@ -72,6 +75,10 @@ try:
     reset=Machine(document,evaluation_limit=100000,runtime_diagnostics=True)
     result['reset_case']=observe(reset,request['reset_args'])
     result['execution_status']='completed'
+    print(json.dumps({'format':'pact.reference-checkpoint/0.1','observations':{
+        key:value for key,value in result.items() if key!='embedded_tests'}},sort_keys=True),flush=True)
+    from pact_tests import execute_declared_tests
+    result['embedded_tests']=execute_declared_tests(document)
 except Exception as error:
     print(str(error)[:512],file=sys.stderr)
 print(json.dumps(result,sort_keys=True))

@@ -50,6 +50,7 @@ def main():
         if receipt['trace']['candidate_sha256']!=trial['candidate_sha256']:raise ValueError('Execution identity differs')
         row={'trial_id':trial['trial_id'],'model_alias':trial['model_alias'],'language':trial['language'],
              'behavior_pass':receipt['grade']['behavior_pass'],'policy_pass':receipt['policy']['policy_pass'],
+             'embedded_tests_pass':receipt['embedded_tests']['pass'],
              'candidate_pass':None,'formal_benchmark':False,'provider_usage':None}
         rows.append(row);print(json.dumps(row),flush=True)
         (output/(trial['trial_id']+'.receipt.json')).write_text(json.dumps(receipt,indent=2)+'\n')

@@ -10,7 +10,7 @@ class AgentSandboxTests(unittest.TestCase):
     def test_c_runtime_metadata_is_required_and_bounded(self):
         observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
         runtime={'engine':'gcc','gcc':'12.2.0'}
-        parsed,versions=self.module().parse_observations(json.dumps({**observed,'runtime':runtime}).encode(),'c')
+        parsed,versions,embedded=self.module().parse_observations(json.dumps({**observed,'runtime':runtime}).encode(),'c')
         self.assertEqual(parsed,observed);self.assertEqual(versions,runtime)
         for value in (None,{},dict(runtime,gcc='x'*101),dict(runtime,engine='other')):
             with self.assertRaises(ValueError):
@@ -27,7 +27,7 @@ class AgentSandboxTests(unittest.TestCase):
     def test_javascript_observations_require_bounded_runtime_metadata(self):
         observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
         runtime={'engine':'node','node':'v24.0.0','v8':'13.6.0'}
-        parsed,versions=self.module().parse_observations(json.dumps({**observed,'runtime':runtime}).encode(),'javascript')
+        parsed,versions,embedded=self.module().parse_observations(json.dumps({**observed,'runtime':runtime}).encode(),'javascript')
         self.assertEqual(parsed,observed);self.assertEqual(versions,runtime)
         for value in (None,{},dict(runtime,node='x'*101),dict(runtime,engine='other')):
             with self.assertRaises(ValueError):
@@ -89,3 +89,44 @@ class AgentSandboxTests(unittest.TestCase):
             with patch.object(module.sys,'platform','linux'),patch.object(module.subprocess,'run',side_effect=FileNotFoundError):
                 with self.assertRaisesRegex(ValueError,'no local execution fallback'):
                     module.run_candidate(candidate,'sha256:'+'a'*64,language='javascript')
+
+    def test_pact_observations_require_separate_embedded_test_evidence(self):
+        observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
+        evidence={'engine':'wasm','status':'passed','declared':1,'executed':1,'pass':True,'reason':None}
+        parsed,runtime,tests=self.module().parse_observations(json.dumps({**observed,'embedded_tests':evidence}).encode(),'pact')
+        self.assertEqual(parsed,observed);self.assertIsNone(runtime);self.assertEqual(tests,evidence)
+        for bad in (None,{},dict(evidence,declared=0),dict(evidence,executed=0),dict(evidence,**{'pass':1}),dict(evidence,status='not_applicable')):
+            with self.assertRaises(ValueError):
+                self.module().parse_observations(json.dumps({**observed,'embedded_tests':bad}).encode(),'pact')
+
+    def test_worker_evidence_cannot_be_attached_to_another_language(self):
+        observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None,'embedded_tests':{}}
+        with self.assertRaises(ValueError):self.module().parse_observations(json.dumps(observed).encode(),'python')
+
+    def test_cli_success_requires_pact_test_execution(self):
+        module=self.module()
+        report={'grade':{'behavior_pass':True},'policy':{'policy_pass':True},'trace':{'language':'pact'},
+                'embedded_tests':{'pass':None}}
+        self.assertFalse(module.checks_passed(report))
+        report['embedded_tests']['pass']=False;self.assertFalse(module.checks_passed(report))
+        report['embedded_tests']['pass']=True;self.assertTrue(module.checks_passed(report))
+        report['policy']['policy_pass']=False;self.assertFalse(module.checks_passed(report))
+        report['policy']['policy_pass']=True;report['trace']['language']='python'
+        report['embedded_tests']['pass']=None;self.assertTrue(module.checks_passed(report))
+
+    def test_reference_checkpoint_survives_a_partial_final_report(self):
+        observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
+        checkpoint=json.dumps({'format':'pact.reference-checkpoint/0.1','observations':observed}).encode()+b'\n'
+        self.assertEqual(self.module().parse_checkpoint(checkpoint+b'{"embedded'),observed)
+        for data in (b'',checkpoint.rstrip(),b'noise\n'+checkpoint,checkpoint.replace(b'completed',b'error')):
+            with self.assertRaises(ValueError):self.module().parse_checkpoint(data)
+
+    def test_final_report_must_match_its_reference_checkpoint(self):
+        observed={'execution_status':'completed','initial_counter':[1,2],'cases':[],'reset_case':None}
+        checkpoint=json.dumps({'format':'pact.reference-checkpoint/0.1','observations':observed}).encode()+b'\n'
+        evidence={'engine':'wasm','status':'passed','declared':1,'executed':1,'pass':True,'reason':None}
+        final=json.dumps({**observed,'embedded_tests':evidence}).encode()
+        parsed,_,_=self.module().parse_observations(checkpoint+final,'pact')
+        self.assertEqual(parsed,observed)
+        changed=json.dumps({**observed,'initial_counter':[9,9],'embedded_tests':evidence}).encode()
+        with self.assertRaises(ValueError):self.module().parse_observations(checkpoint+changed,'pact')
