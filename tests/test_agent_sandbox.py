@@ -56,7 +56,8 @@ class AgentSandboxTests(unittest.TestCase):
         return {'Image':'sha256:'+'a'*64,'Config':{'User':'65534:65534'},'Mounts':[],
                 'HostConfig':{'NetworkMode':'none','ReadonlyRootfs':True,'Privileged':False,
                     'Memory':134217728,'MemorySwap':134217728,'NanoCpus':1000000000,'PidsLimit':32,
-                    'Binds':None,'VolumesFrom':None,'CapDrop':['ALL'],'SecurityOpt':['no-new-privileges']}}
+                    'Ulimits':[{'Name':name,'Soft':value,'Hard':value} for name,value in [('cpu',10),('fsize',1048576),('nofile',64)]],
+                    'Tmpfs':{'/tmp':'size=16m,nosuid,nodev,noexec'},'Binds':None,'VolumesFrom':None,'CapDrop':['ALL'],'SecurityOpt':['no-new-privileges']}}
 
     def test_configuration_verification_rejects_weakened_isolation(self):
         module=self.module();image='sha256:'+'a'*64
@@ -149,3 +150,24 @@ class AgentSandboxTests(unittest.TestCase):
                                 '--policy-profile','counter-four-forms/0.2'])
         self.assertEqual(result,0)
         self.assertEqual(run.call_args.kwargs['policy_profile'],'counter-four-forms/0.2')
+
+    def test_cleanup_verifies_absence_and_propagates_backend_failures(self):
+        module=self.module();name='pact-trial-'+'a'*32
+        with patch.object(module,'control',side_effect=[b'removed',b'']) as control:
+            module.cleanup_container(name)
+            self.assertIn('name=^/'+name+'$',control.call_args.args[0])
+        with patch.object(module,'control',side_effect=[b'removed',b'leftover']):
+            with self.assertRaisesRegex(ValueError,'remains'):module.cleanup_container(name)
+        with patch.object(module,'control',side_effect=ValueError('backend denied removal')):
+            with self.assertRaisesRegex(ValueError,'backend denied'):module.cleanup_container(name)
+        with patch.object(module,'control') as control:
+            with self.assertRaises(ValueError):module.cleanup_container('.*')
+            control.assert_not_called()
+
+    def test_configuration_rejects_changed_tmpfs_or_ulimits(self):
+        module=self.module();image='sha256:'+'a'*64
+        for changed in ('tmpfs','ulimits'):
+            info=self.configuration()
+            if changed=='tmpfs':info['HostConfig']['Tmpfs']={'/tmp':'size=1g,exec'}
+            else:info['HostConfig']['Ulimits']=[]
+            with self.assertRaises(ValueError):module.verify_configuration(info,image)

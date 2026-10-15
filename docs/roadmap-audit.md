@@ -73,3 +73,8 @@ The PACT counter worker now executes the candidate's declared cases through actu
 ## E2 registered-form completion — 2026-10-15
 
 An opt-in `counter-four-forms/0.2` contract now binds canonical and unrolled implementations for each frozen language. PACT compares full validated semantic revisions, Python full AST fingerprints, and JavaScript/C exact normalized-source fingerprints. Unrelated changes remain rejected, including behaviorally matching additions. The default canonical profile and archived responses/results are preserved. Docker checks execute both approved forms and a negative per language; receipts expose profile, contract identity and selected form separately from actual behavior/declarations. The bounded E2 acceptance criterion is complete for this task, with source-policy and declaration-interface asymmetries explicit. It is not a general rewrite/equivalence checker or a completed model benchmark. E3 is the next unfinished gate.
+
+
+## E3 finite-probe implementation — 2026-10-15
+
+The Docker workflow now runs authored resource/filesystem/network attempts with positive controls, records OOM state and bounded logs, and verifies container absence after removal. A real absent-container removal error exercises backend error propagation; cleanup/inspection failure preservation also has synthetic tests. Acceptance requires actual green Docker execution. The probe documentation explicitly excludes universal containment, every exfiltration path and daemon-loss recovery for a live container.
