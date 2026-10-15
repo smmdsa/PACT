@@ -2,7 +2,13 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — Metroidvania generation pilot and playable examples
+## Latest — Demos & Examples catalog
+
+- Added a shared-navigation and homepage entry collecting the three playable games and every published PACT source, replay and patch fixture.
+- Added search, type filters, source downloads, evidence links and a sandboxed inline player, with direct links retained when JavaScript is unavailable.
+- Catalog browser checks cover search, empty results, filters, responsive layout and opening/closing the authored Alien Harvest game on desktop and mobile. GPT originals remain unchanged and use their separate isolated verifier.
+
+## Metroidvania generation pilot and playable examples
 
 - Gave GPT-6.1 and GPT-6 Astra the same fresh-session HTML/JavaScript game contract: five rooms, gated double jump, key, pit, enemies, checkpoint, boss and victory.
 - Preserved both original single-file games without coordinator repairs and added a public comparison shell, original downloads and a project-homepage link.

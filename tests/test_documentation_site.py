@@ -50,3 +50,21 @@ class DocumentationSiteTests(unittest.TestCase):
                              (ROOT/'benchmarks/metroidvania_pilot/candidates'/name).read_bytes())
         self.assertIn('sandbox="allow-scripts"',(ROOT/'site-output/metroidvania/index.html').read_text())
         self.assertIn('16/16',(ROOT/'site-output/metroidvania/index.html').read_text())
+
+    def test_catalog_lists_games_and_every_published_example(self):
+        catalog=ROOT/'site-output/demos.html'
+        self.assertTrue(catalog.exists())
+        source=catalog.read_text();links=Structure(source).links
+        for target in ('game.html','metroidvania/metro_a.html','metroidvania/metro_b.html'):
+            self.assertIn(target,links)
+        for path in (ROOT/'examples').rglob('*'):
+            if path.is_file() and path.suffix in ('.pact','.json'):
+                target=path.relative_to(ROOT/'examples').as_posix()
+                self.assertIn(target,links)
+                self.assertEqual(path.read_bytes(),(ROOT/'site-output'/target).read_bytes())
+        self.assertIn('sandbox="allow-scripts"',source)
+        self.assertIn('Search demos and examples',source)
+
+    def test_catalog_is_available_from_shared_navigation_and_homepage(self):
+        for name in ('index.html','syntax.html','metroidvania-pilot.html'):
+            self.assertIn('demos.html',Structure((ROOT/'site-output'/name).read_text()).links)

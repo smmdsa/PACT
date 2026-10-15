@@ -12,7 +12,7 @@ await fs.mkdir(output,{recursive:true});
 const browser=await chromium.launch({headless:true});
 const report={format:'pact.browser-smoke/0.1.0',started_at_utc:new Date().toISOString(),
   engine:'chromium',browser_version:browser.version(),playwright_version:'1.61.1',
-  scope:'Headless local-file smoke: docs layout, game rendering, keyboard/pointer controls and pause. No visual baseline or audio-quality grading.',
+  scope:'Headless local-file smoke: catalog filtering and embedded player, docs layout, game rendering, keyboard/pointer controls and pause. No visual baseline or audio-quality grading.',
   game_html_sha256:createHash('sha256').update(await fs.readFile(path.join(site,'game.html'))).digest('hex'),
   checks:[]};
 const record=(name, details={})=>report.checks.push({name,status:'passed',...details});
@@ -24,6 +24,32 @@ try {
     const errors=[];
     page.on('pageerror',error=>errors.push(error.message));
     page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
+    await page.goto(pathToFileURL(path.join(site,'demos.html')).href);
+    const games=page.locator('[data-kind="playable"]:visible');
+    assert.equal(await games.count(),3);
+    await page.getByLabel('Search demos and examples').fill('astra');
+    assert.equal(await games.count(),1);
+    assert.match(await games.innerText(),/GPT-6 Astra/);
+    await page.getByLabel('Search demos and examples').fill('no-such-demo-xyz');
+    assert.equal(await page.locator('#catalog-empty').isVisible(),true);
+    await page.getByLabel('Search demos and examples').fill('');
+    await page.getByRole('button',{name:'Source examples',exact:true}).click();
+    assert.equal(await games.count(),0);
+    assert((await page.locator('[data-kind="source"]:visible').count())>0);
+    await page.getByRole('button',{name:'Playable',exact:true}).click();
+    assert.equal(await games.count(),3);
+    const catalogLayout=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
+    assert(catalogLayout.scroll<=catalogLayout.width+1,`Catalog overflow at ${viewport.width}`);
+    // Only the authored PACT demo executes in this worker; GPT outputs use the isolated Docker verifier.
+    await page.locator('[data-demo="alien-harvest"]').click();
+    await page.frameLocator('#demo-frame').locator('#play').waitFor({state:'visible'});
+    assert.equal(await page.locator('#demo-title').innerText(),'Alien Harvest');
+    assert.equal(await page.locator('#demo-frame').getAttribute('sandbox'),'allow-scripts');
+    await page.getByRole('button',{name:'Close demo',exact:true}).click();
+    assert.equal(await page.locator('#demo-frame').getAttribute('src'),null);
+    assert.equal(await page.locator('#demo-player').isVisible(),false);
+    record('catalog-search-filter-layout-and-player',{viewport});
+
     await page.goto(pathToFileURL(path.join(site,'syntax.html')).href);
     await page.locator('article.markdown table').first().waitFor({state:'visible'});
     const layout=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
