@@ -9,6 +9,7 @@
 <div class="models" aria-label="Elegir juego"><button type="button" aria-pressed="true" data-game="metro_a.html">GPT‑6.1</button><button type="button" aria-pressed="false" data-game="metro_b.html">GPT‑6 Astra</button></div>
 <div class="screen"><iframe id="game" src="metro_a.html" sandbox="allow-scripts" title="Metroidvania generada por GPT-6.1"></iframe></div>
 <div class="meta"><span>Hacé clic dentro del juego · A/D o flechas · Espacio · Z · W/S · R</span><a id="download" href="metro_a.html" download>Descargar HTML original</a></div>
+<!--BENCHMARK_RESULTS-->
 <div class="note"><p>Ensayo exploratorio en HTML/JavaScript. Los nombres son los alias solicitados; no disponemos de consumo de tokens ni versión inmutable. Cambiar de modelo reinicia el juego. Un solo intento no establece un ganador ni una ventaja de PACT.</p></div>
 </main><script>
 for(const button of document.querySelectorAll('button[data-game]'))button.addEventListener('click',()=>{for(const other of document.querySelectorAll('button[data-game]'))other.setAttribute('aria-pressed',String(other===button));const frame=document.querySelector('#game');frame.src=button.dataset.game;frame.title='Metroidvania generada por '+button.textContent;document.querySelector('#download').href=button.dataset.game;});

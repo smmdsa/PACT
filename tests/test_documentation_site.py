@@ -49,3 +49,4 @@ class DocumentationSiteTests(unittest.TestCase):
             self.assertEqual((ROOT/'site-output/metroidvania'/name).read_bytes(),
                              (ROOT/'benchmarks/metroidvania_pilot/candidates'/name).read_bytes())
         self.assertIn('sandbox="allow-scripts"',(ROOT/'site-output/metroidvania/index.html').read_text())
+        self.assertIn('16/16',(ROOT/'site-output/metroidvania/index.html').read_text())

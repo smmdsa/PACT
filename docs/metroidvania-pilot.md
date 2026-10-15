@@ -19,6 +19,17 @@ The independent verifier was implemented by a third session that read the contra
 
 ## Execution and evidence
 
+The first complete scored run observed **16/16 checks for each game**, including an action-only route to boss defeat and victory. Original HTML sizes are 13,368 bytes for GPT-6.1 and 12,807 bytes for Astra; bytes are not tokens or a quality ranking. Runtime: Chromium `155.0.8059.39`, Playwright `1.61.1`. The [frozen observations](../benchmarks/metroidvania_pilot/results.json) identify the exact candidate hashes, image, verifier, commit and [CI run](https://github.com/smmdsa/PACT/actions/runs/38664661157).
+
+| Requested model alias | Behavioral checks | Victory observed | Coordinator game repairs |
+| --- | --- | --- | --- |
+| `gpt-6.1-sol` | 16/16 | Yes | None |
+| `gpt-6-astra` | 16/16 | Yes | None |
+
+This is a tie on the checked functional contract. Artistic quality, human enjoyment, frame rate, generation cost and provider tokens were not measured. Each game's actual keyboard displacement over a short wall-time window is only a control smoke check, not a fair performance measurement.
+
+Three earlier infrastructure runs are retained in the frozen report and excluded from model scoring. Minimal file controls loaded, but a trusted Canvas control failed under the original 1 MiB process file limit. Raising only that limit to 32 MiB allowed the control and both original games to run. Candidate input stayed at 1 MiB, total temporary storage at 64 MiB, and generated game files were unchanged. Those navigation failures are not model failures or model repair rounds.
+
 Generated HTML runs only in a dedicated Chromium Docker worker during automated evaluation. No local trusted game/performance driver executes it. The image builds Playwright from the existing exact lockfile and installs Debian Chromium; its actual runtime versions and immutable image ID are recorded. The image's mutable base/package sources do not provide reproducible rebuilds.
 
 Execution requests network `none`, read-only root, UID/GID 65534, all capabilities dropped, no-new-privileges, no host mounts, 768 MiB RAM without extra swap, one CPU, 128 processes, a 45-second process CPU limit, a 32 MiB file limit, 1024 descriptors and a 64 MiB noexec temporary filesystem. The larger file allowance is for Chromium's temporary graphics buffers; candidate input remains bounded to 1 MiB. Selected effective settings are inspected. The host captures at most 1 MiB combined stdout/stderr, imposes a 60-second wall limit, and forcibly removes the container. Missing Docker, mutable image IDs or weakened inspected configuration reject without a host fallback. Chromium uses `--no-sandbox` inside this outer container; this is an explicit additional limitation, not independent browser-sandbox evidence or a VM-level containment claim.

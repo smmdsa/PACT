@@ -11,6 +11,21 @@ from pact.__main__ import main as pact_cli
 from tools.markdown_docs import render_markdown
 
 ROOT=Path(__file__).resolve().parents[1]
+
+
+def metroid_results_html(pilot):
+    data=json.loads((pilot/'results.json').read_text())
+    rows=[];details=[]
+    for trial in data['trials']:
+        model=html.escape(trial['model_alias'])
+        score=str(trial['checks_passed'])+'/'+str(trial['checks_total'])
+        victory=next(check['pass'] for check in trial['checks'] if check['id']=='victory_after_boss_and_exit')
+        rows.append(f'<tr><td>{model}</td><td>{score}</td><td>{trial["source_bytes"]:,}</td><td>{"Sí" if victory else "No"}</td></tr>')
+        checks=''.join('<li>'+html.escape(check['id'])+' · '+('✓' if check['pass'] else '✕')+'</li>' for check in trial['checks'])
+        details.append(f'<details><summary>{model} · comprobaciones</summary><ul>{checks}</ul></details>')
+    return '<section style="margin-top:32px"><h2>Qué medimos</h2><p>Una entrega por modelo, sin reparar los juegos. Recorrido automatizado con entradas de movimiento: habilidades, puertas, combate, regreso, jefe, victoria y reinicio.</p><div style="overflow:auto"><table style="width:100%;text-align:left;line-height:2"><thead><tr><th>Alias solicitado</th><th>Checks</th><th>Bytes HTML</th><th>Victoria observada</th></tr></thead><tbody>'+''.join(rows)+'</tbody></table></div>'+''.join(details)+'<p>Empate en estas comprobaciones; no es una clasificación general. No medimos tokens, costo, FPS ni calidad artística. <a href="results.json">Datos y ejecuciones de CI</a> · <a href="../metroidvania-pilot.html">Método y límites</a></p></section>'
+
+
 DOCUMENTS=[('progress','Progress','CHANGELOG.md'),('roadmap','Roadmap','ROADMAP.md'),
  ('metroidvania-pilot','GPT Metroidvania pilot','docs/metroidvania-pilot.md'),
  ('roadmap-audit','Implementation audit','docs/roadmap-audit.md'),
@@ -59,12 +74,15 @@ def main():
     reports=output/'reports';reports.mkdir(exist_ok=True)
     metroid=output/'metroidvania';metroid.mkdir(exist_ok=True)
     pilot=ROOT/'benchmarks/metroidvania_pilot'
-    shutil.copyfile(pilot/'index.html',metroid/'index.html')
+    shell=(pilot/'index.html').read_text().replace('<!--BENCHMARK_RESULTS-->',metroid_results_html(pilot))
+    (metroid/'index.html').write_text(shell)
     for name in ('metro_a.html','metro_b.html'):
         shutil.copyfile(pilot/'candidates'/name,metroid/name)
     mapping['benchmarks/metroidvania_pilot/index.html']='metroidvania/index.html'
     shutil.copyfile(pilot/'prompt.txt',metroid/'prompt.txt')
     mapping['benchmarks/metroidvania_pilot/prompt.txt']='metroidvania/prompt.txt'
+    shutil.copyfile(pilot/'results.json',metroid/'results.json')
+    mapping['benchmarks/metroidvania_pilot/results.json']='metroidvania/results.json'
     for path in (ROOT/'benchmarks/results').glob('*.json'):
         shutil.copyfile(path,reports/path.name);mapping[str(path.relative_to(ROOT))]='reports/'+path.name
     for slug,title,path in DOCUMENTS:

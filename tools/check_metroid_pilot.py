@@ -106,7 +106,8 @@ def main():
         harness_checks=[check for check in checks if check['id'].startswith('verifier_')]
         if any(not check['pass'] for check in harness_checks):receipt['termination_reason']='verifier_control_failed';checks=[]
         else:checks=[check for check in checks if not check['id'].startswith('verifier_')]
-        row={'trial_id':trial['trial_id'],'model_alias':trial['model_alias'],'termination_reason':receipt['termination_reason'],
+        row={'trial_id':trial['trial_id'],'model_alias':trial['model_alias'],'image_id':receipt['image_id'],
+             'candidate_sha256':receipt['candidate_sha256'],'termination_reason':receipt['termination_reason'],
              'checks':checks,'harness_checks':harness_checks,'checks_passed':sum(check['pass'] for check in checks),'checks_total':len(checks),
              'runtime':observations['runtime'] if observations else None,'candidate_pass':None,'formal_benchmark':False}
         if receipt['termination_reason'] or any(c['id']=='bootstrap' and not c['pass'] for c in checks):

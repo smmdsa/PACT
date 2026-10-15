@@ -1,4 +1,5 @@
 import importlib
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -8,6 +9,19 @@ from unittest.mock import patch
 
 class MetroidPilotTests(unittest.TestCase):
     def module(self):return importlib.import_module('tools.check_metroid_pilot')
+
+    def test_frozen_observations_remain_bound_to_original_games(self):
+        pilot=Path(__file__).resolve().parents[1]/'benchmarks/metroidvania_pilot'
+        manifest=json.loads((pilot/'manifest.json').read_text())
+        results=json.loads((pilot/'results.json').read_text())
+        self.assertEqual(len(results['excluded_infrastructure_runs']),3)
+        for row in results['trials']:
+            trial=next(trial for trial in manifest['trials'] if trial['trial_id']==row['trial_id'])
+            actual=hashlib.sha256((pilot/'candidates'/trial['artifact']).read_bytes()).hexdigest()
+            self.assertEqual(actual,row['candidate_sha256'])
+            self.assertEqual(row['checks_total'],len(row['checks']))
+            self.assertEqual(row['checks_passed'],sum(check['pass'] for check in row['checks']))
+            self.assertIsNone(row['candidate_pass'])
 
     def test_image_and_isolation_flags_are_explicit(self):
         command=self.module().create_command('test','sha256:'+'a'*64)
