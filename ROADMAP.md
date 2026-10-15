@@ -15,7 +15,8 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | Traditional-language source baseline | Done | Frozen greeting/counter traces, four executed languages, both encodings and explicit asymmetry |
 | Parser and benchmark-read bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads; general containment/peak-memory claims excluded |
 | Model trial material and recorder | Done | Same task prompt, frozen contexts/oracle, external provenance and failed-trial accounting |
-| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted IR/AST/exact-source policies plus isolated PACT declared-test execution implemented; broader policy/limit probes, exploratory GPT counter/Metroidvania pilots archived; provider integration and formal trials pending |
+| Counter policy and declared-test verification | Done for frozen task | Opt-in hash-bound canonical/unrolled forms in four languages, preserved interfaces/policies, executed PACT declarations, negative fixtures and explicit asymmetries; no general equivalence verifier |
+| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted default policies, opt-in registered alternative forms and isolated PACT declared-test execution implemented; adversarial limit probes, exploratory GPT counter/Metroidvania pilots archived; provider integration and formal trials pending |
 | Runtime microbenchmark | Done | Warmup/fresh samples, independent state oracle, source hashes and local measurements |
 | Readable docs and progress | Done | Safe static Markdown, navigation, TOC and committed change log |
 | Numeric-module selective inspection | Done | Function discovery, call relationships, effects and test summaries; text graphs and full dependency/coverage proof excluded |
@@ -33,12 +34,11 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 
 | Order | Backlog IDs | Concrete next outcome |
 | --- | --- | --- |
-| 1 | E2 | Broaden pre-registered source policies; PACT declarations now execute on Wasm in Docker with negative fixtures; other language inputs have no declaration interface |
-| 2 | E3 | Exercise hostile resource/filesystem/network attempts and cleanup failures on the actual isolation backend; configuration flags and authored fixtures are not sufficient containment evidence |
-| 3 | E4, E5 | Configure provider/backend, run fresh paired formal trials with actual usage/failures/retries, then broaden tasks and retrieval/repair experiments |
-| 4 | L1, L2 | Versioned expected-trap cases, then nominal units and stronger contracts |
-| 5 | D1, D2, P1 | Full instruction maps/debugger, byte-aware editing/CAS and more browser/device evidence |
-| 6 | S1, R1, X1 | Versioned reusable library, broader runtime/build/memory measurements and owner-approved licensed reproducible releases |
+| 1 | E3 | Exercise hostile resource/filesystem/network attempts and cleanup failures on the actual isolation backend; configuration flags and authored fixtures are not sufficient containment evidence |
+| 2 | E4, E5 | Configure provider/backend, run fresh paired formal trials with actual usage/failures/retries, then broaden tasks and retrieval/repair experiments |
+| 3 | L1, L2 | Versioned expected-trap cases, then nominal units and stronger contracts |
+| 4 | D1, D2, P1 | Full instruction maps/debugger, byte-aware editing/CAS and more browser/device evidence |
+| 5 | S1, R1, X1 | Versioned reusable library, broader runtime/build/memory measurements and owner-approved licensed reproducible releases |
 
 The audit records the evidence and completion criteria for each ID. Task-specific policy results, finite trace matches and CI integration fixtures must not be presented as general candidate correctness or measured model productivity.
 

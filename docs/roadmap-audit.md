@@ -23,11 +23,11 @@ This audit checks repository implementation and tests, not just changelog claims
 | Restricted source policies | `benchmarks/agent_candidate_policy.py`, policy tests and container fixtures | Canonical counter-four IR/AST edits and exact JavaScript/C source edits only; not a general minimal-diff or intent verifier |
 | Public documentation | `tools/markdown_docs.py`, `tools/build_site.py`, documentation tests and Pages workflow | Generated Markdown pages; deployment must be checked separately from local build |
 
-## Confirmed unfinished work
+## Backlog status and completion criteria
 
 | ID | Priority | Missing implementation / evidence | Completion criterion |
 | --- | --- | --- | --- |
-| E2 | In progress | Broader source-policy verification; PACT embedded tests now execute on Wasm in Docker | Pre-registered allowed changes, preserved interfaces/policies, actual embedded tests and negative fixtures; report policy asymmetries across languages |
+| E2 | Done for frozen counter task | Default strict policy plus opt-in registered loop/unrolled forms in four languages; PACT embedded tests execute on Wasm in Docker | Pre-registered allowed changes, preserved interfaces/policies, actual embedded tests and negative fixtures; report policy asymmetries across languages |
 | E3 | Next | Adversarial execution-limit probes | Demonstrate timeout/CPU, memory, output, process, filesystem and network denials on the deployed backend, retaining failed observations and cleanup evidence |
 | E4 | After E1–E3 | Provider integration and real trials | Pinned provider/model/settings, fresh paired trials, actual usage, failed attempts/retries/tool overhead and archived raw candidates/responses; credentials/backend must be configured |
 | E5 | After initial trials | More tasks and retrieval/repair experiments | Pre-register multiple tasks and oracles, full-source vs selected context and repair budgets; do not generalize from counter-four alone |
@@ -68,3 +68,8 @@ A second exploratory task now requests a five-room Metroidvania in HTML/JavaScri
 ## E2 increment — 2026-10-15
 
 The PACT counter worker now executes the candidate's declared cases through actual compiled Wasm inside Docker, separately from reference-interpreter observations and source-policy checks. Receipt 0.6 reports passed/failed/missing/not-run states; Python/JavaScript/C explicitly report not-applicable. CLI success for PACT requires all three checks. Negative fixtures preserve a matching external trace while rejecting wrong expected values, missing declarations and declared traps. This closes declaration execution for the current PACT task, not broader source policies, equivalent test interfaces across languages, authenticated evaluation or E2 as a whole.
+
+
+## E2 registered-form completion — 2026-10-15
+
+An opt-in `counter-four-forms/0.2` contract now binds canonical and unrolled implementations for each frozen language. PACT compares full validated semantic revisions, Python full AST fingerprints, and JavaScript/C exact normalized-source fingerprints. Unrelated changes remain rejected, including behaviorally matching additions. The default canonical profile and archived responses/results are preserved. Docker checks execute both approved forms and a negative per language; receipts expose profile, contract identity and selected form separately from actual behavior/declarations. The bounded E2 acceptance criterion is complete for this task, with source-policy and declaration-interface asymmetries explicit. It is not a general rewrite/equivalence checker or a completed model benchmark. E3 is the next unfinished gate.

@@ -130,3 +130,22 @@ class AgentSandboxTests(unittest.TestCase):
         self.assertEqual(parsed,observed)
         changed=json.dumps({**observed,'initial_counter':[9,9],'embedded_tests':evidence}).encode()
         with self.assertRaises(ValueError):self.module().parse_observations(checkpoint+changed,'pact')
+
+    def test_unknown_policy_rejects_before_docker_or_source_access(self):
+        module=self.module()
+        with patch.object(module,'control') as control:
+            with self.assertRaisesRegex(ValueError,'source-policy profile'):
+                module.run_candidate('missing','sha256:'+'a'*64,policy_profile='unknown')
+            control.assert_not_called()
+
+    def test_cli_forwards_the_explicit_policy_profile(self):
+        import contextlib
+        import io
+        module=self.module()
+        report={'grade':{'behavior_pass':True},'policy':{'policy_pass':True},'trace':{'language':'python'},
+                'embedded_tests':{'pass':None}}
+        with patch.object(module,'run_candidate',return_value=report) as run,contextlib.redirect_stdout(io.StringIO()):
+            result=module.main(['candidate.py','--image','sha256:'+'a'*64,'--language','python',
+                                '--policy-profile','counter-four-forms/0.2'])
+        self.assertEqual(result,0)
+        self.assertEqual(run.call_args.kwargs['policy_profile'],'counter-four-forms/0.2')

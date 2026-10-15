@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — Isolated PACT declared-test execution (E2 increment)
+## Latest — Registered alternative policies (bounded E2 completion)
+
+- Added opt-in `counter-four-forms/0.2`: accepts canonical loops or explicitly unrolled four-update implementations in PACT/Python/JavaScript/C. The original strict `canonical/0.1` remains the default; historical model trials/results keep their original policy.
+- A pinned contract binds baseline identities and allowed IR/AST/normalized-source fingerprints. Receipt 0.7 records the selected profile; policy observations identify the contract and matched form. Static checks execute no candidate code.
+- Authored Docker checks execute both forms and reject unrelated additions even when the finite behavior trace passes. Unit checks preserve rejection of changed data, interfaces/effects/test identity/version, tampered contracts and unsupported profiles.
+- Completed E2 only for the frozen counter task's written acceptance criterion. Formatting/test-interface asymmetries remain explicit; broader tasks, general rewrite acceptance, adversarial isolation probes and formal provider trials are separate unfinished work. E3 is next.
+
+## Isolated PACT declared-test execution (E2 increment)
 
 - The Docker PACT worker now compiles and executes candidate test declarations on real Wasm after collecting the independent external trace. No generated candidate executes on the outer host.
 - Receipt 0.6 separates declaration results from behavior and source policy. CLI success for PACT requires all three; empty legacy test lists fail, unavailable observations remain null, and Python/JavaScript/C explicitly report no declaration interface.

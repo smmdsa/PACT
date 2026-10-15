@@ -103,7 +103,7 @@ python3 -m benchmarks.agent_trials prepare --language pact --plan-seed 17
 
 Runtime benchmark validates consumed state and measures local kernel latency across PACT Wasm, Python, JavaScript and C. [Methodology and measured local run](docs/runtime-performance.md). It does not rank languages universally.
 
-LLM trial material freezes identical instructions, language-specific contexts and an independent arithmetic oracle. The recorder accepts external provenance/usage records; it does not call models, run untrusted candidates or authenticate reported outcomes. Docker adapters now cover the frozen counter task in four languages; PACT declarations also execute on Wasm inside Docker. Broader policies, adversarial probes and formal provider trials remain pending. [Protocol and additional benchmarks](docs/agent-evaluation.md).
+LLM trial material freezes identical instructions, language-specific contexts and an independent arithmetic oracle. The recorder accepts external provenance/usage records; it does not call models, run untrusted candidates or authenticate reported outcomes. Docker adapters now cover the frozen counter task in four languages; PACT declarations also execute on Wasm inside Docker. An opt-in registered loop/unrolled policy now covers that frozen task; broader tasks, adversarial probes and formal provider trials remain pending. [Protocol and additional benchmarks](docs/agent-evaluation.md).
 
 ## Verification and site
 

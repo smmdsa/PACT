@@ -65,7 +65,69 @@ def expected_document():
     return document
 
 
-def audit_candidate(candidate,language='pact'):
+CANONICAL_PROFILE='canonical/0.1'
+FORMS_PROFILE='counter-four-forms/0.2'
+POLICY_PROFILES=(CANONICAL_PROFILE,FORMS_PROFILE)
+FORMS_CONTRACT=MATERIAL/'policy_forms/0.2/contract.json'
+FORMS_CONTRACT_SHA256='f772647a2f5298d407222a7b2cc365acc27dd48841a12b3a0c0871d584b63ac7'
+POLICY_LANGUAGES={'pact':('counter.pact','pact-semantic-revision'),
+                  'python':('counter.py','python-ast-sha256'),
+                  'javascript':('counter.mjs','normalized-source-sha256'),
+                  'c':('counter.c','normalized-source-sha256')}
+
+
+def parse_pact(candidate):
+    source=candidate.decode('utf-8')
+    first=next((line.strip() for line in source.split('\n')
+                if line.strip() and not line.lstrip().startswith('#')),'')
+    if first.startswith('pact '):return loads(source)
+    document=json.loads(source,object_pairs_hook=pairs)
+    validate_document(document)
+    return document
+
+
+def form_fingerprint(candidate,language):
+    if not isinstance(candidate,bytes) or len(candidate)>LIMIT:raise ValueError('Expected at most 1 MiB')
+    source=candidate.decode('utf-8')
+    if language=='pact':return revision(parse_pact(candidate))
+    if language=='python':
+        source=ast.dump(ast.parse(source),include_attributes=False)
+        return hashlib.sha256(source.encode()).hexdigest()
+    return hashlib.sha256(candidate.replace(b'\r\n',b'\n')).hexdigest()
+
+
+def load_forms_contract():
+    data=snapshot(FORMS_CONTRACT)
+    if hashlib.sha256(data).hexdigest()!=FORMS_CONTRACT_SHA256:
+        raise ValueError('Registered source-policy contract identity differs')
+    return json.loads(data,object_pairs_hook=pairs)
+
+
+def audit_forms(candidate,language):
+    contract=load_forms_contract();entry=contract['languages'][language]
+    baseline=snapshot(MATERIAL/POLICY_LANGUAGES[language][0])
+    if hashlib.sha256(baseline).hexdigest()!=entry['baseline_sha256']:
+        raise ValueError('Frozen baseline identity differs')
+    report={'format':'pact.agent-source-policy/0.2','task':'counter-four','language':language,
+            'scope':'two registered counter-four forms; not general equivalence',
+            'profile':FORMS_PROFILE,'contract_sha256':FORMS_CONTRACT_SHA256,
+            'baseline_sha256':entry['baseline_sha256'],'fingerprint_kind':entry['fingerprint_kind'],
+            'policy_pass':False,'candidate_pass':None,'runtime_executed':False,'accepted_form':None,
+            'candidate_sha256':hashlib.sha256(candidate).hexdigest() if isinstance(candidate,bytes) else None}
+    try:fingerprint=form_fingerprint(candidate,language)
+    except (ValueError,TypeError,KeyError,SyntaxError,RecursionError):
+        report['reason']='CANDIDATE_SOURCE_INVALID';return report
+    report['candidate_fingerprint']=fingerprint
+    report['accepted_form']=next((name for name,value in entry['forms'].items() if value==fingerprint),None)
+    report['policy_pass']=report['accepted_form'] is not None
+    report['reason']='REGISTERED_FORM' if report['policy_pass'] else 'UNREGISTERED_FORM'
+    return report
+
+
+def audit_candidate(candidate,language='pact',profile=CANONICAL_PROFILE):
+    if profile not in POLICY_PROFILES:raise ValueError('Unsupported source-policy profile')
+    if language not in POLICY_LANGUAGES:raise ValueError('Unsupported candidate policy language')
+    if profile==FORMS_PROFILE:return audit_forms(candidate,language)
     if language=='c':return audit_exact(candidate,'c','C','counter.c',C_BASELINE_SHA256)
     if language=='javascript':return audit_javascript(candidate)
     if language=='python':return audit_python(candidate)
@@ -78,13 +140,7 @@ def audit_candidate(candidate,language='pact'):
             'runtime_executed':False}
     try:
         if not isinstance(candidate,bytes) or len(candidate)>LIMIT:raise ValueError('Expected at most 1 MiB candidate bytes')
-        source=candidate.decode('utf-8')
-        first=next((line.strip() for line in source.split('\n')
-                    if line.strip() and not line.lstrip().startswith('#')),'')
-        if first.startswith('pact '):document=loads(source)
-        else:
-            document=json.loads(source,object_pairs_hook=pairs)
-            validate_document(document)
+        document=parse_pact(candidate)
     except (ValueError,TypeError,KeyError,RecursionError):
         report['reason']='CANDIDATE_SOURCE_INVALID'
         return report
