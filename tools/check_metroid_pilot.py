@@ -19,7 +19,7 @@ def create_command(name,image):
     validate_image(name,image)
     return ['docker','create','--name',name,'--interactive','--pull','never','--network','none','--read-only',
             '--cap-drop','ALL','--security-opt','no-new-privileges','--user','65534:65534',
-            '--memory','768m','--memory-swap','768m','--cpus','1','--pids-limit','128',
+            '--memory','768m','--memory-swap','768m','--cpus','1','--pids-limit','256',
             '--ulimit','cpu=45:45','--ulimit','fsize=33554432:33554432','--ulimit','nofile=1024:1024',
             '--tmpfs','/tmp:size=64m,nosuid,nodev,noexec','--log-driver','none',
             '--entrypoint','node',image,'/opt/verify/verify_browser.mjs']
@@ -28,7 +28,7 @@ def create_command(name,image):
 def verify_configuration(info,image):
     host=info['HostConfig']
     required={'NetworkMode':'none','ReadonlyRootfs':True,'Privileged':False,'Memory':805306368,
-              'MemorySwap':805306368,'NanoCpus':1000000000,'PidsLimit':128}
+              'MemorySwap':805306368,'NanoCpus':1000000000,'PidsLimit':256}
     if any(host.get(key)!=value for key,value in required.items()):raise ValueError('Browser isolation differs')
     if host.get('Binds') or host.get('VolumesFrom'):raise ValueError('Host mounts forbidden')
     if any(m.get('Type')!='tmpfs' or m.get('Destination')!='/tmp' for m in info.get('Mounts',[])):

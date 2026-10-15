@@ -19,6 +19,10 @@
     {
       "run_id": 38664463747,
       "reason": "Trusted Canvas control also timed out with 1 MiB file limit; PID/memory cgroup limits were not exhausted. No model score assigned."
+    },
+    {
+      "run_id": 38665069994,
+      "reason": "Both repeated browser executions timed out with pthread_create Resource temporarily unavailable under the 128-task limit. No model failure assigned; current browser profile allows 256 tasks."
     }
   ],
   "harness_resolution": "The file limit was raised from 1 MiB to 32 MiB for Chromium temporary graphics buffers, retaining 1 MiB candidate input and 64 MiB temporary-filesystem bounds. Trusted Canvas and both original candidates then ran successfully. No generated source edits.",
