@@ -1,3 +1,7 @@
+## Source-byte patch guard (D2 initial slice)
+
+- Added optional exact source SHA-256 precondition to `pact patch`, with mismatch rejection, observed-byte receipt fields and format-only regression coverage. This guards agent physical-source snapshots but is not in-place CAS or source-range editing. Full D2 remains pending.
+
 # Progress
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
