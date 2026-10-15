@@ -1,6 +1,6 @@
 # Agent guidance
 
-Read README.md, docs/syntax.md and docs/security.md before changing semantics. ROADMAP.md describes planned work. Compact 0.2, compressed data 0.3 and literal/inline source 0.4 wrap graph 0.0.1 or numeric modules 0.1.0/0.2.0/0.3.0/0.4.0; preserve these distinctions. Reading/converting preserves revisions. Only explicit migration changes numeric format; state.reset requires module 0.2.0, 0.3.0 or 0.4.0.
+Read README.md, docs/syntax.md and docs/security.md before changing semantics. ROADMAP.md describes planned work. Compact 0.2, compressed data 0.3 and literal/inline source 0.4 wrap graph 0.0.1 or numeric modules 0.1.0/0.2.0/0.3.0/0.4.0/0.5.0; preserve these distinctions. Reading/converting preserves revisions. Only explicit migration changes numeric format; state.reset requires module 0.2.0, 0.3.0, 0.4.0 or 0.5.0.
 
 Prefer focused function/dependency reads. Keep IDs stable. Do not replace semantic names with undocumented opcodes. Effects, array indices, overflow and grants remain explicit.
 
@@ -24,7 +24,7 @@ Compiler CLI JSON uses UTF-8/LF on every OS. Keep strict manifest format checks;
 
 Module 0.3 requires declared cases for every export. Inspection declared_export_tests is a declaration map, not execution. Build manifests add actual tested receipts. Never generate arbitrary expected values just to satisfy missing-case hints. Default migration still targets 0.2; opt into 0.3 explicitly.
 
-Module 0.4 guard/assert nodes check chosen runtime conditions. False guards trap before evaluating the body; traps retain prior writes. Reference ASSERTION_FAILED IDs and Wasm traps are not interchangeable diagnostics. Negative-trap declarations remain planned; bounded reference/Wasm replay and exact trap-site attribution are implemented.
+Module 0.4 guard/assert nodes check chosen runtime conditions. False guards trap before evaluating the body; traps retain prior writes. Reference ASSERTION_FAILED IDs and Wasm traps are not interchangeable diagnostics. Module 0.5 adds strict expected-trap declarations and build acceptance on both bounded reference evaluation and exact hash-bound Wasm trap sites; state expectations apply after traps. Unsupported Wasm coordinates reject negative cases. Legacy build evidence and default migration remain unchanged. Bounded reference/Wasm replay retains its separate generic fallback.
 
 Use benchmarks.agent_trace_grader for external counter-four observations bound to archived candidate bytes. It never executes source, authenticates a trace or approves full candidate correctness. behavior_pass is not the trial pass field; candidate_pass remains null until sandbox/interface/policy/embedded-test checks are provided. Synthetic tests are not model results.
 

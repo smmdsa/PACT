@@ -8,7 +8,13 @@ from .schema import closed_record, identifier, require
 FORMAT = 'pact.module/0.2.0'
 TESTED_FORMAT = 'pact.module/0.3.0'
 CHECKED_FORMAT = 'pact.module/0.4.0'
-FORMATS = ('pact.module/0.1.0', FORMAT, TESTED_FORMAT, CHECKED_FORMAT)
+TRAP_TESTED_FORMAT = 'pact.module/0.5.0'
+FORMATS = ('pact.module/0.1.0', FORMAT, TESTED_FORMAT, CHECKED_FORMAT, TRAP_TESTED_FORMAT)
+TRAP_OPERATIONS = {
+    'ASSERTION_FAILED': {'flow.assert', 'flow.guard'},
+    'STATE_BOUNDS': {'state.load', 'state.store'},
+    'ARITHMETIC_TRAP': {'i32.div_s', 'i32.rem_s'},
+}
 BINARY = {
     'i32.add_wrap': 0x6a, 'i32.sub_wrap': 0x6b, 'i32.mul_wrap': 0x6c,
     'i32.div_s': 0x6d, 'i32.rem_s': 0x6f, 'i32.eq': 0x46, 'i32.ne': 0x47,
@@ -76,7 +82,7 @@ def analyze_module(document):
     closed_record(document, {'format', 'constants', 'cells', 'functions', 'exports', 'assets', 'presentation', 'tests'})
     require(document['format'] in FORMATS, 'FORMAT_UNSUPPORTED', 'Unsupported module format.')
     operations = (OPERATIONS_0_1_0 if document['format'] == FORMATS[0] else
-                  OPERATIONS if document['format'] == CHECKED_FORMAT else OPERATIONS_0_2_0)
+                  OPERATIONS if document['format'] in FORMATS[3:] else OPERATIONS_0_2_0)
     constants = document['constants']
     require(isinstance(constants, dict) and len(constants) <= 1024, 'SCHEMA_INVALID', 'Expected bounded constants.')
     for key, value in constants.items():
@@ -257,6 +263,8 @@ def analyze_module(document):
     for test in document['tests']:
         require(isinstance(test, dict), 'TEST_INVALID', 'Expected test record.')
         fields = {'id', 'function', 'set', 'expect'} | (set(test) & {'args', 'result'})
+        if document['format'] == TRAP_TESTED_FORMAT and 'trap' in test:
+            fields.add('trap')
         closed_record(test, fields)
         identifier(test['id'])
         require(test['id'] not in test_ids, 'ID_DUPLICATE', 'Duplicate test ID.')
@@ -266,7 +274,21 @@ def analyze_module(document):
         require(isinstance(test_args, list) and len(test_args) == len(indexed[test['function']]['params']), 'TEST_INVALID', 'Invalid test arguments.')
         for value in test_args: integer(value)
         if 'result' in test: integer(test['result'])
-        require(test['expect'] or 'result' in test, 'TEST_EMPTY', 'Tests require an expected value.')
+        if 'trap' in test:
+            trap = test['trap']
+            closed_record(trap, {'code', 'function', 'node'})
+            require('result' not in test, 'TEST_INVALID', 'A trap case cannot expect a return value.')
+            require(isinstance(trap['code'], str) and trap['code'] in TRAP_OPERATIONS,
+                    'TEST_INVALID', 'Unknown expected trap code.')
+            require(isinstance(trap['function'], str) and trap['function'] in indexed,
+                    'TEST_INVALID', 'Unknown expected trap function.')
+            sites = {node['id']: node for node in indexed[trap['function']]['nodes']}
+            require(isinstance(trap['node'], str) and trap['node'] in sites,
+                    'TEST_INVALID', 'Unknown expected trap node.')
+            require(sites[trap['node']]['op'] in TRAP_OPERATIONS[trap['code']],
+                    'TEST_INVALID', 'Expected trap code does not match the node operation.')
+        require(test['expect'] or 'result' in test or 'trap' in test,
+                'TEST_EMPTY', 'Tests require an expected value or trap.')
         for category in ('set', 'expect'):
             require(isinstance(test[category], dict), 'TEST_INVALID', 'Expected test cell values.')
             for cell, values in test[category].items():

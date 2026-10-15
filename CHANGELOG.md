@@ -2,7 +2,14 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — Finite Docker isolation probes (E3)
+## Latest — Expected-trap cases (L1)
+
+- Opt-in module 0.5 adds strict expected assertion/bounds/arithmetic traps with qualified function/node IDs and post-trap state assertions. Legacy schemas, default migration and evidence stay unchanged.
+- Builds validate all 0.5 cases on the reference machine and actual compiled Wasm. Expected Wasm traps require exact binary-bound coordinates; missing positions, wrong failures, normal return and wrong retained state reject.
+- Reference cases share a 1,000,000-node budget; Node retains its 15-second deadline. Forward migration preserves compiled bytes and never invents tests.
+- Added a downloadable mixed positive/negative counter example and documented finite evidence/engine limitations. Nominal units and stronger contracts remain L2.
+
+## Finite Docker isolation probes (E3)
 
 - Added authored CPU, memory, output, wall-time, process, root/host-path/noexec, file-size, tmpfs-capacity and network probes using the counter runtime's actual Docker profile. Positive filesystem/socket controls distinguish denied operations from broken execution.
 - Receipt 0.8 verifies container absence after forced removal. Configuration checks now also require CPU/file/descriptor ulimits, bounded noexec tmpfs and no added capabilities.
