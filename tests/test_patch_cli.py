@@ -43,13 +43,13 @@ class PatchCliTests(unittest.TestCase):
             receipt = json.loads(ok.stdout)
             self.assertEqual(receipt['source_sha256'], digest)
             self.assertEqual(receipt['expected_source_sha256'], digest)
-            source.write_bytes(initial + b'\\n')
+            source.write_bytes(initial + b'\n')
             stale = self.run_cli('patch', source, '--patch', patch, '-o', output,
                                  '--expected-source-sha256', digest)
             self.assertEqual(stale.returncode, 1)
             self.assertEqual(json.loads(stale.stderr)['code'], 'PATCH_SOURCE_STALE')
             self.assertFalse(output.exists())
-            self.assertEqual(source.read_bytes(), initial + b'\\n')
+            self.assertEqual(source.read_bytes(), initial + b'\n')
             invalid = self.run_cli('patch', source, '--patch', patch, '--dry-run',
                                    '--expected-source-sha256', 'A' * 64)
             self.assertEqual(json.loads(invalid.stderr)['code'], 'PATCH_INVALID')
