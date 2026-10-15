@@ -47,10 +47,42 @@ def verify_configuration(info,image):
     if info['Image']!=image or info['Config']['User']!='65534:65534':raise ValueError('Container identity differs')
 
 
+def unexecuted_tests(language):
+    pact=language=='pact'
+    return {'engine':'wasm' if pact else None,'status':'not_run' if pact else 'not_applicable',
+            'declared':None,'executed':0,'pass':None,
+            'reason':'EXECUTION_NOT_COMPLETED' if pact else 'NO_DECLARATION_INTERFACE'}
+
+
+def validate_embedded_tests(value):
+    keys={'engine','status','declared','executed','pass','reason'}
+    if not isinstance(value,dict) or set(value)!=keys or value['engine']!='wasm':
+        raise ValueError('Expected separate PACT declaration evidence')
+    if value['pass'] is not None and type(value['pass']) is not bool:
+        raise ValueError('Expected boolean declaration result')
+    count=value['declared']
+    bounded=type(count) is int and 1<=count<=256
+    status=value['status']
+    if status=='passed':
+        valid=bounded and type(value['executed']) is int and value['executed']==count and value['pass'] is True and value['reason'] is None
+    elif status=='failed':
+        valid=bounded and value['executed'] is None and value['pass'] is False and isinstance(value['reason'],str) and re.fullmatch(r'[A-Z][A-Z0-9_]{0,99}',value['reason'])
+    elif status=='missing':
+        valid=type(count) is int and count==0 and type(value['executed']) is int and value['executed']==0 and value['pass'] is False and value['reason']=='NO_DECLARED_TESTS'
+    else:
+        valid=value==unexecuted_tests('pact') and type(value['executed']) is int
+    if not valid:raise ValueError('Inconsistent PACT declaration evidence')
+    return value
+
+
 def parse_observations(stdout,language):
     observations=json.loads(stdout.decode('utf-8'),object_pairs_hook=pairs)
     if not isinstance(observations,dict):raise ValueError('Unexpected worker output')
     runtime=observations.pop('runtime',None)
+    if language=='pact':embedded=validate_embedded_tests(observations.pop('embedded_tests',None))
+    else:
+        if 'embedded_tests' in observations:raise ValueError('Unexpected declaration evidence')
+        embedded=unexecuted_tests(language)
     if language in ('javascript','c'):
         keys,engine=({'engine','node','v8'},'node') if language=='javascript' else ({'engine','gcc'},'gcc')
         if (not isinstance(runtime,dict) or set(runtime)!=keys or runtime['engine']!=engine
@@ -59,7 +91,7 @@ def parse_observations(stdout,language):
     elif runtime is not None:raise ValueError('Unexpected runtime metadata')
     if set(observations)!={'execution_status','initial_counter','cases','reset_case'}:
         raise ValueError('Unexpected worker output')
-    return observations,runtime
+    return observations,runtime,embedded
 
 
 def run_candidate(candidate_path,image,language='pact'):
@@ -88,10 +120,10 @@ def run_candidate(candidate_path,image,language='pact'):
         control(['docker','rm','--force',container])
     failed={'execution_status':'timeout' if timed_out else 'error','initial_counter':None,'cases':[],'reset_case':None}
     termination_reason='output_limit' if output_limited else 'timeout' if timed_out else 'runtime_error' if runtime_failed else None
-    runtime=None
+    runtime=None;embedded=unexecuted_tests(language)
     try:
         observations=failed
-        if not termination_reason:observations,runtime=parse_observations(stdout,language)
+        if not termination_reason:observations,runtime,embedded=parse_observations(stdout,language)
     except (ValueError,TypeError,RecursionError):
         observations=failed;termination_reason='invalid_worker_output'
     log={'stdout_base64':base64.b64encode(stdout).decode(),'stderr_base64':base64.b64encode(stderr).decode()}
@@ -101,12 +133,18 @@ def run_candidate(candidate_path,image,language='pact'):
            'executor':{'command':'python3 -I -B /opt/worker.py','revision':image,'log_sha256':log_hash},**observations}
     try:grade=grade_trace(trace,candidate)
     except (ValueError,TypeError,KeyError,RecursionError):
-        trace.update(failed);termination_reason='invalid_worker_output';grade=grade_trace(trace,candidate)
-    return {'format':'pact.agent-sandbox-receipt/0.5','image_id':image,'backend':'docker','runtime':runtime,
+        trace.update(failed);embedded=unexecuted_tests(language);termination_reason='invalid_worker_output';grade=grade_trace(trace,candidate)
+    return {'format':'pact.agent-sandbox-receipt/0.6','image_id':image,'backend':'docker','runtime':runtime,
             'trace':trace,'grade':grade,'policy':audit_candidate(candidate,language=language),'log':log,
+            'embedded_tests':embedded,
             'termination_reason':termination_reason,'output_limit_bytes':1048576,
             'timed_out':timed_out,'output_limited':output_limited,
             'isolation_configuration_checked':True,'candidate_pass':None,'model_trial':False}
+
+
+def checks_passed(report):
+    return (report['grade']['behavior_pass'] is True and report['policy']['policy_pass'] is True
+            and (report['trace']['language']!='pact' or report['embedded_tests']['pass'] is True))
 
 
 def main(argv=None):
@@ -117,7 +155,7 @@ def main(argv=None):
     try:
         report=run_candidate(args.candidate,args.image,language=args.language)
         print(json.dumps(report,sort_keys=True,indent=2))
-        return 0 if report['grade']['behavior_pass'] and report['policy']['policy_pass'] else 2
+        return 0 if checks_passed(report) else 2
     except (ValueError,TypeError,KeyError,OSError,RecursionError) as error:
         print(json.dumps({'status':'rejected','code':'AGENT_SANDBOX_REJECTED','message':str(error)}),file=sys.stderr)
         return 1

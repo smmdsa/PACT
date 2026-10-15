@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 
-from benchmarks.agent_sandbox import run_candidate
+from benchmarks.agent_sandbox import run_candidate, checks_passed
 
 image=sys.argv[1]
 receipts=Path('build/sandbox-checks');receipts.mkdir(parents=True,exist_ok=True)
@@ -13,15 +13,20 @@ correct=baseline.replace('repeat 3 iteration','repeat 4 iteration').replace(
     '[-2147483647,-2147483647]','[-2147483646,-2147483647]')
 with tempfile.TemporaryDirectory() as tmp:
     root=Path(tmp)
-    for label,source,expected,policy in [('baseline',baseline,False,False),('edited',correct,True,True),
-            ('invalid','broken',False,False),
-            ('unapproved',correct.replace('positive.wrap','renamed.test'),True,False)]:
+    for label,source,expected,policy,embedded in [('baseline',baseline,False,False,True),('edited',correct,True,True,True),
+            ('invalid','broken',False,False,None),
+            ('unapproved',correct.replace('positive.wrap','renamed.test'),True,False,True),
+            ('wrong-declaration',correct.replace('[-2147483646,-2147483647]','[999,-2147483647]'),True,False,False),
+            ('missing-declarations',correct[:correct.index('tests ')]+ 'tests []\n',True,False,False),
+            ('trapping-declaration',correct.replace('\"args\":[0,1]','\"args\":[2,1]'),True,False,False)]:
         path=root/(label+'.pact');path.write_text(source)
         result=run_candidate(path,image)
         assert result['grade']['behavior_pass']==expected,(label,result)
         assert result['policy']['policy_pass']==policy,(label,result)
         assert result['candidate_pass'] is None
-        print(json.dumps({'fixture':label,'behavior_pass':expected,'policy_pass':policy,'image_id':image,'model_trial':False}))
+        assert result['embedded_tests']['pass'] is embedded,(label,result)
+        assert checks_passed(result)==(expected and policy and embedded is True),(label,result)
+        print(json.dumps({'fixture':label,'embedded_tests':result['embedded_tests'],'behavior_pass':expected,'policy_pass':policy,'image_id':image,'model_trial':False}))
         (receipts/(label+'.receipt.json')).write_text(json.dumps(result,sort_keys=True,indent=2))
     baseline_js=Path('benchmarks/agent_trials/counter.mjs').read_text()
     correct_js=baseline_js.replace('i < 3','i < 4')
@@ -39,6 +44,7 @@ with tempfile.TemporaryDirectory() as tmp:
             ('javascript-timeout','await new Promise(resolve => setTimeout(resolve,60000));',False,False,'timeout')]:
         path=root/(label+'.mjs');path.write_text(source)
         result=run_candidate(path,image,language='javascript')
+        assert result['embedded_tests']['status']=='not_applicable' and result['embedded_tests']['pass'] is None,(label,result)
         assert result['grade']['behavior_pass']==behavior,(label,result)
         assert result['policy']['policy_pass']==policy,(label,result)
         assert result['termination_reason']==reason,(label,result)
@@ -73,6 +79,7 @@ with tempfile.TemporaryDirectory() as tmp:
                 '\n__attribute__((constructor)) static void crash(void) { raise(SIGSEGV); }\n',False,False,'runtime_error')]:
         path=root/(label+'.c');path.write_text(source)
         result=run_candidate(path,image,language='c')
+        assert result['embedded_tests']['status']=='not_applicable' and result['embedded_tests']['pass'] is None,(label,result)
         assert result['grade']['behavior_pass']==behavior,(label,result)
         assert result['policy']['policy_pass']==policy,(label,result)
         assert result['termination_reason']==reason,(label,result)
@@ -90,6 +97,7 @@ with tempfile.TemporaryDirectory() as tmp:
             ('python-timeout','import time\ntime.sleep(60)\n',False,'timeout')]:
         path=root/(label+'.py');path.write_text(source)
         result=run_candidate(path,image,language='python')
+        assert result['embedded_tests']['status']=='not_applicable' and result['embedded_tests']['pass'] is None,(label,result)
         assert result['grade']['behavior_pass']==expected,(label,result)
         assert result['policy']['policy_pass']==expected,(label,result)
         assert result['termination_reason']==reason,(label,result)

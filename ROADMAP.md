@@ -15,7 +15,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | Traditional-language source baseline | Done | Frozen greeting/counter traces, four executed languages, both encodings and explicit asymmetry |
 | Parser and benchmark-read bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads; general containment/peak-memory claims excluded |
 | Model trial material and recorder | Done | Same task prompt, frozen contexts/oracle, external provenance and failed-trial accounting |
-| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted IR/AST/exact-source policies implemented; broader policy/limit probes, exploratory GPT counter/Metroidvania pilots archived; provider integration and formal trials pending |
+| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted IR/AST/exact-source policies plus isolated PACT declared-test execution implemented; broader policy/limit probes, exploratory GPT counter/Metroidvania pilots archived; provider integration and formal trials pending |
 | Runtime microbenchmark | Done | Warmup/fresh samples, independent state oracle, source hashes and local measurements |
 | Readable docs and progress | Done | Safe static Markdown, navigation, TOC and committed change log |
 | Numeric-module selective inspection | Done | Function discovery, call relationships, effects and test summaries; text graphs and full dependency/coverage proof excluded |
@@ -33,7 +33,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 
 | Order | Backlog IDs | Concrete next outcome |
 | --- | --- | --- |
-| 1 | E2 | Broaden pre-registered source policies and execute embedded test declarations; all four adapters exist, with restricted IR/AST/exact-source policies |
+| 1 | E2 | Broaden pre-registered source policies; PACT declarations now execute on Wasm in Docker with negative fixtures; other language inputs have no declaration interface |
 | 2 | E3 | Exercise hostile resource/filesystem/network attempts and cleanup failures on the actual isolation backend; configuration flags and authored fixtures are not sufficient containment evidence |
 | 3 | E4, E5 | Configure provider/backend, run fresh paired formal trials with actual usage/failures/retries, then broaden tasks and retrieval/repair experiments |
 | 4 | L1, L2 | Versioned expected-trap cases, then nominal units and stronger contracts |
