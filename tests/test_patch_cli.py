@@ -32,6 +32,24 @@ class PatchCliTests(unittest.TestCase):
     def run_cli(self, *args):
         return subprocess.run([sys.executable,'-m','pact',*map(str,args)],cwd=ROOT,capture_output=True,text=True)
 
+    def test_patch_validates_one_snapshot_even_if_file_changes_after_read(self):
+        from pact import __main__ as cli
+        from unittest.mock import patch as mock_patch
+        with tempfile.TemporaryDirectory() as tmp:
+            source, patch_file, output, _, _ = self.setup_files(tmp)
+            initial = source.read_bytes()
+            real_read = cli.bounded_source_snapshot
+            def change_after_read(path):
+                data = real_read(path)
+                source.write_bytes(initial + b'\n')
+                return data
+            with mock_patch.object(cli, 'bounded_source_snapshot', side_effect=change_after_read):
+                with mock_patch('pact.module_build.build_module') as build:
+                    self.assertEqual(cli.main(['patch', str(source), '--patch', str(patch_file),
+                                               '-o', str(output)]), 1)
+                    build.assert_not_called()
+            self.assertFalse(output.exists())
+
     def test_unpinned_publication_keeps_observed_source_identity(self):
         # Even legacy patch calls without an explicit byte guard must use the checked snapshot.
         from pact import __main__ as cli
