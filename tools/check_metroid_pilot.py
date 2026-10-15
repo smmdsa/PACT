@@ -103,12 +103,14 @@ def main():
         receipt=run_candidate(path,sys.argv[1])
         if receipt['candidate_sha256']!=trial['candidate_sha256']:raise ValueError('Execution identity differs')
         observations=receipt['observations'];checks=observations['checks'] if observations else []
-        harness_checks=[check for check in checks if check['id'].startswith('verifier_control_')]
+        harness_checks=[check for check in checks if check['id'].startswith('verifier_')]
         if any(not check['pass'] for check in harness_checks):receipt['termination_reason']='verifier_control_failed';checks=[]
-        else:checks=[check for check in checks if not check['id'].startswith('verifier_control_')]
+        else:checks=[check for check in checks if not check['id'].startswith('verifier_')]
         row={'trial_id':trial['trial_id'],'model_alias':trial['model_alias'],'termination_reason':receipt['termination_reason'],
              'checks':checks,'harness_checks':harness_checks,'checks_passed':sum(check['pass'] for check in checks),'checks_total':len(checks),
              'runtime':observations['runtime'] if observations else None,'candidate_pass':None,'formal_benchmark':False}
+        if receipt['termination_reason'] or any(c['id']=='bootstrap' and not c['pass'] for c in checks):
+            row['diagnostic_excerpt']=base64.b64decode(receipt['log']['stderr_base64']).decode(errors='replace')[-2000:]
         summary.append(row);print(json.dumps(row),flush=True)
         (output/(trial['trial_id']+'.receipt.json')).write_text(json.dumps(receipt,indent=2)+'\n')
         if observations:

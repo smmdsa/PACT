@@ -1,6 +1,6 @@
 FROM node:24-bookworm-slim
 
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HOME=/tmp NODE_ENV=production
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HOME=/tmp NODE_ENV=production DEBUG=pw:browser
 RUN apt-get update \
     && apt-get install -y --no-install-recommends chromium ca-certificates \
     && rm -rf /var/lib/apt/lists/*

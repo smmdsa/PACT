@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import { createRequire } from 'node:module';
-import { writeFile } from 'node:fs/promises';
+import { writeFile, readFile } from 'node:fs/promises';
 
 // This is exploratory observation, not authentication or universal correctness.
 // The candidate controls METROID_TEST and can forge its reported observations.
@@ -17,6 +17,13 @@ const bounded = value => String(value).slice(0, 500);
 const result = (id, pass, detail) => output.checks.push({ id, pass: !!pass, detail: bounded(detail) });
 let browser;
 let screenshotBytes = 0;
+async function resources(id) {
+  const values={};
+  for(const name of ['pids.current','pids.max','pids.events','memory.current','memory.events']) {
+    try{values[name]=(await readFile('/sys/fs/cgroup/'+name,'utf8')).trim();}catch{values[name]='unavailable';}
+  }
+  result('verifier_resources_'+id,true,JSON.stringify(values));
+}
 async function deadline(promise, ms = 5000) {
   let timer;
   try { return await Promise.race([promise, new Promise((_, reject) => {
@@ -37,7 +44,8 @@ async function newPage(test = true) {
   page.on('pageerror', error => {
     if (output.page_errors.length < 10) output.page_errors.push(bounded(error.message));
   });
-  await page.goto(`file:///tmp/candidate.html${test ? '?test=1' : ''}`, { waitUntil: 'load', timeout: 5000 });
+  try{await page.goto(`file:///tmp/candidate.html${test ? '?test=1' : ''}`, { waitUntil: 'load', timeout: 5000 });}
+  catch(error){await resources('navigation_failure');throw error;}
   return page;
 }
 async function screenshot(page, id) {
@@ -196,6 +204,14 @@ try {
     if(!okay) throw Error('Trusted browser control failed before candidate evaluation');
   }
   await control.close();
+  await writeFile('/tmp/canvas-control.html','<!doctype html><canvas width="960" height="540"></canvas><script>const c=document.querySelector("canvas").getContext("2d");c.shadowBlur=20;c.fillText("trusted canvas",20,40);c.fillRect(10,10,200,200);window.TRUSTED_CANVAS=true;</script>');
+  const canvasControl=await browser.newPage();
+  try{
+    await canvasControl.goto('file:///tmp/canvas-control.html',{waitUntil:'load',timeout:5000});
+    result('verifier_control_canvas',await canvasControl.evaluate(()=>window.TRUSTED_CANVAS===true),'Trusted 2D canvas rendered');
+  }catch(error){result('verifier_control_canvas',false,error.message);await resources('canvas_failure');throw error;}
+  await canvasControl.close();
+  await resources('before_candidate');
   const page = await newPage();
   await observe('boot_interface', () => action(page,'boot'));
   await screenshot(page,'hub');
