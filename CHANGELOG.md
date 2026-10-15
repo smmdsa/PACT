@@ -2,7 +2,15 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — isolated C counter adapter
+## Latest — exploratory GPT subagent counter pilot
+
+- Archived real final responses from sessions requested as GPT-6.1 and GPT-6 Astra, with fresh context for every language and the same frozen task instruction.
+- Eight valid responses cover PACT/Python/JavaScript/C once per model. Both models returned identical edits per language and all eight pass their static task policies.
+- One coordinator-copy error in Astra's JavaScript input is retained and excluded explicitly; its replacement used a new session. No response body was repaired.
+- Inputs, coordinator-visible responses, extraction rule, candidates and hashes are archived; Docker CI re-evaluates each candidate and retains per-trial behavior/policy receipts.
+- This is exploratory evidence, with no provider usage, immutable model versions, generation latency or statistical ranking. It does not complete the formal model benchmark or establish a PACT advantage.
+
+## Isolated C counter adapter
 
 - `--language c` compiles C11 and executes native code only inside Docker, using the same frozen calls and independent trace grader as PACT/Python/JavaScript.
 - A bounded Linux memfd loads the compiled binary while `/tmp` remains noexec; reset forks and re-executes the binary so C static state starts fresh.
