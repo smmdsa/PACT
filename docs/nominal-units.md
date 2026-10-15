@@ -47,7 +47,7 @@ Reset retains typed initial values. Earlier writes and lazy guard behavior follo
 
 ## Evidence, migration and limits
 
-`check`, plans and build manifests expose `pact.unit-contracts/0.1.0` metadata. Inspection returns relevant cells, constants, selected literal annotations and dependency signatures; helper literal maps stay explicitly omitted. Symbols returns unit signatures without literal maps. Legacy output shapes remain unchanged.
+`check`, plans and build manifests expose `pact.unit-contracts/0.1.0` metadata. Inspection returns relevant cells, constants, selected literal annotations and dependency signatures; helper literal maps stay explicitly omitted. The unit-name list is filtered to these visible bindings, including in symbols output. Symbols returns unit signatures without literal maps. Legacy output shapes remain unchanged.
 
 Compact/JSON conversion preserves annotations, qualified IDs and numeric version. Explicit forward migration to 0.6 changes only format/revision, adds no annotations and preserves compiled bytes. Default migration stays 0.2. Earlier schemas reject `units`; module 0.6 inherits all 0.5 dual-engine case and expected-trap requirements. Source headers remain independent.
 

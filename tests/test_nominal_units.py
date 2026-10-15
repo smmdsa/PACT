@@ -180,6 +180,24 @@ class UnitDeclarationTests(unittest.TestCase):
 
 
 class UnitIntegrationTests(unittest.TestCase):
+    def test_selected_unit_names_exclude_unrelated_and_hidden_literal_units(self):
+        doc = unit_counter();doc['units']['names'].append('unrelated_unit')
+        self.assertEqual(inspect_function(doc, 'step')['unit_contracts']['names'], ['pixel'])
+        self.assertIn('unrelated_unit', analyze_module(doc)['unit_contracts']['names'])
+        doc = arithmetic();fn = doc['functions'][0]
+        fn['nodes'] = [{'id': 'calculate', 'op': 'call', 'target': 'helper', 'args': []}]
+        doc['units']['functions']['sum']['result'] = 'i32'
+        doc['units']['names'].extend(['helper_literal_only', 'unrelated_unit'])
+        doc['functions'].append({'id': 'helper', 'params': [], 'locals': [], 'result': 'i32', 'writes': [],
+            'entry': 'compare', 'nodes': [{'id': 'a', 'op': 'i32.const', 'value': 2},
+                                         {'id': 'b', 'op': 'i32.const', 'value': 3},
+                                         {'id': 'compare', 'op': 'i32.eq', 'args': ['a', 'b']}]})
+        doc['units']['functions']['helper'] = signature(result='i32',
+            literals={'a': 'helper_literal_only', 'b': 'helper_literal_only'})
+        self.assertEqual(inspect_function(doc, 'sum')['unit_contracts']['names'], ['pixel'])
+        self.assertEqual(symbols(doc)['unit_contracts']['names'], ['pixel'])
+        self.assertIn('helper_literal_only', inspect_function(doc, 'helper')['unit_contracts']['names'])
+
     def test_cli_check_exposes_units_and_explicit_migration_is_compatible(self):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:

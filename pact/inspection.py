@@ -67,7 +67,13 @@ def _unit_context(plan, functions, constants, cells, selected=None):
         signatures[key] = copy.deepcopy(contracts['functions'][key])
         if key != selected:
             signatures[key].pop('literals')
-    return {'format': contracts['format'], 'names': list(contracts['names']),
+    visible = {contracts['cells'][key] for key in cells} | {contracts['constants'][key] for key in constants}
+    for signature in signatures.values():
+        visible.update(signature['params'].values())
+        visible.update(signature['locals'].values())
+        visible.update(signature.get('literals', {}).values())
+        visible.add(signature['result'])
+    return {'format': contracts['format'], 'names': [name for name in contracts['names'] if name in visible],
             'cells': {key: contracts['cells'][key] for key in sorted(cells)},
             'constants': {key: contracts['constants'][key] for key in sorted(constants)},
             'functions': signatures}
