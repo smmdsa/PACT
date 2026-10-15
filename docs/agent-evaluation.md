@@ -114,3 +114,5 @@ To repeat only execution verification, using the archived responses rather than 
 ```sh
 python3 -m tools.check_subagent_pilot sha256:IMMUTABLE_LOCAL_IMAGE_ID
 ```
+
+A more complex [Metroidvania pilot](metroidvania-pilot.md) now generates human-playable HTML/JavaScript games from the same brief with both GPT aliases. It has independent Docker browser observations and original public artifacts; it remains separate from formal PACT-versus-traditional-language evaluation.

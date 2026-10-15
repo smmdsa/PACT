@@ -2,7 +2,16 @@
 
 Every entry distinguishes implemented behavior from measured evidence and planned work. The [roadmap](ROADMAP.md) describes remaining scope.
 
-## Latest — exploratory GPT subagent counter pilot
+## Latest — Metroidvania generation pilot and playable examples
+
+- Gave GPT-6.1 and GPT-6 Astra the same fresh-session HTML/JavaScript game contract: five rooms, gated double jump, key, pit, enemies, checkpoint, boss and victory.
+- Preserved both original single-file games without coordinator repairs and added a public comparison shell, original downloads and a project-homepage link.
+- Added a separate restricted Docker Chromium worker with bounded observations, actual keyboard checks, deterministic action-only progression routes and screenshots. A third session implemented the initial verifier blind to candidate sources.
+- Both original games passed 16/16 finite browser checks, including victory; frozen observations bind the CI run, runtime image, verifier and candidate hashes.
+- Four infrastructure runs are retained: a trusted Canvas control exposed the original 1 MiB temporary-file limit; the browser profile now allows bounded 32 MiB graphics files while candidate input stays at 1 MiB. A later Chromium thread-creation timeout is retained separately; its task limit is now 256.
+- Runtime checks and failures are retained separately from generated artifacts. Provider usage/version/latency remain unavailable, one attempt is not a ranking, and this same-language test is not PACT-versus-JavaScript evidence.
+
+## Exploratory GPT subagent counter pilot
 
 - Archived real final responses from sessions requested as GPT-6.1 and GPT-6 Astra, with fresh context for every language and the same frozen task instruction.
 - Eight valid responses cover PACT/Python/JavaScript/C once per model. Both models returned identical edits per language and all eight pass their static task policies.

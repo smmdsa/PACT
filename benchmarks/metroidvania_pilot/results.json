@@ -1,0 +1,269 @@
+{
+  "format": "pact.metroid-pilot-results/0.1",
+  "formal_benchmark": false,
+  "candidate_pass": null,
+  "evidence_commit": "154f516e52e33a75d2b2bcb848e54d13b8d1d190",
+  "workflow_run_id": 38664661157,
+  "workflow_job_id": 116193688903,
+  "image_id": "sha256:3542c7c1ece91cd85a9da210521da06d14beb2bc5604806b169577d8f6415ffa",
+  "verifier_sha256": "aee8a3853c95504a7f7490aa365ba2bf09bbadc3f329ff22a69d156267d354a8",
+  "excluded_infrastructure_runs": [
+    {
+      "run_id": 38663992091,
+      "reason": "Both candidate file loads timed out before gameplay; not valid model scores."
+    },
+    {
+      "run_id": 38664248164,
+      "reason": "Minimal file controls loaded, candidate canvas initialization still timed out; not valid model scores."
+    },
+    {
+      "run_id": 38664463747,
+      "reason": "Trusted Canvas control also timed out with 1 MiB file limit; PID/memory cgroup limits were not exhausted. No model score assigned."
+    },
+    {
+      "run_id": 38665069994,
+      "reason": "Both repeated browser executions timed out with pthread_create Resource temporarily unavailable under the 128-task limit. No model failure assigned; current browser profile allows 256 tasks."
+    }
+  ],
+  "harness_resolution": "The file limit was raised from 1 MiB to 32 MiB for Chromium temporary graphics buffers, retaining 1 MiB candidate input and 64 MiB temporary-filesystem bounds. Trusted Canvas and both original candidates then ran successfully. No generated source edits.",
+  "trials": [
+    {
+      "trial_id": "metro_a",
+      "model_alias": "gpt-6.1-sol",
+      "termination_reason": null,
+      "checks": [
+        {
+          "id": "boot_interface",
+          "pass": true,
+          "detail": "{\"room\":\"hub\",\"x\":480,\"y\":468,\"hp\":3,\"boots\":false,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "deterministic_reset_inputs",
+          "pass": true,
+          "detail": "Compared 80 per-frame snapshots across reset and identical inputs"
+        },
+        {
+          "id": "contact_damage_and_invulnerability",
+          "pass": true,
+          "detail": "{\"damaged\":2,\"after20\":2,\"deaths\":0}"
+        },
+        {
+          "id": "real_keyboard_movement",
+          "pass": true,
+          "detail": "ArrowRight held 200ms: x=480 -> 528"
+        },
+        {
+          "id": "movement_jump",
+          "pass": true,
+          "detail": "{\"moved\":40,\"y\":458.55,\"vy\":-9.45}"
+        },
+        {
+          "id": "second_air_jump_locked",
+          "pass": true,
+          "detail": "{\"before\":-8.899999999999999,\"after\":-8.349999999999998,\"jumpsUsed\":1}"
+        },
+        {
+          "id": "east_gate_before_boots",
+          "pass": true,
+          "detail": "{\"room\":\"hub\",\"x\":936,\"y\":468,\"hp\":3,\"boots\":false,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "west_boots_pickup",
+          "pass": true,
+          "detail": "{\"room\":\"west\",\"x\":176,\"y\":468,\"hp\":3,\"boots\":true,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "second_air_jump_with_boots",
+          "pass": true,
+          "detail": "{\"before\":-6.699999999999998,\"after\":-9.45,\"jumpsUsed\":2}"
+        },
+        {
+          "id": "vertical_room_transition",
+          "pass": true,
+          "detail": "{\"room\":\"lower\",\"x\":68,\"y\":468,\"hp\":3,\"boots\":true,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "lower_pit_and_key",
+          "pass": true,
+          "detail": "{\"room\":\"lower\",\"x\":752,\"y\":468,\"hp\":3,\"boots\":true,\"key\":true,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "return_backtracking",
+          "pass": true,
+          "detail": "{\"room\":\"hub\",\"x\":468,\"y\":468,\"hp\":3,\"boots\":true,\"key\":true,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "sanctum_gate_before_key",
+          "pass": true,
+          "detail": "{\"room\":\"east\",\"x\":936,\"y\":468,\"hp\":3,\"boots\":true,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "boss_hp_decreases",
+          "pass": true,
+          "detail": "{\"initial\":5,\"room\":\"sanctum\",\"x\":720,\"y\":468,\"hp\":3,\"boots\":true,\"key\":true,\"bossHp\":4,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "victory_after_boss_and_exit",
+          "pass": true,
+          "detail": "{\"room\":\"sanctum\",\"x\":860,\"y\":468,\"hp\":3,\"boots\":true,\"key\":true,\"bossHp\":0,\"won\":true,\"deaths\":0}"
+        },
+        {
+          "id": "full_reset_clears_inventory_deaths",
+          "pass": true,
+          "detail": "{\"afterProgress\":true,\"observedDeath\":true,\"room\":\"hub\",\"x\":480,\"y\":468,\"hp\":3,\"boots\":false,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        }
+      ],
+      "harness_checks": [
+        {
+          "id": "verifier_control_unrouted",
+          "pass": true,
+          "detail": "Trusted minimal file loaded"
+        },
+        {
+          "id": "verifier_control_routed",
+          "pass": true,
+          "detail": "Trusted minimal file loaded"
+        },
+        {
+          "id": "verifier_control_canvas",
+          "pass": true,
+          "detail": "Trusted 2D canvas rendered"
+        },
+        {
+          "id": "verifier_resources_before_candidate",
+          "pass": true,
+          "detail": "{\"pids.current\":\"97\",\"pids.max\":\"128\",\"pids.events\":\"max 0\",\"memory.current\":\"241213440\",\"memory.events\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"}"
+        }
+      ],
+      "checks_passed": 16,
+      "checks_total": 16,
+      "runtime": {
+        "chromium": "155.0.8059.39",
+        "playwright": "1.61.1"
+      },
+      "candidate_pass": null,
+      "formal_benchmark": false,
+      "candidate_sha256": "17103f45af8d10ce71cfaf8a0b63ccb7832aa561e4b0ba721da7243a68323f00",
+      "source_bytes": 13368
+    },
+    {
+      "trial_id": "metro_b",
+      "model_alias": "gpt-6-astra",
+      "termination_reason": null,
+      "checks": [
+        {
+          "id": "boot_interface",
+          "pass": true,
+          "detail": "{\"room\":\"hub\",\"x\":480,\"y\":468,\"hp\":3,\"boots\":false,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "deterministic_reset_inputs",
+          "pass": true,
+          "detail": "Compared 80 per-frame snapshots across reset and identical inputs"
+        },
+        {
+          "id": "contact_damage_and_invulnerability",
+          "pass": true,
+          "detail": "{\"damaged\":2,\"after20\":2,\"deaths\":0}"
+        },
+        {
+          "id": "real_keyboard_movement",
+          "pass": true,
+          "detail": "ArrowRight held 200ms: x=480 -> 544"
+        },
+        {
+          "id": "movement_jump",
+          "pass": true,
+          "detail": "{\"moved\":40,\"y\":458.55,\"vy\":-9.45}"
+        },
+        {
+          "id": "second_air_jump_locked",
+          "pass": true,
+          "detail": "{\"before\":-8.899999999999999,\"after\":-8.349999999999998,\"jumpsUsed\":1}"
+        },
+        {
+          "id": "east_gate_before_boots",
+          "pass": true,
+          "detail": "{\"room\":\"hub\",\"x\":936,\"y\":468,\"hp\":3,\"boots\":false,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "west_boots_pickup",
+          "pass": true,
+          "detail": "{\"room\":\"west\",\"x\":176,\"y\":468,\"hp\":3,\"boots\":true,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "second_air_jump_with_boots",
+          "pass": true,
+          "detail": "{\"before\":-6.699999999999998,\"after\":-9.45,\"jumpsUsed\":2}"
+        },
+        {
+          "id": "vertical_room_transition",
+          "pass": true,
+          "detail": "{\"room\":\"lower\",\"x\":68,\"y\":468,\"hp\":3,\"boots\":true,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "lower_pit_and_key",
+          "pass": true,
+          "detail": "{\"room\":\"lower\",\"x\":752,\"y\":468,\"hp\":2,\"boots\":true,\"key\":true,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "return_backtracking",
+          "pass": true,
+          "detail": "{\"room\":\"hub\",\"x\":468,\"y\":468,\"hp\":2,\"boots\":true,\"key\":true,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "sanctum_gate_before_key",
+          "pass": true,
+          "detail": "{\"room\":\"east\",\"x\":936,\"y\":468,\"hp\":3,\"boots\":true,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "boss_hp_decreases",
+          "pass": true,
+          "detail": "{\"initial\":5,\"room\":\"sanctum\",\"x\":720,\"y\":468,\"hp\":2,\"boots\":true,\"key\":true,\"bossHp\":3,\"won\":false,\"deaths\":0}"
+        },
+        {
+          "id": "victory_after_boss_and_exit",
+          "pass": true,
+          "detail": "{\"room\":\"sanctum\",\"x\":860,\"y\":468,\"hp\":2,\"boots\":true,\"key\":true,\"bossHp\":0,\"won\":true,\"deaths\":0}"
+        },
+        {
+          "id": "full_reset_clears_inventory_deaths",
+          "pass": true,
+          "detail": "{\"afterProgress\":true,\"observedDeath\":true,\"room\":\"hub\",\"x\":480,\"y\":468,\"hp\":3,\"boots\":false,\"key\":false,\"bossHp\":5,\"won\":false,\"deaths\":0}"
+        }
+      ],
+      "harness_checks": [
+        {
+          "id": "verifier_control_unrouted",
+          "pass": true,
+          "detail": "Trusted minimal file loaded"
+        },
+        {
+          "id": "verifier_control_routed",
+          "pass": true,
+          "detail": "Trusted minimal file loaded"
+        },
+        {
+          "id": "verifier_control_canvas",
+          "pass": true,
+          "detail": "Trusted 2D canvas rendered"
+        },
+        {
+          "id": "verifier_resources_before_candidate",
+          "pass": true,
+          "detail": "{\"pids.current\":\"99\",\"pids.max\":\"128\",\"pids.events\":\"max 0\",\"memory.current\":\"243617792\",\"memory.events\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"}"
+        }
+      ],
+      "checks_passed": 16,
+      "checks_total": 16,
+      "runtime": {
+        "chromium": "155.0.8059.39",
+        "playwright": "1.61.1"
+      },
+      "candidate_pass": null,
+      "formal_benchmark": false,
+      "candidate_sha256": "0d5ad9fecac8ee3e2f7b9db5b0679caa99f8b90aa42d0784d57ff55ab21fac60",
+      "source_bytes": 12807
+    }
+  ]
+}

@@ -14,7 +14,7 @@ Last code audit: 2026-10-14, starting at main `882a630`. See the [implementation
 | Traditional-language source baseline | Done | Frozen greeting/counter traces, four executed languages, both encodings and explicit asymmetry |
 | Parser and benchmark-read bounds | Done | Cursor operand parsing and bounded single-snapshot benchmark reads; general containment/peak-memory claims excluded |
 | Model trial material and recorder | Done | Same task prompt, frozen contexts/oracle, external provenance and failed-trial accounting |
-| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted IR/AST/exact-source policies implemented; broader policy/limit probes, an exploratory GPT subagent pilot archived; provider integration and formal trials pending |
+| Model-task trials and sandbox verifier | In progress | Trace grader, Docker PACT/Python/JavaScript/C counter adapters and restricted IR/AST/exact-source policies implemented; broader policy/limit probes, exploratory GPT counter/Metroidvania pilots archived; provider integration and formal trials pending |
 | Runtime microbenchmark | Done | Warmup/fresh samples, independent state oracle, source hashes and local measurements |
 | Readable docs and progress | Done | Safe static Markdown, navigation, TOC and committed change log |
 | Numeric-module selective inspection | Done | Function discovery, call relationships, effects and test summaries; text graphs and full dependency/coverage proof excluded |

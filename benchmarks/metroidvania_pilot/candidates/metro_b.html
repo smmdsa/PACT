@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EMBER VAULT</title><style>*{box-sizing:border-box}body{margin:0;background:#070c17;color:#d9e9ef;font:14px system-ui,sans-serif;min-height:100vh;display:grid;place-items:center}main{width:min(100%,1100px);padding:24px}header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}h1{font-size:23px;letter-spacing:7px;margin:0;color:#f4d497}header span{color:#829aa9;font-size:12px;letter-spacing:2px}canvas{display:block;width:100%;aspect-ratio:16/9;background:#101827;border:1px solid #38505c;box-shadow:0 20px 80px #0009;image-rendering:pixelated}footer{display:flex;justify-content:space-between;gap:15px;margin-top:14px;color:#8ba3b3;font-size:12px;line-height:1.8}kbd{color:#f4d497;font:inherit} @media(max-width:600px){main{padding:8px}header span{display:none}footer{display:block}h1{font-size:18px}}</style></head><body><main><header><h1>EMBER VAULT</h1><span>A SMALL WORLD · A LAST LIGHT</span></header><canvas id="game" width="960" height="540" aria-label="Ember Vault exploration game"></canvas><footer><div><kbd>A D / ← →</kbd> Move &nbsp; <kbd>SPACE</kbd> Jump &nbsp; <kbd>Z</kbd> Blade &nbsp; <kbd>↑ ↓ / W S</kbd> Passage &nbsp; <kbd>R</kbd> Restart</div><div>Find the boots. Recover the key. Silence the guardian.</div></footer></main><script>
+'use strict';
+(()=>{
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const names={hub:'THE LANTERN CROSSING',west:'ROOTBOUND ARCHIVE',lower:'THE SUNKEN WORKS',east:'GLASS PROCESSIONAL',sanctum:'HEART OF THE VAULT'};
+const colors={hub:'#80d4ce',west:'#9dd487',lower:'#e5b76c',east:'#a9b6ff',sanctum:'#ed8e8e'};
+const platforms={hub:[{x:180,y:385,w:130},{x:660,y:375,w:120}],west:[{x:310,y:390,w:110},{x:735,y:355,w:120}],lower:[{x:180,y:380,w:110},{x:550,y:375,w:100}],east:[{x:200,y:375,w:120},{x:650,y:355,w:110}],sanctum:[{x:260,y:380,w:135}]};
+let s,prevJump=false,keys={},acc=0,last=0;
+function enemies(){return {west:{x:600,dir:-1,alive:true},lower:{x:650,dir:-1,alive:true},east:{x:500,dir:-1,alive:true}}}
+function reset(){s={room:'hub',x:480,y:468,vx:0,vy:0,hp:3,maxHp:3,boots:false,key:false,bossHp:5,won:false,deaths:0,checkpoint:'hub',visited:['hub'],tick:0,onGround:true,jumpsUsed:0,inv:0,cool:0,slash:0,facing:1,enemies:enemies(),notice:'THE VAULT STIRS · SEEK THE WESTERN ARCHIVE',noticeTime:210};prevJump=false;keys={};acc=0;render();return snapshot()}
+function snapshot(){const o={};for(const k of ['room','x','y','vx','vy','hp','maxHp','boots','key','bossHp','won','deaths','checkpoint','tick','onGround','jumpsUsed'])o[k]=s[k];o.visited=s.visited.slice();return o}
+function tell(t){s.notice=t;s.noticeTime=160}
+function enter(room,x){s.room=room;s.x=x;s.y=468;s.vx=0;s.vy=0;s.onGround=true;s.jumpsUsed=0;if(!s.visited.includes(room))s.visited.push(room);tell(names[room])}
+function die(){s.deaths++;s.hp=3;s.enemies=enemies();s.bossHp=5;enter('hub',480);s.inv=60;tell('THE LANTERN REMEMBERS · YOUR RELICS REMAIN')}
+function hurt(){if(s.inv||s.won)return;s.hp--;s.inv=45;if(s.hp<=0)die()}
+function update(input){const jump=!!input.jump,pressed=jump&&!prevJump;prevJump=jump;if(s.won)return;s.tick++;if(s.inv>0)s.inv--;if(s.cool>0)s.cool--;if(s.slash>0)s.slash--;if(s.noticeTime>0)s.noticeTime--;
+s.vx=((input.right?1:0)-(input.left?1:0))*4;if(s.vx)s.facing=Math.sign(s.vx);
+if(pressed&&(s.onGround||(s.boots&&s.jumpsUsed<2))){s.vy=-10;s.jumpsUsed++;s.onGround=false}
+s.x+=s.vx;const oldBottom=s.y+32;s.vy=Math.min(s.vy+.55,13);s.y+=s.vy;s.onGround=false;
+const surfaces=platforms[s.room].slice();if(s.room==='lower'){surfaces.push({x:0,y:500,w:400},{x:500,y:500,w:460})}else surfaces.push({x:0,y:500,w:960});
+if(s.vy>=0){let top=Infinity;for(const p of surfaces)if(s.x+24>p.x&&s.x<p.x+p.w&&oldBottom<=p.y+.001&&s.y+32>=p.y)top=Math.min(top,p.y);if(top<Infinity){s.y=top-32;s.vy=0;s.onGround=true;s.jumpsUsed=0}}
+if(!s.onGround&&s.jumpsUsed===0)s.jumpsUsed=1;
+if(s.y>600){die();return}
+if(s.x<0){if(s.room==='hub')enter('west',928);else if(s.room==='east')enter('hub',928);else if(s.room==='sanctum')enter('east',928);else s.x=0}
+if(s.x>936){if(s.room==='west')enter('hub',8);else if(s.room==='hub'&&s.boots)enter('east',8);else if(s.room==='east'&&s.key)enter('sanctum',8);else{s.x=936;if(s.room==='hub')tell('SEALED · THE ARCHIVE HOLDS THE STRIDER BOOTS');if(s.room==='east')tell('SEALED · FIND THE KEY IN THE SUNKEN WORKS')}}
+if(s.room==='hub'&&input.down&&Math.abs(s.x+12-480)<=40&&s.y>420)enter('lower',68);else if(s.room==='lower'&&input.up&&Math.abs(s.x+12-80)<=40&&s.y>420)enter('hub',468);
+let cx=s.x+12,cy=s.y+16;
+if(s.room==='west'&&!s.boots&&Math.hypot(cx-160,cy-480)<=30){s.boots=true;tell('STRIDER BOOTS · JUMP AGAIN IN MIDAIR · EAST OPENED')}
+if(s.room==='lower'&&!s.key&&Math.hypot(cx-790,cy-480)<=30){s.key=true;tell('EMBER KEY · THE SANCTUM IS NOW OPEN')}
+for(const [room,e] of Object.entries(s.enemies)){if(!e.alive)continue;e.x+=e.dir*.65;const origin=room==='west'?600:room==='lower'?650:500;if(e.x<origin-65){e.x=origin-65;e.dir=1}if(e.x>origin+65){e.x=origin+65;e.dir=-1}}
+if(input.attack&&s.cool===0){s.cool=20;s.slash=10;const e=s.enemies[s.room];if(e&&e.alive&&Math.hypot(e.x-cx,484-cy)<=60){e.alive=false;tell('SENTINEL DISPERSED')}if(s.room==='sanctum'&&s.bossHp>0&&Math.hypot(780-cx,480-cy)<=60){s.bossHp--;if(s.bossHp===0)tell('THE HEART IS STILL · STEP INTO THE LIGHT')}}
+const e=s.enemies[s.room];if(e&&e.alive&&Math.abs(e.x-cx)<24&&Math.abs(484-cy)<28)hurt();
+if(s.room==='sanctum'&&s.bossHp>0&&s.x+24>760&&s.x<800&&s.y+32>456&&s.y<500)hurt();
+if(s.room==='sanctum'&&s.bossHp===0&&Math.hypot(s.x+12-900,s.y+16-480)<=30){s.won=true;s.vx=0;s.vy=0;tell('')}
+}
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}
+function text(t,x,y,size=14,color='#d9e9ef',align='left'){ctx.font=`${size}px monospace`;ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(t,x,y)}
+function glow(x,y,r,c){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
+function diamond(x,y,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x,y+r);ctx.lineTo(x-r,y);ctx.closePath();ctx.fill()}
+function render(){const accent=colors[s.room];ctx.clearRect(0,0,960,540);const bg=ctx.createLinearGradient(0,0,0,540);bg.addColorStop(0,'#0b1122');bg.addColorStop(1,s.room==='lower'?'#28251f':'#182b36');ctx.fillStyle=bg;ctx.fillRect(0,0,960,540);
+for(let i=0;i<11;i++){const x=i*99+17;rect(x,132+(i%3)*22,35,370,'#142231');rect(x-8,128+(i%3)*22,51,8,'#1c3040');for(let j=0;j<5;j++)rect(x+8,190+j*59,3,12,'#243749')}
+ctx.globalAlpha=.16;for(let i=0;i<6;i++){ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.beginPath();ctx.arc(480,500,100+i*68,Math.PI,0);ctx.stroke()}ctx.globalAlpha=1;
+for(let i=0;i<32;i++){const x=(i*173+35)%960,y=150+(i*83)%330;rect(x,y+Math.sin(s.tick*.025+i)*4,2,2,i%3?'#566777':accent)}
+for(const p of platforms[s.room]){rect(p.x,p.y,p.w,13,'#334b54');rect(p.x,p.y,p.w,3,accent);rect(p.x+10,p.y+13,7,19,'#263b47');rect(p.x+p.w-17,p.y+13,7,19,'#263b47')}
+const ground=s.room==='lower'?[[0,400],[500,460]]:[[0,960]];for(const [x,w]of ground){rect(x,500,w,40,'#101a26');rect(x,500,w,4,'#68817d');rect(x,504,w,7,'#2c424a');for(let a=x+10;a<x+w;a+=39)rect(a,520,25,2,'#22333f')}
+if(s.room==='lower'){glow(450,540,85,'#df64363f');text('THE FRACTURE',450,526,10,'#c08766','center')}
+function door(x,locked,label){glow(x,420,85,locked?'#f0945930':'#81d5c52a');rect(x-8,355,16,145,locked?'#76513f':'#315454');for(let y=360;y<500;y+=19)rect(x-6,y,12,4,locked?'#e8a064':'#90e1cf');if(label)text(label,x<480?24:936,340,11,locked?'#e8ae75':'#9fd9cf',x<480?'left':'right')}
+if(['hub','east','sanctum'].includes(s.room))door(6,false,'');if(['west','hub','east'].includes(s.room))door(954,s.room==='hub'?!s.boots:s.room==='east'?!s.key:false,s.room==='hub'&&!s.boots?'BOOTS REQUIRED':s.room==='east'&&!s.key?'KEY REQUIRED':'');
+if(s.room==='hub'){glow(480,418,105,'#eac37e25');rect(469,385,22,36,'#e8c786');rect(474,390,12,24,'#fff0b4');rect(465,422,30,6,'#435a61');text('CHECKPOINT',480,368,11,'#e8c786','center');rect(451,496,58,5,'#edc785');text('↓  DESCEND',480,458,12,'#f1d6a0','center')}
+if(s.room==='lower'){rect(54,497,52,4,accent);text('↑ RETURN',80,454,12,accent,'center')}
+function pickup(x,type){glow(x,477,55,'#ffdf7b50');diamond(x,477,21,'#e8cc7e22');if(type==='boots'){rect(x-11,466,8,15,'#e6cf8a');rect(x+3,466,8,15,'#e6cf8a');rect(x-11,478,12,7,'#fff0b2');rect(x+3,478,12,7,'#fff0b2')}else{diamond(x-5,474,7,'#ffe6a0');rect(x,472,16,4,'#ffe6a0');rect(x+11,475,4,7,'#ffe6a0')}text(type==='boots'?'STRIDER BOOTS':'EMBER KEY',x,441,11,'#f5dda1','center')}
+if(s.room==='west'&&!s.boots)pickup(160,'boots');if(s.room==='lower'&&!s.key)pickup(790,'key');
+const e=s.enemies[s.room];if(e&&e.alive){glow(e.x,482,30,'#ee806425');rect(e.x-13,477,26,20,'#8c5d68');diamond(e.x,477,15,'#bc7a82');rect(e.x-7,476,5,3,'#ffe2a5');rect(e.x+3,476,5,3,'#ffe2a5');rect(e.x-16,496,9,4,'#503e52');rect(e.x+7,496,9,4,'#503e52')}
+if(s.room==='sanctum'){glow(900,455,85,s.bossHp?'#66769a20':'#ffedba70');rect(878,405,44,95,s.bossHp?'#283144':'#b7bba0');rect(885,412,30,88,s.bossHp?'#131d30':'#fff2c0');text(s.bossHp?'DORMANT':'RETURN TO DAWN',900,388,11,'#dec88e','center');if(s.bossHp>0){glow(780,466,85,'#f2687140');rect(760,452,40,48,'#9f5b6e');diamond(780,455,24,'#cb8990');diamond(780,467,9,'#ffe0ac');rect(765,436,6,15,'#d9aa91');rect(789,436,6,15,'#d9aa91');text('VAULT GUARDIAN',780,411,12,'#f5b5ac','center');for(let i=0;i<5;i++)rect(742+i*16,420,12,5,i<s.bossHp?'#f4aa95':'#3c3043')}}
+if(!(s.inv>0&&s.tick%6<3)){glow(s.x+12,s.y+17,30,'#a9eddf20');rect(s.x+3,s.y+13,18,16,'#5babb2');rect(s.x+2,s.y+2,20,14,'#d6ede0');rect(s.x+(s.facing>0?13:3),s.y+7,8,4,'#17283a');rect(s.x+2,s.y+17,5,13,'#ddb675');rect(s.x+3,s.y+29,7,3,s.boots?'#f6d383':'#325b6d');rect(s.x+15,s.y+29,7,3,s.boots?'#f6d383':'#325b6d');ctx.fillStyle='#ddb675';ctx.beginPath();ctx.moveTo(s.x+7,s.y+15);ctx.lineTo(s.x-10*s.facing,s.y+21);ctx.lineTo(s.x+7,s.y+22);ctx.fill()}
+if(s.slash){ctx.strokeStyle='#fff1b7';ctx.lineWidth=4;ctx.beginPath();ctx.arc(s.x+12,s.y+16,48,s.facing>0?-1.1:Math.PI-1.1,s.facing>0?1.1:Math.PI+1.1);ctx.stroke()}
+rect(0,0,960,104,'#09111de8');rect(0,103,960,1,'#304450');text(names[s.room],26,31,17,accent);text('LIFE',26,58,10,'#8ba1af');for(let i=0;i<3;i++)diamond(78+i*22,54,7,i<s.hp?'#e8b891':'#34414c');text(s.boots?'BOOTS  II':'BOOTS  —',26,82,12,s.boots?'#f0d08e':'#65798b');text(s.key?'KEY  ◆':'KEY  —',153,82,12,s.key?'#f0d08e':'#65798b');text('FALLS '+s.deaths,290,82,11,'#8ba1af');text('VAULT MAP',758,23,10,'#8196a6');const map={west:[740,36],hub:[784,36],lower:[784,67],east:[828,36],sanctum:[872,36]};rect(767,45,121,2,'#3b4d5c');rect(798,52,2,24,'#3b4d5c');for(const [id,[x,y]]of Object.entries(map)){rect(x,y,32,20,s.visited.includes(id)?'#34545d':'#172431');ctx.strokeStyle=id===s.room?'#ffe1a0':'#4a6470';ctx.lineWidth=id===s.room?2:1;ctx.strokeRect(x+.5,y+.5,31,19);if(id===s.room)diamond(x+16,y+10,3,'#ffe1a0')}
+if(s.noticeTime>0&&s.notice){rect(150,113,660,31,'#0a1425df');text(s.notice,480,133,12,'#ead9af','center')}
+if(s.inv>0){ctx.strokeStyle='#ed9b8270';ctx.lineWidth=8;ctx.strokeRect(4,4,952,532)}
+if(s.won){rect(0,0,960,540,'#07111be8');glow(480,250,240,'#f5d78a20');diamond(480,183,25,'#e9ca83');text('THE VAULT REMEMBERS',480,258,30,'#f4d99c','center');text('And at last, it lets the light return.',480,297,16,'#b2c6cb','center');text('5 CHAMBERS · 2 RELICS · '+s.deaths+' FALLS',480,342,12,'#879ea9','center');text('PRESS R TO BEGIN AGAIN',480,402,15,'#ead49a','center')}
+}
+window.METROID_TEST={reset,step(frames,input={}){if(!Number.isInteger(frames)||frames<1||frames>600)throw new RangeError('frames must be an integer from 1 to 600');for(let i=0;i<frames;i++)update(input);render();return snapshot()},snapshot};
+const gameKeys=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','KeyA','KeyD','KeyW','KeyS','KeyZ','KeyR'];window.addEventListener('keydown',e=>{if(gameKeys.includes(e.code))e.preventDefault();if(e.code==='KeyR'){if(!e.repeat)reset();return}keys[e.code]=true});window.addEventListener('keyup',e=>{if(gameKeys.includes(e.code))e.preventDefault();keys[e.code]=false});window.addEventListener('blur',()=>{keys={}});
+reset();if(new URLSearchParams(location.search).get('test')!=='1'){function loop(t){if(!last)last=t;acc+=Math.min(t-last,100);last=t;while(acc>=1000/60){update({left:keys.KeyA||keys.ArrowLeft,right:keys.KeyD||keys.ArrowRight,jump:keys.Space,attack:keys.KeyZ,up:keys.KeyW||keys.ArrowUp,down:keys.KeyS||keys.ArrowDown});acc-=1000/60}render();requestAnimationFrame(loop)}requestAnimationFrame(loop)}
+})();
+</script></body></html>

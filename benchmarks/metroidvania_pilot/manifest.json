@@ -1,0 +1,51 @@
+{
+  "format": "pact.metroid-pilot/0.1",
+  "date_utc": "2026-10-15",
+  "base_commit": "e129624445e07399d4981ea8635d13cd598cb570",
+  "task": "mini-metroidvania",
+  "language": "html-javascript",
+  "prompt_sha256": "abd0d84822d1e56079facfd78726aa10559b2ca98dce0207f44c2597ec10a858",
+  "prompt_recorded_before_generation": true,
+  "formal_benchmark": false,
+  "candidate_pass": null,
+  "trials": [
+    {
+      "trial_id": "metro_a",
+      "model_alias": "gpt-6.1-sol",
+      "requested_reasoning_effort": "medium",
+      "fork_turns": "none",
+      "session_task": "/root/metro_a",
+      "artifact": "metro_a.html",
+      "candidate_sha256": "17103f45af8d10ce71cfaf8a0b63ccb7832aa561e4b0ba721da7243a68323f00",
+      "attempt": 1,
+      "provider_usage": null,
+      "immutable_model_version": null,
+      "generation_latency_ms": null,
+      "artifact_extraction": "Model wrote this file using apply_patch; no coordinator source edits. Final response was only the artifact path."
+    },
+    {
+      "trial_id": "metro_b",
+      "model_alias": "gpt-6-astra",
+      "requested_reasoning_effort": "medium",
+      "fork_turns": "none",
+      "session_task": "/root/metro_b",
+      "artifact": "metro_b.html",
+      "candidate_sha256": "0d5ad9fecac8ee3e2f7b9db5b0679caa99f8b90aa42d0784d57ff55ab21fac60",
+      "attempt": 1,
+      "provider_usage": null,
+      "immutable_model_version": null,
+      "generation_latency_ms": null,
+      "artifact_extraction": "Model wrote this file using apply_patch; no coordinator source edits. Final response was only the artifact path."
+    }
+  ],
+  "limitations": [
+    "One generation per model; no repair or ranking.",
+    "Same task text and same language; this is not PACT versus JavaScript.",
+    "Output paths differ by agent task identity only; task text is shared.",
+    "Only apply_patch output-writing was requested; full hidden system/tool context is not archived.",
+    "Model aliases are requested selections, not immutable backend attestations. Usage and generation latency are unavailable.",
+    "Behavior verification is finite and uses the candidate test API plus actual keyboard input; observations can be forged.",
+    "Verifier development is blind to candidate sources; runtime findings and harness revisions must remain explicit.",
+    "Both original candidate artifacts are published unmodified, including failures."
+  ]
+}

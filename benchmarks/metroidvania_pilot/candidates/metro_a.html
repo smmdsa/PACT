@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ember Vault — a small expedition</title><style>
+*{box-sizing:border-box}body{margin:0;background:#090f1c;color:#cad9e7;font-family:system-ui,sans-serif;min-height:100vh;display:grid;place-items:center}main{width:min(100%,1060px);padding:22px}header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}h1{font-size:20px;letter-spacing:5px;margin:0;color:#f2d49b}header span{font-size:12px;color:#8ca5b8}canvas{width:100%;display:block;aspect-ratio:16/9;background:#111c2d;border:1px solid #3d5263;box-shadow:0 18px 90px #0009;image-rendering:pixelated}footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;line-height:1.8;margin-top:12px;color:#91a7ba}b{color:#e6d2a6;font-weight:600}kbd{font:inherit;color:#e9eef2;border:1px solid #405165;border-radius:3px;padding:1px 5px;background:#182334}</style></head><body><main><header><h1>EMBER VAULT</h1><span>A small expedition beneath the sleeping city</span></header><canvas id="game" width="960" height="540" aria-label="Ember Vault game"></canvas><footer><span><kbd>A</kbd> <kbd>D</kbd> / arrows move · <kbd>Space</kbd> jump · <kbd>Z</kbd> blade · <kbd>↑</kbd> <kbd>↓</kbd> passage</span><span><kbd>R</kbd> restart · <b>Find the boots. Recover the key. End the sentinel.</b></span></footer></main><script>
+'use strict';
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const names={hub:'THE LANTERN HALL',west:'GARDEN OF ASH',lower:'THE SUNKEN ARCHIVE',east:'THE GILDED CAUSEWAY',sanctum:'HEART OF THE VAULT'};
+const palette={hub:['#111d30','#203a49','#e8bd71'],west:['#14262c','#244b47','#74dfb2'],lower:['#141e35','#293954','#8bbff4'],east:['#291e31','#4e3b4b','#e5ad76'],sanctum:['#281d2c','#533444','#ffbd83']};
+const platforms={hub:[{x:200,y:392,w:130},{x:665,y:375,w:135}],west:[{x:315,y:395,w:125},{x:710,y:380,w:120}],lower:[{x:190,y:390,w:110},{x:565,y:380,w:110}],east:[{x:240,y:390,w:140},{x:670,y:390,w:120}],sanctum:[{x:240,y:390,w:130},{x:470,y:350,w:120}]};
+let s,prevJump=false,keys={},acc=0,last=0;
+function enemies(){return {west:{x:600,dir:-1,hp:1},lower:{x:650,dir:1,hp:1},east:{x:500,dir:-1,hp:1}}}
+function reset(){s={room:'hub',x:480,y:468,vx:0,vy:0,hp:3,maxHp:3,boots:false,key:false,bossHp:5,won:false,deaths:0,checkpoint:'hub',visited:['hub'],tick:0,onGround:true,jumpsUsed:0,enemies:enemies(),inv:0,cooldown:0,slash:0,face:1,notice:'THE VAULT AWAITS',noticeTime:160,bossFlash:0};prevJump=false;keys={};acc=0;render();return snapshot()}
+function snapshot(){const {room,x,y,vx,vy,hp,maxHp,boots,key,bossHp,won,deaths,checkpoint,visited,tick,onGround,jumpsUsed}=s;return {room,x,y,vx,vy,hp,maxHp,boots,key,bossHp,won,deaths,checkpoint,visited:visited.slice(),tick,onGround,jumpsUsed}}
+function say(t){s.notice=t;s.noticeTime=160}
+function enter(room,x){s.room=room;s.x=x;s.y=468;s.vx=0;s.vy=0;s.onGround=true;s.jumpsUsed=0;if(!s.visited.includes(room))s.visited.push(room);say(names[room])}
+function death(){s.deaths++;s.hp=3;s.enemies=enemies();s.bossHp=5;s.inv=60;s.cooldown=0;enter('hub',480);say('THE LANTERN CALLS YOU HOME · RELICS RETAINED')}
+function hurt(){if(s.inv||s.won)return;s.hp--;s.inv=45;s.slash=0;s.notice='HIT · '+s.hp+' HEART'+(s.hp===1?'':'S')+' REMAIN';s.noticeTime=65;if(s.hp<=0)death()}
+function update(input){if(s.won){prevJump=!!input.jump;return}s.tick++;s.inv=Math.max(0,s.inv-1);s.cooldown=Math.max(0,s.cooldown-1);s.slash=Math.max(0,s.slash-1);s.noticeTime=Math.max(0,s.noticeTime-1);s.bossFlash=Math.max(0,s.bossFlash-1);
+ const jump=!!input.jump&&!prevJump;prevJump=!!input.jump;s.vx=((input.right?1:0)-(input.left?1:0))*4;if(s.vx)s.face=Math.sign(s.vx);
+ if(jump&&(s.onGround||(s.boots&&s.jumpsUsed<2))){s.vy=-10;s.onGround=false;s.jumpsUsed++;}
+ const oldY=s.y;s.x+=s.vx;s.vy=Math.min(13,s.vy+.55);s.y+=s.vy;s.onGround=false;
+ let lands=platforms[s.room].filter(p=>s.x+24>p.x&&s.x<p.x+p.w);
+ if(s.room!=='lower'||s.x+24>0&&s.x<400||s.x+24>500&&s.x<960)lands.push({x:0,y:500,w:960});
+ for(const p of lands){if(s.vy>=0&&oldY+32<=p.y+.01&&s.y+32>=p.y){s.y=p.y-32;s.vy=0;s.onGround=true;s.jumpsUsed=0;break}}
+ if(s.y>600){death();return}
+ if(s.x<0){if(s.room==='hub')enter('west',916);else if(s.room==='east')enter('hub',916);else if(s.room==='sanctum')enter('east',916);else s.x=0}
+ if(s.x+24>960){if(s.room==='west')enter('hub',20);else if(s.room==='hub'&&s.boots)enter('east',20);else if(s.room==='east'&&s.key)enter('sanctum',20);else{s.x=936;if(s.room==='hub')say('SEALED · FIND THE ECHO BOOTS');if(s.room==='east')say('SEALED · RECOVER THE ARCHIVE KEY')}}
+ if(s.room==='hub'&&input.down&&Math.abs(s.x+12-480)<=40&&s.onGround)enter('lower',68);else if(s.room==='lower'&&input.up&&Math.abs(s.x+12-80)<=40&&s.onGround)enter('hub',468);
+ const cx=s.x+12,cy=s.y+16;
+ if(s.room==='west'&&!s.boots&&Math.hypot(cx-160,cy-480)<=30){s.boots=true;s.hp=3;s.inv=Math.max(s.inv,20);say('ECHO BOOTS · PRESS JUMP AGAIN IN THE AIR')}
+ if(s.room==='lower'&&!s.key&&Math.hypot(cx-790,cy-480)<=30){s.key=true;s.hp=3;s.inv=Math.max(s.inv,20);say('ARCHIVE KEY · THE SANCTUM IS UNSEALED')}
+ const en=s.enemies[s.room];if(en&&en.hp){en.x+=en.dir*.7;const limits=s.room==='west'?[500,740]:s.room==='lower'?[580,710]:[420,600];if(en.x<limits[0]){en.x=limits[0];en.dir=1}if(en.x>limits[1]){en.x=limits[1];en.dir=-1}}
+ if(input.attack&&s.cooldown===0){s.cooldown=20;s.slash=9;if(en&&en.hp&&Math.hypot(cx-en.x,cy-484)<=60){en.hp=0;say('WARDEN DISPERSED')}if(s.room==='sanctum'&&s.bossHp>0&&Math.hypot(cx-780,cy-480)<=60){s.bossHp--;s.bossFlash=10;if(!s.bossHp)say('THE SENTINEL FALLS · ENTER THE LIGHT')}}
+ if(en&&en.hp&&Math.abs(cx-en.x)<25&&s.y+32>468&&s.y<500)hurt();
+ if(s.room==='sanctum'&&s.bossHp>0&&s.x+24>756&&s.x<804&&s.y+32>448&&s.y<500)hurt();
+ if(s.room==='sanctum'&&s.bossHp===0&&Math.hypot(cx-900,cy-480)<=30){s.won=true;say('DAWN RETURNS')}
+}
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
+function text(t,x,y,size=14,c='#c6d7df',align='left'){ctx.font=size+'px monospace';ctx.textAlign=align;ctx.fillStyle=c;ctx.fillText(t,x,y)}
+function diamond(x,y,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x,y+r);ctx.lineTo(x-r,y);ctx.closePath();ctx.fill()}
+function portal(x,locked,label){const a=palette[s.room][2];rect(x-16,370,32,130,'#0a1320');rect(x-22,365,6,135,a);rect(x+16,365,6,135,a);rect(x-22,361,44,7,a);for(let y=381;y<500;y+=19)rect(x-13,y,26,3,locked?'#975a62':'#498b83');if(locked){diamond(x,421,12,'#e0b57c');rect(x-3,415,6,13,'#483449')}text(label,x<100?40:920,350,11,a,x<100?'left':'right')}
+function pickup(x,type){const pulse=Math.sin(s.tick*.07)*3;ctx.save();ctx.shadowColor=type==='boots'?'#7ff8c7':'#f1d38b';ctx.shadowBlur=20;diamond(x,477+pulse,18,type==='boots'?'#68cba9':'#e5bb73');ctx.shadowBlur=0;if(type==='boots'){rect(x-10,471+pulse,7,12,'#112b33');rect(x+1,471+pulse,7,12,'#112b33');rect(x-10,480+pulse,11,5,'#112b33');rect(x+1,480+pulse,11,5,'#112b33')}else{ctx.strokeStyle='#3b2d30';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x-4,474+pulse,4,0,Math.PI*2);ctx.stroke();rect(x,474+pulse,10,3,'#3b2d30');rect(x+7,477+pulse,3,4,'#3b2d30')}ctx.restore();text(type==='boots'?'ECHO BOOTS':'ARCHIVE KEY',x,445,11,'#e4e9dc','center')}
+function render(){const p=palette[s.room],a=p[2];const bg=ctx.createLinearGradient(0,0,0,540);bg.addColorStop(0,p[0]);bg.addColorStop(1,p[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,960,540);
+ // Distant masonry and ribs give each chamber depth.
+ for(let i=0;i<9;i++){const x=i*124-24;rect(x,140,55,360,'#0a142044');rect(x-7,136,69,8,'#b3c9ca0b');rect(x+8,160,9,330,'#a0bfc00b');ctx.strokeStyle='#96acbd13';ctx.lineWidth=5;ctx.beginPath();ctx.arc(x+27,170,57,Math.PI,0);ctx.stroke()}
+ for(let i=0;i<42;i++){const x=(i*137+23)%960,y=130+(i*61)%340;rect(x,y,2,2,i%3?a+'35':a+'70')}
+ rect(0,490,960,10,'#060e19');
+ for(let x=0;x<960;x+=40){if(s.room==='lower'&&x>=400&&x<500)continue;rect(x,500,40,40,'#152535');rect(x,500,39,5,a);rect(x+3,509,34,2,'#607c822d');rect(x+35,508,2,32,'#02081160')}
+ if(s.room==='lower'){rect(400,500,100,40,'#040811');for(let x=408;x<500;x+=20){ctx.fillStyle='#668da3';ctx.beginPath();ctx.moveTo(x,540);ctx.lineTo(x+7,520);ctx.lineTo(x+14,540);ctx.fill()}text('THE FRACTURE',450,447,10,'#86a9c5','center')}
+ for(const q of platforms[s.room]){rect(q.x,q.y,q.w,12,'#253e4e');rect(q.x,q.y,q.w,3,a);rect(q.x+8,q.y+12,8,14,'#1b2d3b');rect(q.x+q.w-16,q.y+12,8,14,'#1b2d3b')}
+ if(s.room==='hub'){portal(8,false,'← ASH GARDEN');portal(952,!s.boots,s.boots?'CAUSEWAY →':'BOOTS REQUIRED');rect(454,490,52,10,'#0c1721');diamond(480,466,8,a);text('↓ ARCHIVE',480,439,12,a,'center');rect(392,465,18,35,'#4c5c58');rect(386,453,30,13,'#e9c37b');rect(390,450,22,3,'#fff0b9');text('CHECKPOINT',400,422,10,'#b5c4ba','center')}
+ if(s.room==='west'){portal(952,false,'LANTERN HALL →');if(!s.boots)pickup(160,'boots');for(let i=0;i<7;i++){const x=38+i*139;rect(x,473,5,27,'#365d50');diamond(x+2,465,10,'#4b8867')}}
+ if(s.room==='lower'){diamond(80,465,8,a);text('↑ LANTERN HALL',80,438,11,a,'center');if(!s.key)pickup(790,'key');for(let i=0;i<5;i++){rect(330+i*16,295,10,55,'#58819a22');rect(330+i*16,300,6,3,'#9ab2be33')}}
+ if(s.room==='east'){portal(8,false,'← LANTERN HALL');portal(952,!s.key,s.key?'SANCTUM →':'KEY REQUIRED')}
+ if(s.room==='sanctum'){portal(8,false,'← CAUSEWAY');ctx.save();ctx.shadowColor=s.bossHp?'#654d53':'#ffe6ad';ctx.shadowBlur=s.bossHp?5:30;rect(885,420,30,80,s.bossHp?'#3f3b48':'#f7df9d');rect(878,415,44,5,a);ctx.restore();text(s.bossHp?'DORMANT EXIT':'DAWN GATE',900,400,10,a,'center');if(s.bossHp){const c=s.bossFlash?'#fff0cc':'#a96f79';rect(756,453,48,47,c);diamond(780,440,28,c);rect(762,463,36,8,'#291f34');rect(771,463,18,4,'#ffd88c');rect(750,483,10,17,'#604356');rect(800,483,10,17,'#604356');for(let i=0;i<5;i++)rect(740+i*17,411,12,5,i<s.bossHp?'#ebbc84':'#493544');text('VAULT SENTINEL',780,391,11,'#e5b99c','center')}}
+ const en=s.enemies[s.room];if(en&&en.hp){const bob=Math.sin(s.tick*.14)*2;rect(en.x-14,474+bob,28,23,'#775c80');diamond(en.x,474+bob,17,'#c596a3');rect(en.x-9,476+bob,18,4,'#292a41');rect(en.x-5,477+bob,10,2,'#f9d49b');rect(en.x-12,497,7,3,'#d3a0a7');rect(en.x+5,497,7,3,'#d3a0a7')}
+ if(!(s.inv&&Math.floor(s.inv/4)%2)){rect(s.x+5,s.y+12,15,18,'#73c4c1');rect(s.x+3,s.y+7,18,12,'#edf1d0');rect(s.x+7+(s.face===1?7:0),s.y+10,5,4,'#153142');rect(s.x+3,s.y+19,18,5,'#456b7b');rect(s.x+3,s.y+29,7,3,s.boots?'#e9c67b':'#b7c4cb');rect(s.x+16,s.y+29,7,3,s.boots?'#e9c67b':'#b7c4cb');rect(s.x+(s.face===1?-5:20),s.y+15,9,10,'#d88a77')}
+ if(s.slash){ctx.strokeStyle='#fff0bc';ctx.lineWidth=5;ctx.beginPath();const x=s.x+12+s.face*12;ctx.arc(x,s.y+16,45,s.face===1?-1.1:2.04,s.face===1?1.1:4.24);ctx.stroke();ctx.strokeStyle='#75e9dc88';ctx.lineWidth=2;ctx.stroke()}
+ // HUD
+ rect(0,0,960,93,'#08101de8');rect(0,92,960,1,'#657e7755');text(names[s.room],25,29,15,a);for(let i=0;i<3;i++){text(i<s.hp?'♥':'♡',25+i*28,63,25,i<s.hp?'#e79d95':'#526374')}text('ECHO '+(s.boots?'●':'○')+'   KEY '+(s.key?'●':'○'),134,59,13,'#adc6cf');text('DEATHS '+s.deaths,337,59,11,'#7f97a9');text(s.boots?'DOUBLE JUMP ONLINE':'SEEK THE ECHO BOOTS',25,81,10,'#7e9ba9');
+ const map={hub:[814,31],west:[782,31],lower:[814,55],east:[846,31],sanctum:[878,31]};ctx.strokeStyle='#526575';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(792,40);ctx.lineTo(890,40);ctx.moveTo(825,40);ctx.lineTo(825,66);ctx.stroke();for(const [id,[x,y]] of Object.entries(map)){rect(x,y,24,17,s.room===id?a:s.visited.includes(id)?'#506b78':'#202f41');rect(x+2,y+2,20,13,s.room===id?'#d2d4a7':s.visited.includes(id)?'#39515f':'#142033')}text('VAULT MAP',841,21,9,'#839cac','center');
+ if(s.noticeTime>0){rect(160,111,640,33,'#071421dc');text(s.notice,480,133,13,a,'center')}
+ if(s.won){rect(0,0,960,540,'#08121ce8');text('DAWN RETURNS',480,220,42,'#ffe1a0','center');text('The vault is silent. The city can dream again.',480,267,16,'#bacfce','center');text('ECHO BOOTS  ·  ARCHIVE KEY  ·  SENTINEL DEFEATED',480,306,12,'#79b9b4','center');text('DEATHS '+s.deaths+'   /   '+Math.floor(s.tick/60)+' SECONDS',480,340,12,'#839eac','center');text('PRESS R TO BEGIN AGAIN',480,391,15,'#f1d49b','center')}
+}
+window.METROID_TEST={reset,step(frames,input={}){if(!Number.isInteger(frames)||frames<1||frames>600)throw new RangeError('frames must be an integer from 1 to 600');for(let i=0;i<frames;i++)update(input);render();return snapshot()},snapshot};
+const codes=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','KeyA','KeyD','KeyW','KeyS','KeyZ','KeyR'];window.addEventListener('keydown',e=>{if(codes.includes(e.code))e.preventDefault();if(e.code==='KeyR'&&!e.repeat)reset();else keys[e.code]=true});window.addEventListener('keyup',e=>{if(codes.includes(e.code))e.preventDefault();keys[e.code]=false});window.addEventListener('blur',()=>{keys={}});
+function frame(t){if(!last)last=t;acc+=Math.min(100,t-last);last=t;while(acc>=1000/60){update({left:keys.KeyA||keys.ArrowLeft,right:keys.KeyD||keys.ArrowRight,jump:keys.Space,attack:keys.KeyZ,up:keys.KeyW||keys.ArrowUp,down:keys.KeyS||keys.ArrowDown});acc-=1000/60}render();requestAnimationFrame(frame)}reset();if(new URLSearchParams(location.search).get('test')!=='1')requestAnimationFrame(frame);
+</script></body></html>

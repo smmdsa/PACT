@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dos GPT · una Metroidvania</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0b101b;color:#eef5ff}*{box-sizing:border-box}body{margin:0}main{max-width:1160px;margin:auto;padding:32px 24px}header{display:flex;justify-content:space-between;align-items:center;gap:24px}a{color:#9ce9df}.eyebrow{color:#9ce9df;letter-spacing:.16em;font-size:12px;text-transform:uppercase}h1{font-size:clamp(30px,5vw,56px);line-height:1.05;margin:14px 0}p{color:#b4c1d5;max-width:760px;line-height:1.6}.models{display:flex;gap:10px;margin:26px 0 14px;flex-wrap:wrap}button{background:#182339;border:1px solid #34455f;border-radius:8px;padding:13px 20px;color:#e7f0ff;font:600 15px system-ui;cursor:pointer}button[aria-pressed=true]{background:#9ce9df;color:#0b2027;border-color:#9ce9df}button:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:4px}.screen{border:1px solid #34455f;border-radius:12px;overflow:hidden;background:#050910}iframe{display:block;width:100%;height:650px;border:0}.meta{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap;margin-top:14px;font-size:14px;color:#aebed5}.note{padding:18px 22px;border-left:3px solid #9ce9df;background:#111c2d;margin-top:28px}.note p{margin:0}@media(max-width:650px){main{padding:24px 12px}header{display:block}iframe{height:520px}}
+</style>
+<main><header><div><span class="eyebrow">PACT · laboratorio de modelos</span><h1>Dos GPT.<br>Una Metroidvania.</h1></div><a href="../evaluation.html">Ver metodología ↗</a></header>
+<p>Mismo encargo, cinco salas y una sola entrega por modelo. Explorá, conseguí las botas de doble salto y la llave, volvé sobre tus pasos y derrotá al jefe. Estos juegos son las entregas originales de los modelos.</p>
+<div class="models" aria-label="Elegir juego"><button type="button" aria-pressed="true" data-game="metro_a.html">GPT‑6.1</button><button type="button" aria-pressed="false" data-game="metro_b.html">GPT‑6 Astra</button></div>
+<div class="screen"><iframe id="game" src="metro_a.html" sandbox="allow-scripts" title="Metroidvania generada por GPT-6.1"></iframe></div>
+<div class="meta"><span>Hacé clic dentro del juego · A/D o flechas · Espacio · Z · W/S · R</span><a id="download" href="metro_a.html" download>Descargar HTML original</a></div>
+<!--BENCHMARK_RESULTS-->
+<div class="note"><p>Ensayo exploratorio en HTML/JavaScript. Los nombres son los alias solicitados; no disponemos de consumo de tokens ni versión inmutable. Cambiar de modelo reinicia el juego. Un solo intento no establece un ganador ni una ventaja de PACT.</p></div>
+</main><script>
+for(const button of document.querySelectorAll('button[data-game]'))button.addEventListener('click',()=>{for(const other of document.querySelectorAll('button[data-game]'))other.setAttribute('aria-pressed',String(other===button));const frame=document.querySelector('#game');frame.src=button.dataset.game;frame.title='Metroidvania generada por '+button.textContent;document.querySelector('#download').href=button.dataset.game;});
+</script></html>
