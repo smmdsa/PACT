@@ -32,6 +32,22 @@ class PatchCliTests(unittest.TestCase):
     def run_cli(self, *args):
         return subprocess.run([sys.executable,'-m','pact',*map(str,args)],cwd=ROOT,capture_output=True,text=True)
 
+    def test_unpinned_publication_keeps_observed_source_identity(self):
+        # Even legacy patch calls without an explicit byte guard must use the checked snapshot.
+        from pact import __main__ as cli
+        import unittest.mock
+        with tempfile.TemporaryDirectory() as tmp:
+            source, patch, output, _, _ = self.setup_files(tmp)
+            original = source.read_bytes()
+            real_build = __import__('pact.module_build', fromlist=['build_module']).build_module
+            def mutate_after_validation(candidate):
+                source.write_bytes(original + b'\\n')
+                return real_build(candidate)
+            with unittest.mock.patch('pact.module_build.build_module', side_effect=mutate_after_validation):
+                self.assertEqual(cli.main(['patch', str(source), '--patch', str(patch), '-o', str(output)]), 1)
+            self.assertFalse(output.exists())
+            self.assertEqual(source.read_bytes(), original + b'\\n')
+
     def test_patch_rejects_oversized_source_during_hashing(self):
         with tempfile.TemporaryDirectory() as tmp:
             source, patch, output, _, _ = self.setup_files(tmp)
