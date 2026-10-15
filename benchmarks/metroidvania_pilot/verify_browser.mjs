@@ -183,6 +183,19 @@ try {
   await writeFile('/tmp/candidate.html', candidate, { mode: 0o600 });
   browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
   output.runtime.chromium = browser.version();
+  await writeFile('/tmp/control.html','<!doctype html><title>trusted control</title><script>window.TRUSTED_CONTROL=true</script>');
+  const control = await browser.newPage();
+  for (const routed of [false,true]) {
+    if (routed) await control.context().route('**/*', route=>route.request().url().startsWith('file:')?route.continue():route.abort());
+    let okay=false;
+    try {
+      await control.goto('file:///tmp/control.html?mode='+routed,{waitUntil:'load',timeout:5000});
+      okay=await control.evaluate(()=>window.TRUSTED_CONTROL===true);
+      result('verifier_control_'+(routed?'routed':'unrouted'),okay,'Trusted minimal file loaded');
+    } catch(error) { result('verifier_control_'+(routed?'routed':'unrouted'),false,error.message); }
+    if(!okay) throw Error('Trusted browser control failed before candidate evaluation');
+  }
+  await control.close();
   const page = await newPage();
   await observe('boot_interface', () => action(page,'boot'));
   await screenshot(page,'hub');
