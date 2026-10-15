@@ -14,7 +14,7 @@ This audit checks repository implementation and tests, not just changelog claims
 | Runtime benchmark | `benchmarks/runtime_performance.py`, frozen runtime report and tests | Chosen local counter workload with warmup, fresh samples and oracle; not a universal speed ranking |
 | Selective inspection | `pact/inspection.py`, inspection CLI/tests | Numeric modules only; helper bodies/state/test bodies can be omitted explicitly |
 | Revision-checked edits | `pact/transactions.py`, `pact/transaction_io.py`, patch/transaction tests | New candidate publication; no in-place filesystem compare-and-swap |
-| Contracts | Module 0.3 export-case declarations, 0.4 guard/assert checking; export-evidence/assertion tests | Case presence and executed examples are not coverage proofs or nominal units |
+| Contracts | Module 0.3 export-case declarations, 0.4 guard/assert checking and 0.5 expected-trap cases; export-evidence/assertion/trap tests | Case presence and executed examples are not coverage proofs or nominal units |
 | Locations and replay | `pact/source_locations.py`, `pact/replay.py`, compiler trap maps; location/replay tests | Definition spans and selected trap opcodes; no full instruction/source map or interactive debugger |
 | Portability | OS matrix, Chromium smoke, Node input-only game playthrough | No Firefox/WebKit, physical-device run or full browser victory evidence |
 | Trial material and recorder | `benchmarks/agent_trials.py`, frozen prompt/contexts/oracle; recorder tests | Records external claims; no provider requests or real trial-result dataset |
@@ -31,7 +31,7 @@ This audit checks repository implementation and tests, not just changelog claims
 | E3 | Done for finite profile | Ten actual Linux/Docker probes passed in CI 38700604568; failed attempt retained | Demonstrate timeout/CPU, memory, output, process, filesystem and network denials on the deployed backend, retaining failed observations and cleanup evidence |
 | E4 | Blocked: provider configuration | No configured API key/backend or immutable model/usage evidence in this environment | Pinned provider/model/settings, fresh paired trials, actual usage, failed attempts/retries/tool overhead and archived raw candidates/responses; credentials/backend must be configured |
 | E5 | After initial trials | More tasks and retrieval/repair experiments | Pre-register multiple tasks and oracles, full-source vs selected context and repair budgets; do not generalize from counter-four alone |
-| L1 | Planned | Negative-trap case declarations | Versioned test schema, reference/Wasm acceptance for expected traps, state-after-trap semantics and migration compatibility |
+| L1 | Implemented | Module 0.5 strict expected-trap declarations, dual-engine execution and retained-state assertions | Versioned test schema, reference/Wasm acceptance for expected traps, state-after-trap semantics and migration compatibility |
 | L2 | Planned | Nominal units and stronger contracts | Versioned type/contract specification and enforcement; reject incompatible units with independent tests |
 | D1 | Planned | Full instruction maps and interactive debugger | Define mapping/stepping semantics, bounded trace or breakpoint state and actual engine tests; retain generic fallback when unsupported |
 | D2 | Planned | Physical source editing and in-place CAS | Specify exact-byte identity, stale-file races and failure atomicity; current semantic patch/new-file flow remains valid |
@@ -79,6 +79,10 @@ An opt-in `counter-four-forms/0.2` contract now binds canonical and unrolled imp
 
 The Docker workflow now runs authored resource/filesystem/network attempts with positive controls, records OOM state and bounded logs, and verifies container absence after removal. A temporarily inaccessible client endpoint exercises cleanup rejection while a bounded container runs; access is restored for real removal. Cleanup/inspection failure preservation also has synthetic tests. The initial unsuccessful absent-container oracle is retained separately. All ten observations passed in actual Docker CI run 38700604568, with the image, probe/harness hashes, per-probe observations and artifact digest frozen in `benchmarks/results/isolation-38700604568.json`. The probe documentation explicitly excludes universal containment, every exfiltration path and daemon-loss recovery for a live container.
 
-## Active loop — E3 complete, L1 next
+## Active loop — E3 complete, L1 implemented
 
-E3 completed its written finite acceptance criterion on 2026-10-15. E4 cannot run formal trials in this environment: provider credentials/backend and immutable provider usage/model attestations are unavailable. E5 remains dependent on formal trials; the exploratory demos do not satisfy it. Continue with L1 while retaining those blockers. X1 still requires the owner’s license choice; reproducible packaging can proceed independently.
+E3 completed its written finite acceptance criterion on 2026-10-15. E4 cannot run formal trials in this environment: provider credentials/backend and immutable provider usage/model attestations are unavailable. E5 remains dependent on formal trials; the exploratory demos do not satisfy it. L1 now implements strict expected traps on reference/Wasm; continue with L2 while retaining those blockers. X1 still requires the owner’s license choice; reproducible packaging can proceed independently.
+
+## L1 expected-trap cases — 2026-10-15
+
+Module 0.5 inherits 0.4 operations and accepts strict code/function/node trap declarations. Build validates every 0.5 case on fresh reference/Wasm state, including post-trap writes; Wasm requires an exact binary-bound compiler trap site. Normal return, wrong failure/state, missing coordinates and exhausted reference budget reject. Legacy defaults/evidence and frozen sources stay intact. Migration changes only the version/revision and preserves compiled bytes. Tests exercise guard/assert/helper/bounds/arithmetic failures, retained writes, numeric results, map tampering, shared budget, representations and CLI atomic rejection. This completes L1’s written finite criterion, not L2 contracts/units or coverage proof.

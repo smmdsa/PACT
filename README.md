@@ -2,7 +2,7 @@
 
 Experimental agent-first programming: explicit dataflow, checked effects, stable node IDs and deterministic WebAssembly compilation.
 
-Compact frontend **0.2**, with optional data compression **0.3** and stable-ID literal definitions and inline arguments **0.4**, translates to text graph **0.0.1** or numeric module **0.1.0** / **0.2.0** / **0.3.0** / **0.4.0**. Loading preserves the declared module version; checked runtime `state.reset` requires a supported numeric format from 0.2.0 onward. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
+Compact frontend **0.2**, with optional data compression **0.3** and stable-ID literal definitions and inline arguments **0.4**, translates to text graph **0.0.1** or numeric module **0.1.0** / **0.2.0** / **0.3.0** / **0.4.0** / **0.5.0**. Loading preserves the declared module version; checked runtime `state.reset` requires a supported numeric format from 0.2.0 onward. JSON remains an interchange format. Source representation token counts are measured; agent productivity and total task efficiency remain untested.
 
 [Documentation and game](https://smmdsa.github.io/PACT/) · [Syntax](docs/syntax.md) · [Security](docs/security.md) · [Roadmap](ROADMAP.md)
 
@@ -103,7 +103,7 @@ python3 -m benchmarks.agent_trials prepare --language pact --plan-seed 17
 
 Runtime benchmark validates consumed state and measures local kernel latency across PACT Wasm, Python, JavaScript and C. [Methodology and measured local run](docs/runtime-performance.md). It does not rank languages universally.
 
-LLM trial material freezes identical instructions, language-specific contexts and an independent arithmetic oracle. The recorder accepts external provenance/usage records; it does not call models, run untrusted candidates or authenticate reported outcomes. Docker adapters now cover the frozen counter task in four languages; PACT declarations also execute on Wasm inside Docker. An opt-in registered loop/unrolled policy now covers that frozen task; broader tasks, adversarial probes and formal provider trials remain pending. [Protocol and additional benchmarks](docs/agent-evaluation.md).
+LLM trial material freezes identical instructions, language-specific contexts and an independent arithmetic oracle. The recorder accepts external provenance/usage records; it does not call models, run untrusted candidates or authenticate reported outcomes. Docker adapters now cover the frozen counter task in four languages; PACT declarations also execute on Wasm inside Docker. An opt-in registered loop/unrolled policy now covers that frozen task; finite Docker isolation probes have passed; broader tasks and formal provider trials remain pending. [Protocol and additional benchmarks](docs/agent-evaluation.md).
 
 ## Verification and site
 
@@ -159,3 +159,7 @@ Opt-in numeric module 0.4 adds typed `assert` and lazy `guard` nodes for explici
 ## Independent trace grading
 
 External counter-four traces can be checked against the frozen oracle and archived candidate byte identity with `python3 -m benchmarks.agent_trace_grader TRACE --candidate SOURCE`. This executes no candidate code and produces a behavioral observation, not full candidate approval or measured model results. See [trace grading](docs/agent-trace-grading.md).
+
+## Expected failures as executable cases
+
+Opt-in module 0.5 adds expected assertion, bounds and arithmetic traps with qualified function/node IDs and post-trap state expectations. Builds validate every 0.5 case on the reference machine and actual Wasm, requiring exact binary-bound trap coordinates. Earlier writes persist; normal return or another failure rejects the case. [Example](examples/counter.traps.pact) · [Schema, migration and evidence](docs/expected-traps.md).

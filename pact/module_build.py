@@ -5,18 +5,26 @@ import tempfile
 from pathlib import Path
 
 from .diagnostics import PactError
-from .module import analyze_module
-from .module_wasm import compile_module
+from .module import TRAP_TESTED_FORMAT, analyze_module
+from .module_wasm import compile_module, compile_module_with_traps
+from .module_tests import check_reference_tests
 from .schema import require
 
 
 def build_module(document):
     plan=analyze_module(document)
-    binary=compile_module(plan)
+    trap_tests = document['format'] == TRAP_TESTED_FORMAT
+    request = {'tests':document['tests'],'layout':plan['layout']}
+    if trap_tests:
+        check_reference_tests(document)
+        binary, trap_map = compile_module_with_traps(plan)
+        request.update(trap_map=trap_map, reference_tested=True)
+    else:
+        binary=compile_module(plan)
     with tempfile.TemporaryDirectory() as directory:
         directory=Path(directory)
         (directory/'module.wasm').write_bytes(binary)
-        (directory/'tests.json').write_text(json.dumps({'tests':document['tests'],'layout':plan['layout']}))
+        (directory/'tests.json').write_text(json.dumps(request))
         command=['node',str(Path(__file__).resolve().parents[1]/'tools/check_module.mjs'),str(directory/'module.wasm'),str(directory/'tests.json')]
         try:result=subprocess.run(command,capture_output=True,timeout=15)
         except FileNotFoundError:raise PactError('TEST_RUNTIME_MISSING','Node is required to validate module builds.') from None

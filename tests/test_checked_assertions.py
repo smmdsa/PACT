@@ -75,7 +75,7 @@ class CheckedAssertionsTests(unittest.TestCase):
         self.assertEqual(CHECKED_FORMAT, CHECKED)
         self.assertEqual(FORMAT, 'pact.module/0.2.0')
         self.assertEqual(TESTED_FORMAT, 'pact.module/0.3.0')
-        self.assertEqual(FORMATS[-1], CHECKED)
+        self.assertEqual(FORMATS[3], CHECKED)
         self.assertEqual(analyze_module(checked())['declared_export_tests'], {'step': ['success']})
         doc = checked()
         doc['tests'] = []

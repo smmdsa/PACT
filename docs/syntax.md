@@ -16,7 +16,7 @@ return ENTRY_NODE_ID
 end
 ```
 
-Top-level nodes belong to a text graph; functions belong to a numeric module. Explicit `format` selects `pact.graph/0.0.1`, `pact.module/0.1.0` or `pact.module/0.2.0` / `pact.module/0.3.0` / `pact.module/0.4.0` (loading preserves the declared module version; `state.reset` requires a supported numeric format from 0.2.0 onward). All original closed-schema sections remain. Every section occupies one physical line. JSON strings encode newlines as escapes. Blank lines and indentation are insignificant.
+Top-level nodes belong to a text graph; functions belong to a numeric module. Explicit `format` selects `pact.graph/0.0.1`, `pact.module/0.1.0` or `pact.module/0.2.0` / `pact.module/0.3.0` / `pact.module/0.4.0` / `pact.module/0.5.0` (loading preserves the declared module version; `state.reset` requires a supported numeric format from 0.2.0 onward). All original closed-schema sections remain. Every section occupies one physical line. JSON strings encode newlines as escapes. Blank lines and indentation are insignificant.
 
 Whole-line `#` comments are optional and discarded by conversion. Inline comments are unsupported; `#` in quoted text is ordinary text. Rationale belongs in documentation until versioned metadata is designed.
 
@@ -80,3 +80,7 @@ Numeric module 0.3 retains 0.2 operations and requires at least one declared cas
 ## Explicit checked flow
 
 Module 0.4 adds `assert predicate` (unit) and `guard predicate body` (body type), with zero/nonzero i32 truth. They are regular version-gated nodes under existing source headers. Execution ordering is explicit; no automatic rollback. See [checked conditions](checked-assertions.md).
+
+## Expected-trap declarations
+
+Module 0.5 inherits 0.4 operations and adds optional closed `trap` metadata to test cases: code/function/node, with no result field and optional post-trap state assertions. Builds require matching reference and exact Wasm failures. Source headers do not select this behavior. See [expected traps](expected-traps.md).
