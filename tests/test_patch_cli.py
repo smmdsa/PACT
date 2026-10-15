@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -30,6 +31,28 @@ class PatchCliTests(unittest.TestCase):
 
     def run_cli(self, *args):
         return subprocess.run([sys.executable,'-m','pact',*map(str,args)],cwd=ROOT,capture_output=True,text=True)
+
+    def test_exact_source_guard_detects_format_only_changes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source, patch, output, _, _ = self.setup_files(tmp)
+            initial = source.read_bytes()
+            digest = hashlib.sha256(initial).hexdigest()
+            ok = self.run_cli('patch', source, '--patch', patch, '--dry-run',
+                              '--expected-source-sha256', digest)
+            self.assertEqual(ok.returncode, 0, ok.stderr)
+            receipt = json.loads(ok.stdout)
+            self.assertEqual(receipt['source_sha256'], digest)
+            self.assertEqual(receipt['expected_source_sha256'], digest)
+            source.write_bytes(initial + b'\n')
+            stale = self.run_cli('patch', source, '--patch', patch, '-o', output,
+                                 '--expected-source-sha256', digest)
+            self.assertEqual(stale.returncode, 1)
+            self.assertEqual(json.loads(stale.stderr)['code'], 'PATCH_SOURCE_STALE')
+            self.assertFalse(output.exists())
+            self.assertEqual(source.read_bytes(), initial + b'\n')
+            invalid = self.run_cli('patch', source, '--patch', patch, '--dry-run',
+                                   '--expected-source-sha256', 'A' * 64)
+            self.assertEqual(json.loads(invalid.stderr)['code'], 'PATCH_INVALID')
 
     def test_dry_run_runs_declared_tests_without_writing(self):
         with tempfile.TemporaryDirectory() as tmp:

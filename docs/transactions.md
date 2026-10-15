@@ -30,6 +30,12 @@ A node or test replacement must preserve the targeted ID. No operation creates o
 
 A stale digest raises `PATCH_STALE`; absent targets raise `PATCH_TARGET_MISSING`; changed replacement IDs raise `PATCH_ID_CHANGED`; duplicate targets raise `PATCH_TARGET_DUPLICATE`. Invalid format, operation names, digest syntax or operation count raise `PATCH_INVALID`. Closed-schema, identifier and numeric-module errors retain the validator's existing diagnostic codes.
 
+## Optional exact-source guard (D2 initial slice)
+
+For an agent editing a specific physical snapshot, calculate SHA-256 of the original **file bytes** and pass `--expected-source-sha256 HASH` to `pact patch`. The guard uses lowercase 64-character hexadecimal SHA-256 and rejects mismatches with `PATCH_SOURCE_STALE`, including whitespace-only and CRLF changes that preserve the semantic revision. Successful receipts include the observed `source_sha256` and optional `expected_source_sha256` (null when omitted). Existing revision-only calls remain supported.
+
+The guard is checked before patch validation and again immediately before candidate publication. This is **not** atomic filesystem compare-and-swap: the source could change between checks, and the input loader performs its own bounded snapshot read. It does not implement source-range editing, source identity authentication or protection against hostile concurrent writers. Publication still creates only a new destination without clobbering.
+
 ## Review and publication
 
 ```sh
