@@ -14,10 +14,14 @@ def _unique_pairs(pairs):
     return result
 
 
-def load_document(path, migrate_legacy=False, validate_source=False, migrate_to=None):
+def load_document(path, migrate_legacy=False, validate_source=False, migrate_to=None, snapshot_data=None):
     try:
-        with Path(path).open("rb") as stream:
-            data = stream.read(MAX_SOURCE_BYTES + 1)
+        if snapshot_data is None:
+            with Path(path).open("rb") as stream:
+                data = stream.read(MAX_SOURCE_BYTES + 1)
+        else:
+            require(isinstance(snapshot_data, bytes), 'SOURCE_INVALID', 'Expected source snapshot bytes.')
+            data = snapshot_data
         require(len(data) <= MAX_SOURCE_BYTES, "SOURCE_LIMIT", "Source exceeds 1 MiB.")
         text = data.decode("utf-8")
         compact_source = Path(path).suffix == '.pact' or text.lstrip().startswith('pact ')

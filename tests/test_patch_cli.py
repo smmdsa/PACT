@@ -32,6 +32,25 @@ class PatchCliTests(unittest.TestCase):
     def run_cli(self, *args):
         return subprocess.run([sys.executable,'-m','pact',*map(str,args)],cwd=ROOT,capture_output=True,text=True)
 
+    def test_patch_validation_uses_exact_snapshot_bytes(self):
+        from pact import __main__ as cli
+        from unittest.mock import patch as mock_patch
+        with tempfile.TemporaryDirectory() as tmp:
+            source, patch_file, output, _, _ = self.setup_files(tmp)
+            initial = source.read_bytes()
+            real_load = cli.load_document
+            seen = []
+            def load_and_mutate(path, **kwargs):
+                if kwargs.get('snapshot_data') is not None:
+                    seen.append(kwargs['snapshot_data'])
+                    source.write_bytes(initial + b'\n')
+                return real_load(path, **kwargs)
+            with mock_patch.object(cli, 'load_document', side_effect=load_and_mutate):
+                self.assertEqual(cli.main(['patch', str(source), '--patch', str(patch_file),
+                                           '-o', str(output)]), 1)
+            self.assertEqual(seen, [initial])
+            self.assertFalse(output.exists())
+
     def test_unpinned_publication_keeps_observed_source_identity(self):
         # Even legacy patch calls without an explicit byte guard must use the checked snapshot.
         from pact import __main__ as cli

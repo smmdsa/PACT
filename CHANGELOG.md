@@ -1,3 +1,7 @@
+## D2: single-snapshot patch validation
+
+- Patch validation and receipt hash now use the same bounded source bytes, rather than separately reading the source for hashing and parsing. File changes remain rejected by prepublication recheck. This improves snapshot identity, not atomic filesystem CAS.
+
 ## D2 regression: physical newlines
 
 - Correct the mutation fixture to append actual LF bytes instead of the literal backslash-n characters. Add a CRLF-only mutation regression for unpinned candidate publication. This validates formatting-only stale-source rejection; it does not change the filesystem concurrency guarantee.
