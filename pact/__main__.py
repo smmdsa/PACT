@@ -100,7 +100,7 @@ def main(argv=None):
             return 0
         source_snapshot = bounded_source_snapshot(args.source) if args.command == 'patch' else None
         document = load_document(args.source, validate_source=args.command != 'migrate',
-                                 migrate_to=args.to if args.command == 'migrate', snapshot_data=source_snapshot)
+                                 migrate_to=args.to if args.command == 'migrate' else None, snapshot_data=source_snapshot)
         if args.command == 'patch':
             from .compact import dumps
             from .module_build import build_module
