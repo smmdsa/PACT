@@ -123,7 +123,12 @@ class PatchCliTests(unittest.TestCase):
             self.assertEqual(result.returncode,0,result.stderr)
             receipt = json.loads(result.stdout)
             self.assertEqual(receipt['status'],'validated')
-            self.assertEqual(receipt['candidate_bytes'], len(receipt_candidate := __import__('pact.compact', fromlist=['dumps']).dumps(__import__('pact.transactions', fromlist=['apply_patch']).apply_patch(__import__('pact.graph', fromlist=['load_document']).load_document(source), json.loads(patch.read_text()))).encode('utf-8')))
+            from pact.compact import dumps
+            from pact.graph import load_document
+            from pact.transactions import apply_patch
+            candidate = apply_patch(load_document(source), json.loads(patch.read_text()))
+            receipt_candidate = dumps(candidate).encode('utf-8')
+            self.assertEqual(receipt['candidate_bytes'], len(receipt_candidate))
             self.assertEqual(receipt['candidate_sha256'], hashlib.sha256(receipt_candidate).hexdigest())
             self.assertEqual(receipt['evidence'],[{'id':'step.test','status':'tested'}])
             self.assertEqual(receipt['changes'][0]['value'],8)
