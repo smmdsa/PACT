@@ -43,7 +43,7 @@ class PatchCliTests(unittest.TestCase):
             def load_and_mutate(path, **kwargs):
                 if kwargs.get('snapshot_data') is not None:
                     seen.append(kwargs['snapshot_data'])
-                    source.write_bytes(initial + b'\\n')
+                    source.write_bytes(initial + b'\n')
                 return real_load(path, **kwargs)
             with mock_patch.object(cli, 'load_document', side_effect=load_and_mutate):
                 self.assertEqual(cli.main(['patch', str(source), '--patch', str(patch_file),
