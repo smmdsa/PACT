@@ -1,3 +1,7 @@
+## D2 candidate artifact byte identity
+
+- Patch receipts now include SHA-256 and byte count of the exact serialized candidate, for dry-run and published outputs. This enables receipt-to-file verification without changing patch formats or compiled programs. It is not CAS or a signature.
+
 ## D2: single-snapshot patch validation
 
 - Patch validation and receipt hash now use the same bounded source bytes, rather than separately reading the source for hashing and parsing. File changes remain rejected by prepublication recheck. This improves snapshot identity, not atomic filesystem CAS.

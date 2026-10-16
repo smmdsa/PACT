@@ -131,6 +131,8 @@ def main(argv=None):
                        'status': 'validated' if args.dry_run else 'patched',
                        'expected_revision_sha256': patch['expected_revision_sha256'],
                        'source_sha256': source_hash,
+                       'candidate_sha256': hashlib.sha256(data).hexdigest(),
+                       'candidate_bytes': len(data),
                        'expected_source_sha256': args.expected_source_sha256,
                        'result_revision_sha256': revision(candidate),
                        'evidence': manifest['evidence'],
